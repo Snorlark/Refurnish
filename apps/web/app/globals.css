@@ -26,12 +26,21 @@
   font-style: normal;
 }
 
+*{
+  
+  transition: all;
+  transition-timing-function: var(--ease-in-out); 
+  transition-duration: 300ms;
+}
+
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Futura', 'Futura Std', 'Futura PT', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 200;
   line-height: 1.6;
+
 }
 
 /* Modern radius utilities */
