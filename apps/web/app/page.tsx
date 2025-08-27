@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -11,6 +11,16 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sign Up modal state
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -35,9 +45,37 @@ const LoginPage: React.FC = () => {
   };
 
   const handleRegisterClick = () => {
-    // Navigate to register page
-    console.log('Navigate to register page');
-    alert('Navigate to register page');
+    setIsSignUpOpen(true);
+  };
+
+  const closeSignUp = () => {
+    setIsSignUpOpen(false);
+  };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSignUpOpen(false);
+      }
+    };
+    if (isSignUpOpen) {
+      window.addEventListener('keydown', onKeyDown);
+    }
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isSignUpOpen]);
+
+  const handleSignUp = async () => {
+    // Placeholder submit; replace with API call later
+    if (!firstName || !lastName || !signUpEmail || !signUpPassword || !confirmPassword) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    if (signUpPassword !== confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+    console.log('Sign up attempt:', { firstName, lastName, signUpEmail });
+    setIsSignUpOpen(false);
   };
 
   const handleForgotPassword = () => {
@@ -197,6 +235,140 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Sign Up Modal Overlay */}
+      {isSignUpOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeSignUp} />
+          <div className="relative w-full max-w-xl bg-gray-100 rounded-[32px] shadow-2xl z-10">
+            <div className="p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-4xl font-extrabold text-[#273815] text-center w-full">Sign Up</h2>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-6">
+                {/* Name fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-[#273815] mb-2">First name</label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
+                      placeholder="Enter your first name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-[#273815] mb-2">Last name</label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
+                      placeholder="Enter your last name"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="signUpEmail" className="block text-sm font-medium text-[#273815] mb-2">Email address</label>
+                  <input
+                    id="signUpEmail"
+                    type="email"
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="signUpPassword" className="block text-sm font-medium text-[#273815]">Password</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                      className="flex items-center text-sm text-[#273815]"
+                    >
+                      {showSignUpPassword ? (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-1" /> Hide
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" /> Show
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <input
+                    id="signUpPassword"
+                    type={showSignUpPassword ? 'text' : 'password'}
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
+                    placeholder="Enter your password"
+                  />
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#273815]">Confirm Password</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="flex items-center text-sm text-[#273815]"
+                    >
+                      {showConfirmPassword ? (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-1" /> Hide
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" /> Show
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
+                    placeholder="Re-enter your password"
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  onClick={handleSignUp}
+                  className="w-full bg-[#636B2F] text-white font-semibold py-3 px-4 rounded-full shadow-md"
+                >
+                  Sign Up
+                </button>
+
+                <p className="text-center text-[#273815]">
+                  Already have an account?{' '}
+                  <button onClick={closeSignUp} className="text-[#273815] font-semibold underline">
+                    Log in here
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
