@@ -33,8 +33,8 @@ const AdminDashboard: React.FC = () => {
   // Sample data - in real app, this would come from MongoDB
   const navItems = [
     { label: 'Dashboard Overview', href: '/admin/dashboard', active: true },
-    { label: 'User Management', href: '/admin/users', active: false },
-    { label: 'Product Moderation', href: '/admin/moderation', active: false },
+    { label: 'User Management', href: '/admin/user-management', active: false },
+    { label: 'Product Moderation', href: '/admin/product-moderation', active: false },
   ];
   const stats: StatCard[] = [
     {
