@@ -33,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="page-fade">
+          {children}
+        </div>
       </body>
     </html>
   );
