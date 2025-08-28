@@ -161,13 +161,13 @@ export default function ItemViewSwapPage() {
 
               {/* Product Images Carousel */}
               <div className="relative mb-8">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100">
+                <div className="h-120 w-110 object-center justify-center mx-auto rounded-2xl overflow-hidden bg-gray-100">
                   <Image 
                     src={currentSwapProduct.images[currentImageIndex]} 
                     alt={currentSwapProduct.title}
                     width={500}
                     height={600}
-                    className="w-full h-full object-cover"
+                    className="w-full h-120 object-cover"
                   />
                 </div>
                 
@@ -176,7 +176,7 @@ export default function ItemViewSwapPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
                         index === currentImageIndex 
                           ? 'bg-(--color-olive) scale-125' 
                           : 'bg-gray-300 hover:bg-gray-400'
@@ -185,12 +185,12 @@ export default function ItemViewSwapPage() {
                   ))}
                 </div>
 
-                <button onClick={prevImage} className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300">
+                <button onClick={prevImage} className="absolute border-1 border-(--color-primary) cursor-pointer mx-0 left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <button onClick={nextImage} className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300">
+                <button onClick={nextImage} className="absolute border-1 border-(--color-primary) cursor-pointer mx-0 right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>

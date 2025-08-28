@@ -15,28 +15,29 @@ type SwapItem = {
   image: string;
   location: string;
   swapFor: string; // New field for what the seller wants
+  dateAdded: string; 
 };
 
 const swapCatalog: Record<string, SwapItem[]> = {
   CHAIRS: [
-    { id: 1, title: "Wooden Chair", image: "/bedroom.png", location: "Amanpulo", swapFor: "Coffee Table" },
-    { id: 2, title: "Classic Rattan Chair", image: "/bedroom.png", location: "Cebu", swapFor: "Floor Lamp" },
+    { id: 1, title: "Wooden Chair", image: "/bedroom.png", location: "Amanpulo", swapFor: "Coffee Table", dateAdded: "2025-08-25" },
+    { id: 2, title: "Classic Rattan Chair", image: "/bedroom.png", location: "Cebu", swapFor: "Floor Lamp", dateAdded: "2025-08-26"  },
   ],
   TABLES: [
-    { id: 3, title: "Dining Table", image: "/bedroom.png", location: "Makati", swapFor: "Bookshelf" },
-    { id: 4, title: "Coffee Table", image: "/bedroom.png", location: "Tagaytay", swapFor: "Side Chair" },
+    { id: 3, title: "Dining Table", image: "/bedroom.png", location: "Makati", swapFor: "Bookshelf", dateAdded: "2025-08-5"  },
+    { id: 4, title: "Coffee Table", image: "/bedroom.png", location: "Tagaytay", swapFor: "Side Chair", dateAdded: "2025-08-15"  },
   ],
   SOFA: [
-    { id: 5, title: "Modern Sofa", image: "/living.png", location: "Cebu", swapFor: "Rug" },
+    { id: 5, title: "Modern Sofa", image: "/living.png", location: "Cebu", swapFor: "Rug" , dateAdded: "2025-07-25" },
   ],
   CABINET: [
-    { id: 6, title: "Classic Cabinet", image: "/living.png", location: "Davao", swapFor: "Bar Stool" },
+    { id: 6, title: "Classic Cabinet", image: "/living.png", location: "Davao", swapFor: "Bar Stool" , dateAdded: "2025-01-25" },
   ],
   DECOR: [
-    { id: 7, title: "Decorative Vase", image: "/living.png", location: "Palawan", swapFor: "Wall Art" },
+    { id: 7, title: "Decorative Vase", image: "/living.png", location: "Palawan", swapFor: "Wall Art", dateAdded: "2025-09-25"  },
   ],
   MIRROR: [
-    { id: 8, title: "Wall Mirror", image: "/dining.png", location: "Tagaytay", swapFor: "Console Table" },
+    { id: 8, title: "Wall Mirror", image: "/dining.png", location: "Tagaytay", swapFor: "Console Table" , dateAdded: "2025-08-12" },
   ],
   
   LAMP: [
@@ -58,6 +59,10 @@ export default function SwapCatalogPage() {
   const categories = ["ALL", ...Object.keys(swapCatalog)];
   const [isSwapPage, setIsSwapPage] = useState(true); // since this is the Swap page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [sortOption, setSortOption] = useState<string>("newest");
+  const [showFilters, setShowFilters] = useState(false);
+///  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   // Navbar animation
     useEffect(() => {
@@ -128,6 +133,24 @@ export default function SwapCatalogPage() {
     return () => ctx.revert();
   }, [activeCategory]);
 
+  // Get unique locations from products
+  const allLocations = Array.from(new Set(Object.values(swapCatalog).flat().map(product => product.location)));
+
+  // Enhanced filtering logic
+  let filteredItems: SwapItem[] =
+    activeCategory === "ALL"
+      ? Object.values(swapCatalog).flat()
+      : swapCatalog[activeCategory] ?? [];
+
+
+
+  // Apply location filter
+  if (selectedLocations.length > 0) {
+    filteredItems = filteredItems.filter(item =>
+      selectedLocations.includes(item.location)
+    );
+  }
+
   // Filtering logic (curated & scalable)
   const filteredProducts: SwapItem[] =
     isSwapPage
@@ -145,7 +168,6 @@ export default function SwapCatalogPage() {
     <>
     <main className="bg-white font-['Futura'] min-h-screen">
       {/* NAVBAR */}
-      
         <nav
             ref={navbarRef}
             className="bg-white/95 backdrop-blur-md rounded-full mx-3 sm:mx-6 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
@@ -196,55 +218,165 @@ export default function SwapCatalogPage() {
           {/* Spacer for fixed nav */}
           <div className="h-20 sm:h-15" />
 
-      {/* CATEGORY TABS */}
-     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
+        {/* CATEGORY TABS */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
+      
+            <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
+  
+            {/* CATEGORY TABS (centered) */}
+            <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
+              {categories.map((c) => {
+              const active = c === activeCategory;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setActiveCategory(c)}
+                  className={`relative pb-1 sm:pb-2 transition-colors ${
+                    active ? "font-semibold text-black" : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {c}
+                  {active && (
+                    <span className="absolute -bottom-[3px] left-0 right-0 mx-auto block h-[4px] w-3 sm:w-4 rounded-full bg-black" />
+                  )}
+                </button>
+              );
+            })}
+            </div>
+  
+            {/* FILTER SECTION */}
+              <div className="mt-6 mb-8 mx-22">
+                {/* Filter Toggle Button and Sale/Swap Buttons */}
+                <div className="flex justify-between items-center mb-4">
+                  {/* Sale & Swap Buttons */}
+                  <div className="flex gap-4">
 
-           {/* SALE & SWAP FILTERS */}
-          <div className="mt-6 flex justify-center mb-5 gap-4">
-            
-             <Link
-              href="/product-catalog-sale"
-              className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
-            >
-              Sale
-            </Link>
+                    <Link
+                      href="/product-catalog-sale"
+                      className="px-6 py-3 bg-white border-2 border-gray-200  rounded-full text-sm font-medium transition-colors text-gray-700 hover:bg-gray-200"
+                    >
+                      Sale
+                    </Link>
 
-            <button
-              onClick={() => setIsSwapPage(true)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                isSwapPage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Swap
-            </button>
-          </div>
-
-          <div className="border-t-[0.1px] border-(--color-primary) mx-5 lg:mx-40 text-center opacity-50"></div>
-
-          {/* CATEGORY TABS (centered) */}
-          <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
-            {categories.map((c) => {
-            const active = c === activeCategory;
-            return (
-              <button
-                key={c}
-                onClick={() => setActiveCategory(c)}
-                className={`relative pb-1 sm:pb-2 transition-colors ${
-                  active ? "font-semibold text-(--color-primary)" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                {c}
-                {active && (
-                  <span className="absolute -bottom-[3px] left-0 right-0 mx-auto block h-[4px] w-3 sm:w-4 rounded-full bg-black" />
-                )}
-              </button>
-            );
-          })}
-          </div>
+                    <button
+                      onClick={() => setIsSwapPage(true)}
+                      className={`px-6 py-3 rounded-full text-sm font-medium transition-colors ${
+                        isSwapPage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Swap
+                    </button>
+                  </div>
+  
+                  {/* Filter Button */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filters & Sort
+                    <svg className={`w-4 h-4 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+  
+                {/* Filter Panel */}
+                {showFilters && (
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  
+                    {/* Sort Options */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                      <select
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                        className="w-full px-4 py-3 border font-['Futura'] border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+                      >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="nameAZ">Name: A to Z</option>
+                        <option value="nameZA">Name: Z to A</option>
+                      </select>
+                    </div>
+  
+                    {/* Location Filter */}
+                      <div className="lg:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <div className="flex flex-wrap gap-2">
+                          {allLocations.map((location) => (
+                            <button
+                              key={location}
+                              onClick={() => {
+                                if (selectedLocations.includes(location)) {
+                                  setSelectedLocations(selectedLocations.filter(loc => loc !== location));
+                                } else {
+                                  setSelectedLocations([...selectedLocations, location]);
+                                }
+                              }}
+                              className={`px-3 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
+                                selectedLocations.includes(location)
+                                  ? 'bg-(--color-olive) text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {location}
+                            </button>
+                          ))}
+                          {selectedLocations.length > 0 && (
+                            <button
+                              onClick={() => setSelectedLocations([])}
+                              className="px-3 py-2 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300"
+                            >
+                              Clear All
+                            </button>
+                          )}
+                        </div>
+                      </div>
+  
+                      {/* Clear Filters */}
+                      <div className="lg:col-span-3 font-['Futura'] flex justify-end">
+                        <button
+                          onClick={() => {
+                            setSelectedLocations([]);
+                            setSortOption("newest");
+                          }}
+                          className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-300 rounded-full hover:text-gray-800 transition-colors duration-300"
+                        >
+                          Clear All Filters
+                        </button>
+                      </div>
+                  </div>
+  
+                    {/* Active Filters Display */}
+                    {(selectedLocations.length > 0) && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex flex-wrap gap-2">
+                        {selectedLocations.map((location) => (
+                          <span key={location} className="inline-flex items-center gap-1 px-3 py-1 bg-gray-300 text-(--color-primary) rounded-full text-xs">
+                            {location}
+                            <button onClick={() => setSelectedLocations(selectedLocations.filter(loc => loc !== location))} className="ml-1 cursor-pointer text-[18px] hover:text-(--color-olive)">×</button>
+                          </span>
+                        ))}
+                          
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+  
+              {/* Results Count */}
+              <div className="text-center text-sm text-gray-600 mb-4">
+                Showing {filteredItems.length} of {Object.values(swapCatalog).flat().length} products
+              </div>
+            </div>
           </section>
 
-      {/* SWAP GRID */}
-      <section className="max-w-7xl mx-auto md:mx-30 px-6 lg:px-9 mt-8">
+          {/* SWAP GRID */}
+          <section className="max-w-7xl mx-auto md:mx-30 px-6 lg:px-9 mt-8">
               <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {filteredProducts.length === 0 ? (
                   <div className="col-span-full text-center py-20 text-gray-500">
@@ -257,6 +389,8 @@ export default function SwapCatalogPage() {
                         <Image src={p.image} alt={p.title} width={600} height={420} className="w-full h-44 object-cover" />
                       </div>
       
+                <Link 
+                href="/item-view-swap">
                       <div className="p-4">
                         <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
                         <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
@@ -269,6 +403,7 @@ export default function SwapCatalogPage() {
                           <span>{p.location}</span>
                         </div>
                       </div>
+                      </Link>
                     </article>
                   ))
                 )}

@@ -51,60 +51,25 @@ const productCatalog: Record<string, Product[]> = {
     { id: 19, title: "Floor Mirror", image: "/dining.png", location: "Amanpulo", price: 220, dateAdded: "2025-08-16" },
     { id: 20, title: "Bathroom Mirror", image: "/dining.png", location: "Davao", price: 95, dateAdded: "2025-08-06" },
   ],
+  LAMP: [
+    
+  ],
+  VANITY: [
+    
+  ],
+
+  SHELVES: [
+    
+  ],
 };
-
-
-// const productCatalog: Record<string, Product[]> = {
-//   CHAIRS: [
-//     { id: 1, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-//     { id: 2, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-//     { id: 3, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-//     { id: 4, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-//     { id: 5, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-//     { id: 6, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-  
-  
-  
-//   ],
-//   TABLES: [
-//     { id: 3, title: "Dining Table", price: "₱ 20,000.00", image: "/bedroom.png", location: "Makati" },
-//     { id: 4, title: "Coffee Table", price: "₱ 8,000.00", image: "/bedroom.png", location: "Tagaytay" },
-//   ],
-//   SOFA: [
-//     { id: 5, title: "Modern Sofa", price: "₱ 30,000.00", image: "/living.png", location: "Cebu" },
-//   ],
-//   CABINET: [
-//     { id: 6, title: "Classic Cabinet", price: "₱ 15,000.00", image: "/living.png", location: "Davao" },
-//   ],
-//   DECOR: [
-//     { id: 7, title: "Decorative Vase", price: "₱ 5,000.00", image: "/living.png", location: "Palawan" },
-//   ],
-//   MIRROR: [
-//     { id: 8, title: "Wall Mirror", price: "₱ 8,500.00", image: "/dining.png", location: "Tagaytay" },
-//   ],
-//   LAMP: [
-    
-//   ],
-//   VANITY: [
-    
-//   ],
-
-//   SHELVES: [
-    
-//   ],
-// };
 
 
 
 export default function ChairsCatalogPage() {
   const navbarRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
- // const [activeCategory, setActiveCategory] = useState("CHAIRS");
   const categories = ["ALL", ...Object.keys(productCatalog)];
-  // const defaultCategory = productCatalog["CHAIRS"] ? "CHAIRS" : "ALL";
-  // const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
   const defaultCategory = "SALE";
-  // const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
   const [isSalePage, setIsSalePage] = useState(true); // since this is the Sale page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [sortOption, setSortOption] = useState<string>("newest");
@@ -181,6 +146,8 @@ export default function ChairsCatalogPage() {
 
     return () => ctx.revert();
   }, [activeCategory]);
+
+
   // Get unique locations from products
   const allLocations = Array.from(new Set(Object.values(productCatalog).flat().map(product => product.location)));
 
@@ -306,7 +273,7 @@ export default function ChairsCatalogPage() {
           </div>
 
           {/* FILTER SECTION */}
-           <div className="mt-6 mb-8">
+           <div className="mt-6 mb-8 mx-22">
              {/* Filter Toggle Button and Sale/Swap Buttons */}
              <div className="flex justify-between items-center mb-4">
                {/* Sale & Swap Buttons */}
@@ -322,7 +289,7 @@ export default function ChairsCatalogPage() {
 
                  <Link
                    href="/product-catalog-swap"
-                   className="px-6 py-3 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                   className="px-6 py-3 bg-white border-2 border-gray-200  rounded-full text-sm font-medium transition-colors text-gray-700 hover:bg-gray-200"
                  >
                    Swap
                  </Link>
@@ -331,7 +298,7 @@ export default function ChairsCatalogPage() {
                {/* Filter Button */}
                <button
                  onClick={() => setShowFilters(!showFilters)}
-                 className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
+                 className="flex font-['Futura'] items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
                >
                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -343,9 +310,9 @@ export default function ChairsCatalogPage() {
                </button>
              </div>
 
-                         {/* Filter Panel */}
+             {/* Filter Panel */}
              {showFilters && (
-               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
+               <div className="bg-white  font-['Futura'] rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                   {/* Sort Options */}
@@ -354,7 +321,7 @@ export default function ChairsCatalogPage() {
                     <select
                       value={sortOption}
                       onChange={(e) => setSortOption(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+                      className="w-full px-4 py-3 font-['Futura']  border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
@@ -425,7 +392,7 @@ export default function ChairsCatalogPage() {
                    </div>
 
                    {/* Clear Filters */}
-                   <div className="lg:col-span-3 flex justify-end">
+                   <div className="lg:col-span-3  font-['Futura']  flex justify-end">
                      <button
                        onClick={() => {
                          setPriceRange([0, 600]);
