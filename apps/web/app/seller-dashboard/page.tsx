@@ -16,6 +16,9 @@ const SellerDashboardPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [sellerActiveTab, setSellerActiveTab] = useState('Dashboard');
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+    const [isSellerRegistrationModalOpen, setIsSellerRegistrationModalOpen] = useState(false);
+    
+    // Add Product Modal state
     const [addProductForm, setAddProductForm] = useState({
         productName: '',
         category: '',
@@ -28,6 +31,20 @@ const SellerDashboardPage = () => {
         price: '',
         modeOfDelivery: [] as string[],
         modeOfPayment: [] as string[]
+    });
+
+    // Seller Registration Modal state
+    const [sellerRegistrationForm, setSellerRegistrationForm] = useState({
+        shopName: '',
+        address: '',
+        detailedAddress: '',
+        contactNumber: '',
+        governmentId1Front: null as File | null,
+        governmentId1Back: null as File | null,
+        governmentId2Front: null as File | null,
+        governmentId2Back: null as File | null,
+        transactionOptions: [] as string[],
+        termsAccepted: false
     });
 
     // Sample data for seller dashboard
@@ -54,6 +71,7 @@ const SellerDashboardPage = () => {
         status: ['Unpaid', 'To Ship', 'Shipping', 'Completed'][Math.floor(Math.random() * 4)]
     }));
 
+    // Add Product Modal handlers
     const handleAddProductFormChange = (field: keyof typeof addProductForm, value: any) => {
         setAddProductForm(prev => ({
             ...prev,
@@ -61,10 +79,10 @@ const SellerDashboardPage = () => {
         }));
     };
 
-    const handleCheckboxChange = (field: 'modeOfDelivery' | 'modeOfPayment', value: string, checked: boolean) => {
+    const handleAddProductCheckboxChange = (field: 'modeOfDelivery' | 'modeOfPayment', value: string, checked: boolean) => {
         setAddProductForm(prev => ({
             ...prev,
-            [field]: checked 
+            [field]: checked
                 ? [...prev[field], value]
                 : prev[field].filter(item => item !== value)
         }));
@@ -93,6 +111,49 @@ const SellerDashboardPage = () => {
             price: '',
             modeOfDelivery: [] as string[],
             modeOfPayment: [] as string[]
+        });
+    };
+
+    // Seller Registration Modal handlers
+    const handleSellerRegistrationFormChange = (field: keyof typeof sellerRegistrationForm, value: any) => {
+        setSellerRegistrationForm(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSellerRegistrationCheckboxChange = (field: 'transactionOptions', value: string, checked: boolean) => {
+        setSellerRegistrationForm(prev => ({
+            ...prev,
+            [field]: checked
+                ? [...prev[field], value]
+                : prev[field].filter(item => item !== value)
+        }));
+    };
+
+    const handleSellerRegistrationFileUpload = (field: keyof typeof sellerRegistrationForm, file: File | null) => {
+        setSellerRegistrationForm(prev => ({
+            ...prev,
+            [field]: file
+        }));
+    };
+
+    const handleSubmitSellerRegistration = () => {
+        // Handle seller registration submission here
+        console.log('Seller registration data:', sellerRegistrationForm);
+        setIsSellerRegistrationModalOpen(false);
+        // Reset form
+        setSellerRegistrationForm({
+            shopName: '',
+            address: '',
+            detailedAddress: '',
+            contactNumber: '',
+            governmentId1Front: null,
+            governmentId1Back: null,
+            governmentId2Front: null,
+            governmentId2Back: null,
+            transactionOptions: [],
+            termsAccepted: false
         });
     };
 
@@ -185,8 +246,8 @@ const SellerDashboardPage = () => {
                                 key={tab.name}
                                 onClick={() => setSellerActiveTab(tab.name)}
                                 className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${sellerActiveTab === tab.name
-                                        ? 'border-green text-green'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-green text-green'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <Icon className="h-5 w-5 mr-2" />
@@ -259,7 +320,7 @@ const SellerDashboardPage = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setIsAddProductModalOpen(true)}
                         className="flex items-center px-4 py-2 bg-green text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
                     >
@@ -328,13 +389,13 @@ const SellerDashboardPage = () => {
                 </div>
                 <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                     <div className="relative">
-                    <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 appearance-none bg-white pr-8 text-left">
-                        <option>Select Overview</option>
-                        <option>All Orders</option>
-                        <option>Pending</option>
-                        <option>Completed</option>
-                    </select>
-                    <svg
+                        <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 appearance-none bg-white pr-8 text-left">
+                            <option>Select Overview</option>
+                            <option>All Orders</option>
+                            <option>Pending</option>
+                            <option>Completed</option>
+                        </select>
+                        <svg
                             className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -382,9 +443,9 @@ const SellerDashboardPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.quantity}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'Shipping' ? 'bg-blue-100 text-blue-800' :
-                                                    order.status === 'To Ship' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'
+                                            order.status === 'Shipping' ? 'bg-blue-100 text-blue-800' :
+                                                order.status === 'To Ship' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
                                             }`}>
                                             {order.status}
                                         </span>
@@ -424,6 +485,12 @@ const SellerDashboardPage = () => {
                             <div className="w-full max-w-[1200px]">
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Seller Dashboard</h1>
+                                    <button
+                                        onClick={() => setIsSellerRegistrationModalOpen(true)}
+                                        className="flex items-center px-4 py-2 bg-green text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                                    >
+                                        Seller Registration
+                                    </button>
 
                                     {renderSellerNavbar()}
 
@@ -451,9 +518,20 @@ const SellerDashboardPage = () => {
                 onClose={() => setIsAddProductModalOpen(false)}
                 formData={addProductForm}
                 onFormChange={handleAddProductFormChange}
-                onCheckboxChange={handleCheckboxChange}
+                onCheckboxChange={handleAddProductCheckboxChange}
                 onImageUpload={handleImageUpload}
                 onSubmit={handleSubmitProduct}
+            />
+
+            {/* Seller Registration Modal */}
+            <SellerRegistrationModal
+                isOpen={isSellerRegistrationModalOpen}
+                onClose={() => setIsSellerRegistrationModalOpen(false)}
+                formData={sellerRegistrationForm}
+                onFormChange={handleSellerRegistrationFormChange}
+                onCheckboxChange={handleSellerRegistrationCheckboxChange}
+                onFileUpload={handleSellerRegistrationFileUpload}
+                onSubmit={handleSubmitSellerRegistration}
             />
 
             <Footer />
