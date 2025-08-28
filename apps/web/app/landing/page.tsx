@@ -142,9 +142,11 @@ export default function Home() {
             <p className="text-(--color-black) mb-8 font-light leading-relaxed text-[14px] md:text-[15px]">
               Enjoy a 10% discount on your first two furniture purchases when you sign up today.
             </p>
+            <Link href='/login'>
             <button className="bg-(--color-olive) tracking-[0.1em] text-white px-10 py-4 rounded-full font-normal cursor-pointer transition-modern text-[12px] md:text-[14px]">
               BUY NOW
             </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -254,9 +256,11 @@ export default function Home() {
 
           {/* Explore More Button */}
           <div className="text-center">
+            <Link href='product-catalog-sale'>
             <button className=" shadow-sm box-sha tracking-[0.1em] text-(--color-primary) cursor-pointer border-2 border-(--color-primary) px-8 py-4 rounded-full font-medium transition-modern text-[12px]">
               EXPLORE MORE
             </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -314,9 +318,11 @@ export default function Home() {
                 <img src="/refurnishlogoSection.png" alt="Feature 1" className=" lg:ml-110 xl:ml-150 w-100 h-auto object-center" />
           
           <div className="flex flex-col sm:flex-row mt-2 lg:ml-110  xl:ml-150 gap-6">
+            <Link href='/login'>
             <button className=" text-(--color-olive) cursor-pointer tracking-[0.1em] rounded-full border-2 border-(--color-olive) px-7 py-3 font-semibold transition-modern text-[12px]">
               BUY NOW
             </button>
+            </Link>
             
            
           </div>
