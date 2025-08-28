@@ -1,5 +1,3 @@
-
-// app/shop/chairs/page.tsx
 "use client";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,9 +54,15 @@ export default function ChairsCatalogPage() {
   const gridRef = useRef<HTMLDivElement>(null);
  // const [activeCategory, setActiveCategory] = useState("CHAIRS");
   const categories = ["ALL", ...Object.keys(productCatalog)];
-  const defaultCategory = productCatalog["CHAIRS"] ? "CHAIRS" : "ALL";
-  const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
+  // const defaultCategory = productCatalog["CHAIRS"] ? "CHAIRS" : "ALL";
+  // const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
+  const defaultCategory = "SALE";
+  // const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
+  const [isSalePage, setIsSalePage] = useState(true); // since this is the Sale page
+  const [activeCategory, setActiveCategory] = useState<string>("ALL");
 
+  
+  
   useEffect(() => {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
@@ -127,10 +131,23 @@ export default function ChairsCatalogPage() {
   }, [activeCategory]);
 
   // Filtering logic (curated & scalable)
+  // const filteredProducts: Product[] =
+  //   activeCategory === "ALL"
+  //     ? Object.values(productCatalog).flat()
+  //     : productCatalog[activeCategory] ?? [];
   const filteredProducts: Product[] =
-    activeCategory === "ALL"
-      ? Object.values(productCatalog).flat()
-      : productCatalog[activeCategory] ?? [];
+    isSalePage
+      ? // Sale page: filter by category under SALE
+        (activeCategory === "ALL"
+          ? Object.values(productCatalog).flat()
+          : productCatalog[activeCategory] ?? [])
+      : // Non-sale page logic (future proof if reused elsewhere)
+        (activeCategory === "ALL"
+          ? Object.values(productCatalog).flat()
+          : productCatalog[activeCategory] ?? []);
+
+
+
 
   return (
     <>
@@ -184,19 +201,43 @@ export default function ChairsCatalogPage() {
           </nav>
 
           {/* Spacer for fixed nav */}
-          <div className="h-20 sm:h-24" />
+          <div className="h-20 sm:h-15" />
 
       {/* CATEGORY TABS (centered) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
-        <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
-          {categories.map((c) => {
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
+
+           {/* SALE & SWAP FILTERS */}
+          <div className="mt-6 flex justify-center mb-5 gap-4">
+            <button
+              onClick={() => setIsSalePage(true)}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                isSalePage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Sale
+            </button>
+
+            <Link
+              href="/product-catalog-swap"
+              className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              Swap
+            </Link>
+          </div>
+
+          <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
+
+          {/* CATEGORY TABS (centered) */}
+          <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
+            {categories.map((c) => {
             const active = c === activeCategory;
             return (
               <button
                 key={c}
                 onClick={() => setActiveCategory(c)}
-                className={`relative pb-1 sm:pb-2 transition-colors ${active ? "font-semibold text-black" : "text-gray-600 hover:text-gray-900"
-                  }`}
+                className={`relative pb-1 sm:pb-2 transition-colors ${
+                  active ? "font-semibold text-black" : "text-gray-600 hover:text-gray-900"
+                }`}
               >
                 {c}
                 {active && (
@@ -205,8 +246,9 @@ export default function ChairsCatalogPage() {
               </button>
             );
           })}
-        </div>
-      </section>
+          </div>
+          </section>
+
 
       {/* PRODUCTS GRID */}
       <section className="max-w-7xl mx-auto md:mx-30 px-6 lg:px-9 mt-8">
@@ -225,8 +267,8 @@ export default function ChairsCatalogPage() {
                 <div className="p-4">
                   <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
                   <div className="mt-1 text-[14px]">{p.price}</div>
-                  <div className="mt-2 flex items-center gap-2 text-[12px] text-gray-600">
-                    <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-4" />
+                  <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
+                    <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
                     <span>{p.location}</span>
                   </div>
                 </div>
@@ -237,7 +279,6 @@ export default function ChairsCatalogPage() {
       </section>
 
       {/* FOOTER */}
-    
       <div className="border-t-[0.2px] border-(--color-olive) mt-12  text-center"></div>
 
       <footer className="bg-(--color-white) text-(--color-primary) py-16 px-6 lg:px-16">
