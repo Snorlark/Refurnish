@@ -12,40 +12,87 @@ if (typeof window !== "undefined") {
 type Product = {
   id: number;
   title: string;
-  price: string;
   image: string;
   location: string;
+  price: number; // Added for sorting purposes
+  dateAdded: string; 
 };
 
 const productCatalog: Record<string, Product[]> = {
   CHAIRS: [
-    { id: 1, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-    { id: 2, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-    { id: 3, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-    { id: 4, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-    { id: 5, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
-    { id: 6, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
-  
-  
-  
+    { id: 1, title: "Wooden Chair", image: "/bedroom.png", location: "Amanpulo", price: 120, dateAdded: "2025-08-25" },
+    { id: 2, title: "Classic Rattan Chair", image: "/bedroom.png", location: "Cebu", price: 80, dateAdded: "2025-08-20" },
+    { id: 9, title: "Ergonomic Office Chair", image: "/bedroom.png", location: "Makati", price: 250, dateAdded: "2025-08-15" },
+    { id: 10, title: "Vintage Armchair", image: "/bedroom.png", location: "Tagaytay", price: 180, dateAdded: "2025-08-10" },
   ],
   TABLES: [
-    { id: 3, title: "Dining Table", price: "₱ 20,000.00", image: "/bedroom.png", location: "Makati" },
-    { id: 4, title: "Coffee Table", price: "₱ 8,000.00", image: "/bedroom.png", location: "Tagaytay" },
+    { id: 3, title: "Dining Table", image: "/bedroom.png", location: "Makati", price: 300, dateAdded: "2025-08-22" },
+    { id: 4, title: "Coffee Table", image: "/bedroom.png", location: "Tagaytay", price: 150, dateAdded: "2025-08-18" },
+    { id: 11, title: "Study Desk", image: "/bedroom.png", location: "Cebu", price: 120, dateAdded: "2025-08-12" },
+    { id: 12, title: "Console Table", image: "/bedroom.png", location: "Davao", price: 90, dateAdded: "2025-08-08" },
   ],
   SOFA: [
-    { id: 5, title: "Modern Sofa", price: "₱ 30,000.00", image: "/living.png", location: "Cebu" },
+    { id: 5, title: "Modern Sofa", image: "/living.png", location: "Cebu", price: 450, dateAdded: "2025-08-21" },
+    { id: 13, title: "Leather Loveseat", image: "/living.png", location: "Makati", price: 380, dateAdded: "2025-08-14" },
+    { id: 14, title: "Sectional Sofa", image: "/living.png", location: "Amanpulo", price: 520, dateAdded: "2025-08-05" },
   ],
   CABINET: [
-    { id: 6, title: "Classic Cabinet", price: "₱ 15,000.00", image: "/living.png", location: "Davao" },
+    { id: 6, title: "Classic Cabinet", image: "/living.png", location: "Davao", price: 200, dateAdded: "2025-08-19" },
+    { id: 15, title: "Bookshelf", image: "/living.png", location: "Tagaytay", price: 160, dateAdded: "2025-08-11" },
+    { id: 16, title: "Wardrobe", image: "/living.png", location: "Palawan", price: 280, dateAdded: "2025-08-07" },
   ],
   DECOR: [
-    { id: 7, title: "Decorative Vase", price: "₱ 5,000.00", image: "/living.png", location: "Palawan" },
+    { id: 7, title: "Decorative Vase", image: "/living.png", location: "Palawan", price: 50, dateAdded: "2025-08-26" },
+    { id: 17, title: "Wall Art", image: "/living.png", location: "Cebu", price: 75, dateAdded: "2025-08-13" },
+    { id: 18, title: "Table Lamp", image: "/living.png", location: "Makati", price: 65, dateAdded: "2025-08-09" },
   ],
   MIRROR: [
-    { id: 8, title: "Wall Mirror", price: "₱ 8,500.00", image: "/dining.png", location: "Tagaytay" },
+    { id: 8, title: "Wall Mirror", image: "/dining.png", location: "Tagaytay", price: 180, dateAdded: "2025-08-23" },
+    { id: 19, title: "Floor Mirror", image: "/dining.png", location: "Amanpulo", price: 220, dateAdded: "2025-08-16" },
+    { id: 20, title: "Bathroom Mirror", image: "/dining.png", location: "Davao", price: 95, dateAdded: "2025-08-06" },
   ],
 };
+
+
+// const productCatalog: Record<string, Product[]> = {
+//   CHAIRS: [
+//     { id: 1, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
+//     { id: 2, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
+//     { id: 3, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
+//     { id: 4, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
+//     { id: 5, title: "Wooden Chair", price: "₱ 12,000.00", image: "/bedroom.png", location: "Amanpulo" },
+//     { id: 6, title: "Classic Rattan Chair", price: "₱ 15,500.00", image: "/bedroom.png", location: "Cebu" },
+  
+  
+  
+//   ],
+//   TABLES: [
+//     { id: 3, title: "Dining Table", price: "₱ 20,000.00", image: "/bedroom.png", location: "Makati" },
+//     { id: 4, title: "Coffee Table", price: "₱ 8,000.00", image: "/bedroom.png", location: "Tagaytay" },
+//   ],
+//   SOFA: [
+//     { id: 5, title: "Modern Sofa", price: "₱ 30,000.00", image: "/living.png", location: "Cebu" },
+//   ],
+//   CABINET: [
+//     { id: 6, title: "Classic Cabinet", price: "₱ 15,000.00", image: "/living.png", location: "Davao" },
+//   ],
+//   DECOR: [
+//     { id: 7, title: "Decorative Vase", price: "₱ 5,000.00", image: "/living.png", location: "Palawan" },
+//   ],
+//   MIRROR: [
+//     { id: 8, title: "Wall Mirror", price: "₱ 8,500.00", image: "/dining.png", location: "Tagaytay" },
+//   ],
+//   LAMP: [
+    
+//   ],
+//   VANITY: [
+    
+//   ],
+
+//   SHELVES: [
+    
+//   ],
+// };
 
 
 
@@ -60,6 +107,11 @@ export default function ChairsCatalogPage() {
   // const [activeCategory, setActiveCategory] = useState<string>(defaultCategory);
   const [isSalePage, setIsSalePage] = useState(true); // since this is the Sale page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [sortOption, setSortOption] = useState<string>("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
 
   
   
@@ -129,22 +181,44 @@ export default function ChairsCatalogPage() {
 
     return () => ctx.revert();
   }, [activeCategory]);
+  // Get unique locations from products
+  const allLocations = Array.from(new Set(Object.values(productCatalog).flat().map(product => product.location)));
 
-  // Filtering logic (curated & scalable)
-  // const filteredProducts: Product[] =
-  //   activeCategory === "ALL"
-  //     ? Object.values(productCatalog).flat()
-  //     : productCatalog[activeCategory] ?? [];
-  const filteredProducts: Product[] =
-    isSalePage
-      ? // Sale page: filter by category under SALE
-        (activeCategory === "ALL"
-          ? Object.values(productCatalog).flat()
-          : productCatalog[activeCategory] ?? [])
-      : // Non-sale page logic (future proof if reused elsewhere)
-        (activeCategory === "ALL"
-          ? Object.values(productCatalog).flat()
-          : productCatalog[activeCategory] ?? []);
+  // Enhanced filtering logic
+  let filteredItems: Product[] =
+    activeCategory === "ALL"
+      ? Object.values(productCatalog).flat()
+      : productCatalog[activeCategory] ?? [];
+
+
+
+  // Apply location filter
+  if (selectedLocations.length > 0) {
+    filteredItems = filteredItems.filter(item =>
+      selectedLocations.includes(item.location)
+    );
+  }
+
+  // Apply price range filter
+  filteredItems = filteredItems.filter(item =>
+    item.price >= priceRange[0] && item.price <= priceRange[1]
+  );
+
+  // Apply sorting
+  filteredItems = [...filteredItems].sort((a, b) => {
+    if (sortOption === "lowToHigh") return a.price - b.price;
+    if (sortOption === "highToLow") return b.price - a.price;
+    if (sortOption === "newest") return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    if (sortOption === "oldest") return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+    if (sortOption === "nameAZ") return a.title.localeCompare(b.title);
+    if (sortOption === "nameZA") return b.title.localeCompare(a.title);
+    return 0;
+  });
+
+
+
+  // Use the enhanced filteredItems for display
+  const filteredProducts: Product[] = filteredItems;
 
 
 
@@ -206,24 +280,7 @@ export default function ChairsCatalogPage() {
       {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
 
-           {/* SALE & SWAP FILTERS */}
-          <div className="mt-6 flex justify-center mb-5 gap-4">
-            <button
-              onClick={() => setIsSalePage(true)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                isSalePage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Sale
-            </button>
-
-            <Link
-              href="/product-catalog-swap"
-              className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
-            >
-              Swap
-            </Link>
-          </div>
+           
 
           <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
 
@@ -247,6 +304,171 @@ export default function ChairsCatalogPage() {
             );
           })}
           </div>
+
+                     {/* MODERN FILTER SECTION */}
+           <div className="mt-6 mb-8">
+             {/* Filter Toggle Button and Sale/Swap Buttons */}
+             <div className="flex justify-between items-center mb-4">
+               {/* Sale & Swap Buttons */}
+               <div className="flex gap-4">
+                 <button
+                   onClick={() => setIsSalePage(true)}
+                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors ${
+                     isSalePage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                   }`}
+                 >
+                   Sale
+                 </button>
+
+                 <Link
+                   href="/product-catalog-swap"
+                   className="px-6 py-3 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                 >
+                   Swap
+                 </Link>
+               </div>
+
+               {/* Filter Button */}
+               <button
+                 onClick={() => setShowFilters(!showFilters)}
+                 className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
+               >
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                 </svg>
+                 Filters & Sort
+                 <svg className={`w-4 h-4 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                 </svg>
+               </button>
+             </div>
+
+                         {/* Filter Panel */}
+             {showFilters && (
+               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                  {/* Sort Options */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select
+                      value={sortOption}
+                      onChange={(e) => setSortOption(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="lowToHigh">Price: Low to High</option>
+                      <option value="highToLow">Price: High to Low</option>
+                      <option value="nameAZ">Name: A to Z</option>
+                      <option value="nameZA">Name: Z to A</option>
+                    </select>
+                  </div>
+
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={priceRange[0]}
+                          onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                          placeholder="Min"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none text-sm"
+                        />
+                        <span className="text-gray-400 self-center">-</span>
+                                                 <input
+                           type="number"
+                           value={priceRange[1]}
+                           onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 600])}
+                           placeholder="Max"
+                           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none text-sm"
+                         />
+                      </div>
+                      <div className="text-xs text-gray-500">₱{priceRange[0]} - ₱{priceRange[1]}</div>
+                    </div>
+                  </div>
+
+                                     {/* Location Filter */}
+                   <div className="lg:col-span-2">
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                     <div className="flex flex-wrap gap-2">
+                       {allLocations.map((location) => (
+                         <button
+                           key={location}
+                           onClick={() => {
+                             if (selectedLocations.includes(location)) {
+                               setSelectedLocations(selectedLocations.filter(loc => loc !== location));
+                             } else {
+                               setSelectedLocations([...selectedLocations, location]);
+                             }
+                           }}
+                           className={`px-3 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
+                             selectedLocations.includes(location)
+                               ? 'bg-(--color-olive) text-white'
+                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                           }`}
+                         >
+                           {location}
+                         </button>
+                       ))}
+                       {selectedLocations.length > 0 && (
+                         <button
+                           onClick={() => setSelectedLocations([])}
+                           className="px-3 py-2 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-300"
+                         >
+                           Clear All
+                         </button>
+                       )}
+                     </div>
+                   </div>
+
+                   {/* Clear Filters */}
+                   <div className="lg:col-span-3 flex justify-end">
+                     <button
+                       onClick={() => {
+                         setPriceRange([0, 600]);
+                         setSelectedLocations([]);
+                         setSortOption("newest");
+                       }}
+                       className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-300"
+                     >
+                       Clear All Filters
+                     </button>
+                   </div>
+                </div>
+
+                                                  {/* Active Filters Display */}
+                 {(selectedLocations.length > 0 || priceRange[0] > 0 || priceRange[1] < 600) && (
+                   <div className="mt-4 pt-4 border-t border-gray-200">
+                     <div className="flex flex-wrap gap-2">
+                      {selectedLocations.map((location) => (
+                        <span key={location} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          {location}
+                          <button onClick={() => setSelectedLocations(selectedLocations.filter(loc => loc !== location))} className="ml-1 hover:text-green-600">×</button>
+                        </span>
+                      ))}
+                                             {(priceRange[0] > 0 || priceRange[1] < 600) && (
+                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                           Price: ₱{priceRange[0]} - ₱{priceRange[1]}
+                           <button onClick={() => setPriceRange([0, 600])} className="ml-1 hover:text-purple-600">×</button>
+                         </span>
+                       )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Results Count */}
+            <div className="text-center text-sm text-gray-600 mb-4">
+              Showing {filteredItems.length} of {Object.values(productCatalog).flat().length} products
+            </div>
+          </div>
+
+            
+
           </section>
 
 
@@ -258,18 +480,18 @@ export default function ChairsCatalogPage() {
               No products in this category yet.
             </div>
           ) : (
-            filteredProducts.map((p) => (
-              <article key={`${p.id}-${p.title}`} className="product-card bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
+            filteredProducts.map((item) => (
+              <article key={`${item.id}-${item.title}`} className="product-card bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
                 <div className="relative">
-                  <Image src={p.image} alt={p.title} width={600} height={420} className="w-full h-44 object-cover" />
+                  <Image src={item.image} alt={item.title} width={600} height={420} className="w-full h-44 object-cover" />
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
-                  <div className="mt-1 text-[14px]">{p.price}</div>
+                  <h3 className="text-[15px] text-(--color-olive) font-semibold">{item.title}</h3>
+                  <div className="mt-1 text-[14px]">₱{item.price}.00</div>
                   <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
                     <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
-                    <span>{p.location}</span>
+                    <span>{item.location}</span>
                   </div>
                 </div>
               </article>

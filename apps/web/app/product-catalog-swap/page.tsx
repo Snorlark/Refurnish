@@ -38,6 +38,18 @@ const swapCatalog: Record<string, SwapItem[]> = {
   MIRROR: [
     { id: 8, title: "Wall Mirror", image: "/dining.png", location: "Tagaytay", swapFor: "Console Table" },
   ],
+  
+  LAMP: [
+    
+  ],
+  VANITY: [
+    
+  ],
+
+  SHELVES: [
+    
+  ],
+
 };
 
 export default function SwapCatalogPage() {
@@ -189,14 +201,7 @@ export default function SwapCatalogPage() {
 
            {/* SALE & SWAP FILTERS */}
           <div className="mt-6 flex justify-center mb-5 gap-4">
-            {/* <button
-              onClick={() => setIsSwapPage(true)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                isSwapPage ? "bg-(--color-primary) text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Sale
-            </button> */}
+            
              <Link
               href="/product-catalog-sale"
               className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -212,17 +217,9 @@ export default function SwapCatalogPage() {
             >
               Swap
             </button>
-
-
-            {/* <Link
-              href="/shop/swap"
-              className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
-            >
-              Swap
-            </Link> */}
           </div>
 
-          <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
+          <div className="border-t-[0.1px] border-(--color-primary) mx-5 lg:mx-40 text-center opacity-50"></div>
 
           {/* CATEGORY TABS (centered) */}
           <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
@@ -262,7 +259,11 @@ export default function SwapCatalogPage() {
       
                       <div className="p-4">
                         <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
-                        <div className="mt-1 text-[14px]">{p.swapFor}</div>
+                        <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
+                          <img src="/icon/swapIcon.png" alt="Swap" className="w-4 h-auto" />
+                          <span>{p.swapFor}</span>
+                        </div>
+
                         <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
                           <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
                           <span>{p.location}</span>
