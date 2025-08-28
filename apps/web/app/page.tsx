@@ -168,7 +168,7 @@ export default function Home() {
                 <img src="/living.png" alt="Living" className="w-auto h-100 object-center group-hover:scale-105 transition-modern" />
               </div>
               <div className="p-8">
-                  <h3 className="text-2xl font-semibold text-(--color-primary)">Living</h3>
+                  <h3 className="text-[18px] font-semibold text-(--color-primary)">Living</h3>
               </div>
             </div>
 
@@ -177,7 +177,7 @@ export default function Home() {
                 <img src="/dining.png" alt="Dining" className="w-auto h-100 object-cover group-hover:scale-105 transition-modern" />
               </div>
               <div className="p-8">
-                  <h3 className="text-2xl font-semibold text-(--color-primary)">Dining</h3>
+                  <h3 className="text-[18px] font-semibold text-(--color-primary)">Dining</h3>
               </div>
             </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
                 <img src="/bedroom.png" alt="Bedroom" className="w-auto h-100 object-cover group-hover:scale-105 transition-modern" />
               </div>
               <div className="p-8">
-                  <h3 className="text-2xl font-semibold text-(--color-primary)">Bedroom</h3>
+                  <h3 className="text-[18px] font-semibold text-(--color-primary)">Bedroom</h3>
               </div>
             </div>
 
@@ -217,7 +217,7 @@ export default function Home() {
                   <img 
                     src={index % 3 === 0 ? "/living.png" : index % 3 === 1 ? "/dining.png" : "/bedroom.png"}
                     alt={`Product ${index + 1}`}
-                    className="w-full h-70 object-cover group-hover:scale-105 transition-modern"
+                    className="w-full h-60 object-cover group-hover:scale-105 transition-modern"
                   />
                   {index === 2 && (
                     <div className="absolute top-4 left-4">
@@ -226,23 +226,23 @@ export default function Home() {
                   )}
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-(--color-olive) mb-2 text-[20px]">
+                  <h3 className="font-semibold text-(--color-olive) mb-2 text-[15px]">
                     {index === 0 ? "Filing Cab on Wheels" : 
                      index === 1 ? "Bent Ply Office Chair" : 
                      index === 2 ? "Muji Style Low Chair" : 
                      index === 3 ? "12-Layered Oak Dra..." : 
                      `Product ${index + 1}`}
                   </h3>
-                  <p className="text-(--color-primary) font-medium text-[18px]">₱ 12,000.00</p>
+                  <p className="text-(--color-primary) font-medium text-[14px]">₱ 12,000.00</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center text-(--color-primary) font-light text-[14px] ">
+                    <div className="flex items-center text-(--color-primary) font-light text-[12px] ">
                       <img src="/icon/locateIcon.png" alt="locate" className="w-auto h-4 pr-2 object-cover transition-modern" />
                        Amanpulo
                     </div>
                     <div className="flex items-center space-x-3">
                       
                       <button className="cursor-pointer">
-                       <img src="/icon/addtocart.png" alt="addtocart" className="w-12 h-11 pr-1 mb-1 object-center transition-modern" />
+                       <img src="/icon/addtocart.png" alt="addtocart" className="w-auto h-8 pr-1 mb-1 object-center transition-modern" />
 
                       </button>
                     </div>

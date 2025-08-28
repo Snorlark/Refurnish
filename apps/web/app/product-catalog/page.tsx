@@ -162,21 +162,21 @@ export default function ChairsCatalogPage() {
                     </svg>
                     <input
                       className="bg-transparent outline-none text-sm flex-1"
-                      placeholder="Seaaaaaarch…"
+                      placeholder="Search"
                     />
                   </div>
                 </div>
 
                 {/* Icons */}
-                <div className="nav-icons flex items-center space-x-4 sm:space-x-5 text-gray-700">
+                <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
                   <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                     <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
                   </button>
-                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                  <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
                     <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
                   </button>
                   <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                    <img src="/icon/userIcon.png" alt="Account" className="h-4 w-auto" />
+                    <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
                   </button>
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function ChairsCatalogPage() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-[15px] font-semibold">{p.title}</h3>
+                  <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
                   <div className="mt-1 text-[14px]">{p.price}</div>
                   <div className="mt-2 flex items-center gap-2 text-[12px] text-gray-600">
                     <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-4" />
