@@ -7,9 +7,11 @@
 
 @theme inline {
   --color-white: #FBFBFB;
+  --color-white2: #F9F9F9;
   --color-primary: #273815;
   --color-olive: #636B2F;
-  --coor-black: #0A0A0A;
+  --color-black: #0A0A0A;
+  --color-green: #86942C;
 }
 
 @media (prefers-color-scheme: dark) {
