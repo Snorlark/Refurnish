@@ -20,7 +20,7 @@ type Product = {
 
 const productCatalog: Record<string, Product[]> = {
   CHAIRS: [
-    { id: 1, title: "Wooden Chair", image: "/bedroom.png", location: "Amanpulo", price: 120, dateAdded: "2025-08-25" },
+    { id: 1, title: "360° Swivel Wooden Office Chair", image: "/products/chair/view1.jpg", location: "Cavite", price: 500, dateAdded: "2025-08-25" },
     { id: 2, title: "Classic Rattan Chair", image: "/bedroom.png", location: "Cebu", price: 80, dateAdded: "2025-08-20" },
     { id: 9, title: "Ergonomic Office Chair", image: "/bedroom.png", location: "Makati", price: 250, dateAdded: "2025-08-15" },
     { id: 10, title: "Vintage Armchair", image: "/bedroom.png", location: "Tagaytay", price: 180, dateAdded: "2025-08-10" },
@@ -305,7 +305,7 @@ export default function ChairsCatalogPage() {
           })}
           </div>
 
-                     {/* MODERN FILTER SECTION */}
+          {/* FILTER SECTION */}
            <div className="mt-6 mb-8">
              {/* Filter Toggle Button and Sale/Swap Buttons */}
              <div className="flex justify-between items-center mb-4">
@@ -390,7 +390,7 @@ export default function ChairsCatalogPage() {
                     </div>
                   </div>
 
-                                     {/* Location Filter */}
+                  {/* Location Filter */}
                    <div className="lg:col-span-2">
                      <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                      <div className="flex flex-wrap gap-2">
@@ -439,7 +439,7 @@ export default function ChairsCatalogPage() {
                    </div>
                 </div>
 
-                                                  {/* Active Filters Display */}
+                 {/* Active Filters Display */}
                  {(selectedLocations.length > 0 || priceRange[0] > 0 || priceRange[1] < 600) && (
                    <div className="mt-4 pt-4 border-t border-gray-200">
                      <div className="flex flex-wrap gap-2">
@@ -486,6 +486,8 @@ export default function ChairsCatalogPage() {
                   <Image src={item.image} alt={item.title} width={600} height={420} className="w-full h-44 object-cover" />
                 </div>
 
+                <Link 
+                href="/item-view-sale">
                 <div className="p-4">
                   <h3 className="text-[15px] text-(--color-olive) font-semibold">{item.title}</h3>
                   <div className="mt-1 text-[14px]">₱{item.price}.00</div>
@@ -494,6 +496,7 @@ export default function ChairsCatalogPage() {
                     <span>{item.location}</span>
                   </div>
                 </div>
+                </Link>
               </article>
             ))
           )}
