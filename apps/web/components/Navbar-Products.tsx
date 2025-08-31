@@ -107,20 +107,20 @@ export default function Navbar({
     if (variant === 'home') {
       return (
         <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-          <Link href="/" className="hover:text-green-900 transition-modern text-green-900">Home</Link>
-          <Link href="/shop" className="hover:text-green-900 transition-modern">Shop</Link>
-          <Link href="/about" className="hover:text-green-900 transition-modern">About</Link>
-          <button onClick={scrollToContact} className="hover:text-green-900 transition-modern">Contact</button>
+          <Link href="/" className="hover:text-(--color-olive) transition-modern text-(--color-primary)">Home</Link>
+          <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
+          <Link href="/about" className="hover:text-(--color-olive) transition-modern">About</Link>
+          <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
         </div>
       );
     }
 
     return (
       <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-        <Link href="/" className="hover:text-green-900 transition-modern">Home</Link>
-        <Link href="/shop" className="hover:text-green-900 transition-modern text-green-900">Shop</Link>
-        <Link href="/about" className="hover:text-green-900 transition-modern">About</Link>
-        <button onClick={scrollToContact} className="hover:text-green-900 transition-modern">Contact</button>
+        <Link href="/" className="hover:text-(--color-olive) transition-modern">Home</Link>
+        <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
+        <Link href="/about" className="hover:text-(--color-olive) transition-modern">About</Link>
+        <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
       </div>
     );
   };
@@ -175,7 +175,7 @@ export default function Navbar({
                       setIsMobileMenuOpen(false);
                     }}
                     className={`block w-full text-left text-lg font-medium transition-colors ${
-                      link.active ? 'text-green-900' : 'text-gray-700 hover:text-green-900'
+                      link.active ? 'text-(--color-primary)' : 'text-gray-700 hover:text-(--color-olive)'
                     }`}
                   >
                     {link.label}
@@ -186,7 +186,7 @@ export default function Navbar({
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`block text-lg font-medium transition-colors ${
-                      link.active ? 'text-green-900' : 'text-gray-700 hover:text-green-900'
+                      link.active ? 'text-(--color-primary)' : 'text-gray-700 hover:text-(--color-olive)'
                     }`}
                   >
                     {link.label}
@@ -353,7 +353,7 @@ export default function Navbar({
               <div className="flex items-center space-x-1 pr-1">
                 <button 
                   type="submit"
-                  className="p-2.5 bg-green-900 text-white rounded-xl hover:bg-green-800 transition-colors"
+                  className="p-2.5 bg-(--color-olive) cursor-pointer text-white rounded-xl hover:bg-(--color-primary) transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -362,7 +362,7 @@ export default function Navbar({
                 <button 
                   type="button"
                   onClick={() => setIsSearchOpen(false)}
-                  className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2.5 text-gray-400 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

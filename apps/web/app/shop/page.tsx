@@ -168,7 +168,7 @@ export default function Shop() {
       />
 
       {/* Hero Carousel Section */}
-      <div className="h-32 bg-white"></div>
+      <div className="h-20 bg-white"></div>
       <div className="relative h-screen overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -258,9 +258,10 @@ export default function Shop() {
       </div>
 
       {/* On Sale Section */}
-      <div id="on-sale" className="py-16 px-6 lg:px-16">
+      <div id="on-sale" className="py-16 font-['Futura'] px-6 lg:px-16">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">On Sale</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">
+            On Sale</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {saleProducts.map((product, index) => (
               <div 
@@ -284,18 +285,18 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-lg">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base">{product.price}.00</p>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center text-gray-600 text-xs">
-                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
+                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-4 mr-2" />
                       {product.location}
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      className="p-2 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -308,7 +309,7 @@ export default function Shop() {
       {/* New Products Section */}
       <div className="py-16 px-6 lg:px-16 bg-gray-50/30">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">New Products</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">New Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {newProducts.map((product, index) => (
               <div 
@@ -327,7 +328,7 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <button 
                     onClick={() => wishlist.toggleWishlist(product)}
-                    className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
+                    className={`absolute  cursor-pointer top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
                       wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
                     }`}
                   >
@@ -339,8 +340,8 @@ export default function Shop() {
                   </button>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-base mb-2">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base mb-2">{product.price}.00</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-gray-600 text-xs">
                       <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
@@ -348,9 +349,9 @@ export default function Shop() {
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
+                      className="p-2  cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -394,7 +395,7 @@ export default function Shop() {
       {/* Just For You Section */}
       <div className="py-16 px-6 lg:px-16">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">Just For You</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">Just For You</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {justForYouProducts.map((product, index) => (
               <div 
@@ -413,7 +414,7 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <button 
                     onClick={() => wishlist.toggleWishlist(product)}
-                    className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
+                    className={`absolute  cursor-pointer top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
                       wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
                     }`}
                   >
@@ -425,18 +426,18 @@ export default function Shop() {
                   </button>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-base mb-2">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base mb-2">{product.price}.00</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center text-gray-600 text-xs">
-                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
+                    <div className="flex  items-center text-gray-600 text-xs">
+                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-4 mr-2" />
                       {product.location}
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
+                      className="p-2  cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -449,7 +450,7 @@ export default function Shop() {
       {/* For Swap Section */}
       <div id="for-swap" className="py-16 px-6 lg:px-16 bg-gray-50/30">
         <div className="container mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">For Swap</h2>
+          <h2 className="text-2xl font-bold text-(--color-primary) mb-8">For Swap</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {forSwapProducts.map((product) => (
               <div key={product.id} className="bg-white radius-20 shadow-modern hover:shadow-modern-hover transition-modern overflow-hidden group">
@@ -461,14 +462,15 @@ export default function Shop() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-semibold text-gray-900 text-lg mb-2">{product.name}</h3>
-                  <div className="flex items-center text-gray-600 text-sm mb-1">
-                    <span className="mr-2">📋</span>
+                  <h3 className="font-bold text-(--color-olive) text-lg mb-2">{product.name}</h3>
+                  <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
+                    {/* <span className="mr-2">📋</span> */}
+                    <img src="/icon/swapIcon.png" alt="Swap" className="w-4 h-auto" />
                     <span>{product.condition}</span>
                   </div>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <img src="/icon/locateIcon.png" alt="location" className="w-4 h-4 mr-2" />
-                    <span>Near {product.location} - check details</span>
+                  <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
+                    <img src="/icon/locateIcon.png" alt="location" className="w-4 h-5 mr-2" />
+                    <span> {product.location}</span>
                   </div>
                 </div>
               </div>

@@ -298,9 +298,9 @@ export default function Home() {
 
             {/* Right copy block */}
             <div className="order-3 lg:order-3 text-left">
-              <h3 className="text-2xl md:text-[28px] font-medium text-(--color-olive)  mb-4 leading-tight">Budget-Friendly & Sustainable Furniture</h3>
+              <h3 className="text-2xl md:text-[28px] font-medium text-(--color-olive)  mb-4 leading-tight">Budget-Friendly Furniture</h3>
               <p className="text-gray-700 leading-relaxed text-base md:text-[14px] max-w-md">
-                Discover pre-loved and unused furniture that fits your budget without compromising on quality and style. With our furniture swapping initiative, you can also trade items with other users to refresh your home.
+                Discover pre-loved and unused furniture at prices that fit your budget, without compromising on style or quality.
               </p>
             </div>
           </div>

@@ -166,6 +166,7 @@ export default function SwapCatalogPage() {
 
   return (
     <>
+    <body>
     <main className="bg-white font-['Futura'] min-h-screen">
       {/* NAVBAR */}
         <nav
@@ -472,6 +473,8 @@ export default function SwapCatalogPage() {
         </div>
       </footer>
     </main>
+    </body>
+
     </>
   );
 }
