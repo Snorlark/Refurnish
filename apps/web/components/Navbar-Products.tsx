@@ -107,9 +107,9 @@ export default function Navbar({
     if (variant === 'home') {
       return (
         <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-          <Link href="/" className="hover:text-(--color-olive) transition-modern text-(--color-primary)">Home</Link>
+          <Link href="/landing" className="hover:text-(--color-olive) transition-modern text-(--color-primary)">Home</Link>
           <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
-          <Link href="/about" className="hover:text-(--color-olive) transition-modern">About</Link>
+          <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
           <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
         </div>
       );
@@ -117,9 +117,9 @@ export default function Navbar({
 
     return (
       <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-        <Link href="/" className="hover:text-(--color-olive) transition-modern">Home</Link>
+        <Link href="/landing" className="hover:text-(--color-olive) transition-modern">Home</Link>
         <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
-        <Link href="/about" className="hover:text-(--color-olive) transition-modern">About</Link>
+        <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
         <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
       </div>
     );
@@ -127,14 +127,14 @@ export default function Navbar({
 
   const renderMobileMenu = () => {
     const links = variant === 'home' ? [
-      { href: '/', label: 'Home', active: true },
+      { href: '/landing', label: 'Home', active: true },
       { href: '/shop', label: 'Shop', active: false },
-      { href: '/about', label: 'About', active: false },
+      { href: '/about-us', label: 'About', active: false },
       { href: '#contact', label: 'Contact', active: false, onClick: scrollToContact }
     ] : [
-      { href: '/', label: 'Home', active: false },
+      { href: '/landing', label: 'Home', active: false },
       { href: '/shop', label: 'Shop', active: true },
-      { href: '/about', label: 'About', active: false },
+      { href: '/about-us', label: 'About', active: false },
       { href: '#contact', label: 'Contact', active: false, onClick: scrollToContact }
     ];
 
