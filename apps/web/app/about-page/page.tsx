@@ -1,16 +1,24 @@
 "use client";
-import React, { useState, useEffect, useRef} from 'react';
-import { Menu, Search, ShoppingCart, Heart, Users, Target, Award, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Target, Award, Globe, Mail, Phone, MapPin } from 'lucide-react';
 import UserProfileSidebar from '../../components/UserProfileSidebar';
 import Footer from '../../components/Footer';
+import NavbarMenu from '../../components/Navbar-Menu';
 import Link from "next/link";
-import { gsap } from "gsap";
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const AboutPage = () => {
-  const navbarRef = useRef<HTMLElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Handlers for navbar actions
+  const handleWishlistClick = () => {
+    // Add wishlist functionality here
+    console.log('Wishlist clicked');
+  };
+
+  const handleCartClick = () => {
+    // Add cart functionality here
+    console.log('Cart clicked');
+  };
 
   const teamMembers = [
     {
@@ -69,166 +77,14 @@ const AboutPage = () => {
     }
   ];
 
-  const renderNavbar = () => (
-    <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img src="/icon/RF.png" alt="RF Logo" className="h-8 w-auto" />
-          </div>
-
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                placeholder="Search..."
-              />
-            </div>
-          </div>
-
-          {/* Right Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Search */}
-            <button 
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
-              <Search className="h-5 w-5 text-gray-600" />
-            </button>
-
-            {/* Cart & Wishlist */}
-            <div className="hidden sm:flex items-center space-x-2">
-              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                <ShoppingCart className="h-5 w-5 text-gray-600" />
-              </button>
-              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                <Heart className="h-5 w-5 text-gray-600" />
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="h-6 w-6 text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Search Bar */}
-        {isSearchOpen && (
-          <div className="md:hidden pb-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                placeholder="Search..."
-                autoFocus
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-
-   // Navbar animation (reused from Home)
-    useEffect(() => {
-      if (!navbarRef.current) return;
-  
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: "main",
-          start: "top top",
-          end: "+=100",
-          scrub: 0.5,
-          onUpdate: (self) => {
-            const progress = self.progress;
-            const height = gsap.utils.interpolate(80, 60, progress);
-            const marginX = gsap.utils.interpolate(32, 18, progress);
-            const marginY = gsap.utils.interpolate(0, 16, progress);
-            const paddingX = gsap.utils.interpolate(26, 16, progress);
-            
-            gsap.set(navbarRef.current, {
-              height: height,
-              marginLeft: marginX,
-              marginRight: marginX,
-              marginTop: marginY,
-              marginBottom: marginY,
-            });
-            
-            const innerContainer = navbarRef.current?.querySelector('.nav-inner');
-            if (innerContainer) {
-              gsap.set(innerContainer, {
-                paddingLeft: paddingX,
-                paddingRight: paddingX,
-              });
-            }
-            
-            const logo = navbarRef.current?.querySelector('.nav-logo img');
-            if (logo) {
-              const logoScale = gsap.utils.interpolate(1, 0.85, progress);
-              gsap.set(logo, { scale: logoScale });
-            }
-            
-            const navLinks = Array.from(navbarRef.current?.querySelectorAll('.nav-links a') || []);
-            navLinks.forEach((link) => {
-              const textScale = gsap.utils.interpolate(1, 0.9, progress);
-              gsap.set(link, { scale: textScale });
-            });
-            
-            const icons = Array.from(navbarRef.current?.querySelectorAll('.nav-icons > div') || []);
-            icons.forEach((icon) => {
-              const iconScale = gsap.utils.interpolate(1, 0.9, progress);
-              gsap.set(icon, { scale: iconScale });
-            });
-          }
-        }
-      });
-  
-      return () => {
-        tl.kill();
-        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      };
-    }, []);
-
   return (
     <>
     <div className="min-h-screen bg-white">
-      {/* {renderNavbar()} */}
       {/* NAVBAR */}
-        <nav
-          ref={navbarRef}
-          className="bg-(--color-white)  backdrop-blur-md rounded-full mx-3 sm:mx-6 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
-          style={{ height: 72 }}
-        >
-          <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
-            <div className="flex justify-between items-center h-full gap-3">
-              <Link href="/landing" className="nav-logo flex items-center flex-shrink-0">
-                <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
-              </Link>
-              <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                  <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
-                </button>
-                <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
-                  <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
-                </button>
-               
-              </div>
-            </div>
-          </div>
-        </nav>
+      <NavbarMenu 
+        onWishlistClick={handleWishlistClick}
+        onCartClick={handleCartClick}
+      />
       
       <div className="flex justify-center">
         <div className="flex max-w-7xl w-full">
