@@ -213,12 +213,12 @@ const MessagesPage = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <Phone className="h-5 w-5 text-gray-600" />
                         </button>
                         <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <Video className="h-5 w-5 text-gray-600" />
-                        </button>
+                        </button> */}
                         <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <MoreHorizontal className="h-5 w-5 text-gray-600" />
                         </button>
@@ -298,6 +298,7 @@ const MessagesPage = () => {
     };
 
     return (
+        <>
         <div className="min-h-screen bg-gray-50">
             {/* NAVBAR */}
             <NavbarMenu 
@@ -351,7 +352,7 @@ const MessagesPage = () => {
             </div>
 
             <Footer />
-        </div>
+        </div></>
     );
 };
 
