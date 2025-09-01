@@ -29,8 +29,6 @@ const LoginPage: React.FC = () => {
       // Simulate login API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app, you would validate credentials against your backend
-      // For now, we'll simulate a successful login
       console.log('Login attempt:', { email, password });
       
       // Redirect to admin dashboard

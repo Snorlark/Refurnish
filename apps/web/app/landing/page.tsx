@@ -15,7 +15,6 @@ import { useCart } from '../../hooks/useCart';
 import { saleProducts, newProducts, featuredProducts, forSwapProducts } from '../../data/products';
 
 
-// Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -46,7 +45,7 @@ export default function Home() {
     }
   ];
 
- // Navbar animation (reused from Home)
+ // Navbar animation 
   useEffect(() => {
     if (!navbarRef.current) return;
 

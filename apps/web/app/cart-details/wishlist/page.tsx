@@ -196,7 +196,7 @@ export default function WishlistPage() {
             className={`inline-flex font-['Futura'] items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
             aria-label="Buy now"
           >
-            <span className=" font-['Futura'] ">Buy Now</span>
+            <span className=" font-['Futura'] ">Add to Cart</span>
           </button>
         </div>
 

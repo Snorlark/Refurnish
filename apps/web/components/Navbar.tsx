@@ -42,10 +42,6 @@ export default function Navbar() {
           },
         },
       });
-
-      // keep a reference so cleanup kills this timeline too
-      // (timeline is scoped inside ctx and will be reverted by ctx.revert())
-      // nothing else needed here
     }, navEl);
 
     return () => ctx.revert();
@@ -66,7 +62,7 @@ export default function Navbar() {
               <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
             </Link>
 
-            {/* Search bar (hidden on xs, expands on sm+) */}
+            {/* Search bar */}
             <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
               <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
                 <svg

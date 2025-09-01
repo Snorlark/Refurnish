@@ -192,29 +192,6 @@ export default function Shop() {
             }}
           >
             {slide.isRefurnishSlide && (
-              // <div className="relative z-10 h-full flex items-center justify-center">
-              //   <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-12 shadow-2xl max-w-2xl mx-8">
-              //     <div className="text-center">
-              //       <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight tracking-tight text-green-800">
-              //         REFURNISH
-              //       </h1>
-              //       <p className="text-lg md:text-xl mb-8 font-normal text-gray-700">
-              //         From their home to yours.
-              //       </p>
-              //       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              //         <button className="bg-green-800 text-white px-8 py-3 rounded-full font-medium hover:bg-green-900 transition-all text-base shadow-lg">
-              //           SHOP NOW
-              //         </button>
-              //         <div className="text-gray-600">
-              //           <p className="text-sm mb-1">Ready to start selling?</p>
-              //           <button className="text-green-800 underline hover:text-green-900 transition-colors text-sm font-medium">
-              //             Learn more →
-              //           </button>
-              //         </div>
-              //       </div>
-              //     </div>
-              //   </div>
-              // </div>
 
               <div className="relative py-18 px-6 h-screen lg:px-16" style={{backgroundImage: 'url(/refurnishSection.png)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
                 <div className="absolute inset-0 bg-black/20"></div>

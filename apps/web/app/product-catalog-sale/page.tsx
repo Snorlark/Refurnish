@@ -111,10 +111,6 @@ export default function ChairsCatalogPage() {
           },
         },
       });
-
-      // keep a reference so cleanup kills this timeline too
-      // (timeline is scoped inside ctx and will be reverted by ctx.revert())
-      // nothing else needed here
     }, navEl);
 
     return () => ctx.revert();
