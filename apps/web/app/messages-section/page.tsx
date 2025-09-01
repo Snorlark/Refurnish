@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Menu,
     Search,
@@ -13,8 +13,12 @@ import {
 } from "lucide-react";
 import UserProfileSidebar from "../../components/UserProfileSidebar";
 import Footer from "../../components/Footer";
+import Link from "next/link";
+import { gsap } from "gsap";
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const MessagesPage = () => {
+    const navbarRef = useRef<HTMLElement>(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [selectedChat, setSelectedChat] = useState<number | null>(null);
@@ -241,6 +245,7 @@ const MessagesPage = () => {
 
         return (
             <div className="flex-1 flex flex-col bg-gray-50">
+                
                 {/* Mobile back button */}
                 <div className="md:hidden bg-white border-b border-gray-200 p-2 flex items-center">
                     <button
@@ -361,9 +366,92 @@ const MessagesPage = () => {
         );
     };
 
+    // Navbar animation (reused from Home)
+    useEffect(() => {
+      if (!navbarRef.current) return;
+  
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "main",
+          start: "top top",
+          end: "+=100",
+          scrub: 0.5,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const height = gsap.utils.interpolate(80, 60, progress);
+            const marginX = gsap.utils.interpolate(32, 18, progress);
+            const marginY = gsap.utils.interpolate(0, 16, progress);
+            const paddingX = gsap.utils.interpolate(26, 16, progress);
+            
+            gsap.set(navbarRef.current, {
+              height: height,
+              marginLeft: marginX,
+              marginRight: marginX,
+              marginTop: marginY,
+              marginBottom: marginY,
+            });
+            
+            const innerContainer = navbarRef.current?.querySelector('.nav-inner');
+            if (innerContainer) {
+              gsap.set(innerContainer, {
+                paddingLeft: paddingX,
+                paddingRight: paddingX,
+              });
+            }
+            
+            const logo = navbarRef.current?.querySelector('.nav-logo img');
+            if (logo) {
+              const logoScale = gsap.utils.interpolate(1, 0.85, progress);
+              gsap.set(logo, { scale: logoScale });
+            }
+            
+            const navLinks = Array.from(navbarRef.current?.querySelectorAll('.nav-links a') || []);
+            navLinks.forEach((link) => {
+              const textScale = gsap.utils.interpolate(1, 0.9, progress);
+              gsap.set(link, { scale: textScale });
+            });
+            
+            const icons = Array.from(navbarRef.current?.querySelectorAll('.nav-icons > div') || []);
+            icons.forEach((icon) => {
+              const iconScale = gsap.utils.interpolate(1, 0.9, progress);
+              gsap.set(icon, { scale: iconScale });
+            });
+          }
+        }
+      });
+  
+      return () => {
+        tl.kill();
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      };
+    }, []);
+
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {renderNavbar()}
+            {/* {renderNavbar()} */}
+            <nav
+                ref={navbarRef}
+                className="bg-(--color-white)  backdrop-blur-md rounded-full mx-3 sm:mx-6 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
+                style={{ height: 72 }}
+                >
+                <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
+                    <div className="flex justify-between items-center h-full gap-3">
+                    <Link href="/landing" className="nav-logo flex items-center flex-shrink-0">
+                        <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
+                    </Link>
+                    <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
+                        <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                        <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
+                        </button>
+                        <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                        <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
+                        </button>
+                    
+                    </div>
+                    </div>
+                </div>
+            </nav>
 
             <div className="flex justify-center">
                 <div className="flex max-w-7xl w-full">

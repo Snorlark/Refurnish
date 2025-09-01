@@ -113,7 +113,7 @@ export default function ItemViewSwapPage() {
         >
           <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
             <div className="flex justify-between items-center h-full gap-3">
-              <Link href="/" className="nav-logo flex items-center flex-shrink-0">
+              <Link href="/landing" className="nav-logo flex items-center flex-shrink-0">
                 <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
               </Link>
 

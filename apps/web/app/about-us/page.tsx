@@ -33,7 +33,12 @@ export default function AboutUs() {
   };
 
   return (
+    <>
+    
+    <div className="h-20 bg-(--color-white)"></div>
+    
     <div className="min-h-screen relative">
+      
       {/* Background Image with Blur */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -62,21 +67,22 @@ export default function AboutUs() {
         />
 
         {/* Main Content */}
-        <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <main className="pt-24  pb-16 px-4 sm:px-6 lg:px-8">
+
           <div className="max-w-4xl mx-auto text-center">
             {/* Hero Section */}
             <section className="mb-16">
-              <img src="/RefurnishLogoAboutUs.png" alt="Logo" className="w-auto h-30 sm:mt-15 mx-auto object-center">
+              <img src="/RefurnishLogoAboutUs.png" alt="Logo" className="w-auto h-30 sm:mt-8 mx-auto object-center">
               
               </img>
             </section>
 
             {/* About Us Section */}
             <section className="mb-16">
-              <h2 className="text-3xl sm:text-2xl font-semibold text-white mb-8">
+              <h2 className="text-3xl sm:text-2xl font-['Futura'] font-semibold text-white mb-8">
                 About Us
               </h2>
-              <div className="space-y-6 text-white/90 text-base sm:text-lg leading-relaxed">
+              <div className="space-y-8 text-white/90 text-base sm:text-lg leading-relaxed">
                 <p>
                   At Refurnish, we believe every piece of furniture has a story — and deserves a second one. 
                   We are a Philippines-based online marketplace dedicated to giving pre-loved, unused, and 
@@ -95,10 +101,10 @@ export default function AboutUs() {
 
             {/* Contact Section */}
             <section id="contact">
-              <h2 className="text-1xl sm:text-2xl font-semibold text-white mb-8">
+              <h2 className="text-1xl font-['Futura'] sm:text-2xl md:mt-22 font-semibold text-white mb-8">
                 Get in touch with us
               </h2>
-              <div className="space-y-4 text-white/90 text-base sm:text-lg">
+              <div className="space-y-2 text-white/90 text-base sm:text-lg">
                 <p>
                   <span className="font-semibold">Email:</span> support@refurnish.ph
                 </p>
@@ -114,5 +120,6 @@ export default function AboutUs() {
         </main>
       </div>
     </div>
+    </>
   );
 }
