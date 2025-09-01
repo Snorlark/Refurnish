@@ -213,7 +213,7 @@ const AccountPage = () => {
                         <div className="p-4 sm:p-6 lg:p-8">
                             <div className="w-full max-w-[1200px]">
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">My Profile</h1>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-(--color-olive) mb-6 sm:mb-8">My Profile</h1>
                                     {renderAccountContent()}
                                 </div>
                             </div>
