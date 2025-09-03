@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
             </div>
 
             {/* Contact */}
-            <div>
+            <div  id="contact" >
               <h4 className="text-md font-semibold mb-4">Contact Us</h4>
               <ul className="space-y-3 text-sm">
                 <li>Email: info@refurnish.com</li>

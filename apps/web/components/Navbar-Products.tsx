@@ -110,7 +110,7 @@ export default function Navbar({
           <Link href="/landing" className="hover:text-(--color-olive) transition-modern text-(--color-primary)">Home</Link>
           <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
           <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
-          <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
+          <button onClick={scrollToContact} className="hover:text-(--color-olive) cursor-pointer transition-modern">Contact</button>
         </div>
       );
     }
@@ -120,7 +120,7 @@ export default function Navbar({
         <Link href="/landing" className="hover:text-(--color-olive) transition-modern">Home</Link>
         <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
         <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
-        <button onClick={scrollToContact} className="hover:text-(--color-olive) transition-modern">Contact</button>
+        <button onClick={scrollToContact} className="hover:text-(--color-olive) cursor-pointer transition-modern">Contact</button>
       </div>
     );
   };
@@ -310,7 +310,7 @@ export default function Navbar({
               >
                 <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto object-cover" />
                 {wishlistItemsCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center cursor-pointer justify-center font-bold">
                     {wishlistItemsCount}
                   </span>
                 )}
