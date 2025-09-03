@@ -153,7 +153,7 @@ export default function Shop() {
 
 
   return (
-    <main className="bg-white font-['Futura']">
+    <main className="bg-white font-sans">
       {/* Navbar */}
       <Navbar 
         variant="shop"
@@ -261,7 +261,7 @@ export default function Shop() {
       </div>
 
       {/* On Sale Section */}
-      <div id="on-sale" className="py-16 md:mx-10 font-['Futura'] px-6 lg:px-16">
+      <div id="on-sale" className="py-16 md:mx-10 font-sans px-6 lg:px-16">
         <div className="container mx-auto">
           <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">
             On Sale</h2>

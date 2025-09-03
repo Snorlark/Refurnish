@@ -191,7 +191,7 @@ export default function Home() {
 
   return (
      <>
-    <main className="bg-white font-['Futura']">
+    <main className="bg-white font-sans">
       {/* Navbar */}
       <Navbar 
               variant="shop"

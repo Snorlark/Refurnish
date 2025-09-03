@@ -235,7 +235,7 @@ export default function ItemViewSalePage() {
 
   return (
     <>
-      <main className="bg-white font-['Futura'] min-h-screen transition-all ease-in-out duration-300">
+      <main className="bg-white font-sans min-h-screen transition-all ease-in-out duration-300">
         {/* NAVBAR */}
         <nav
           ref={navbarRef}

@@ -166,7 +166,7 @@ export default function SwapCatalogPage() {
 
   return (
     <>
-    <main className="bg-white font-['Futura'] min-h-screen">
+    <main className="bg-white font-sans min-h-screen">
       {/* NAVBAR */}
         <nav
             ref={navbarRef}
@@ -294,7 +294,7 @@ export default function SwapCatalogPage() {
                       <select
                         value={sortOption}
                         onChange={(e) => setSortOption(e.target.value)}
-                        className="w-full px-4 py-3 border font-['Futura'] border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+                        className="w-full px-4 py-3 border font-sans border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
                       >
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
@@ -338,7 +338,7 @@ export default function SwapCatalogPage() {
                       </div>
   
                       {/* Clear Filters */}
-                      <div className="lg:col-span-3 font-['Futura'] flex justify-end">
+                      <div className="lg:col-span-3 font-sans flex justify-end">
                         <button
                           onClick={() => {
                             setSelectedLocations([]);

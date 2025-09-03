@@ -352,7 +352,8 @@ const MessagesPage = () => {
             </div>
 
             <Footer />
-        </div></>
+        </div>
+        </>
     );
 };
 

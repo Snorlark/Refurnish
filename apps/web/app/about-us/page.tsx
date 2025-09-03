@@ -79,7 +79,7 @@ export default function AboutUs() {
 
             {/* About Us Section */}
             <section className="mb-16">
-              <h2 className="text-3xl sm:text-2xl font-['Futura'] font-semibold text-white mb-8">
+              <h2 className="text-3xl sm:text-2xl font-sans font-semibold text-white mb-8">
                 About Us
               </h2>
               <div className="space-y-8 text-white/90 text-base sm:text-lg leading-relaxed">
@@ -101,7 +101,7 @@ export default function AboutUs() {
 
             {/* Contact Section */}
             <section id="contact">
-              <h2 className="text-1xl font-['Futura'] sm:text-2xl md:mt-22 font-semibold text-white mb-8">
+              <h2 className="text-1xl font-sans sm:text-2xl md:mt-22 font-semibold text-white mb-8">
                 Get in touch with us
               </h2>
               <div className="space-y-2 text-white/90 text-base sm:text-lg">

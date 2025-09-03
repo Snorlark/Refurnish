@@ -43,16 +43,16 @@ export default function TrackOrdersPage() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col font-['Futura'] ">
+    <div className="min-h-screen flex flex-col font-sans ">
       <SiteHeader />
 
-      <main className="mx-auto w-full font-['Futura'] max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
+      <main className="mx-auto w-full font-sans max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
 
-        <div className="mt-6 rounded-2xl bg-white font-['Futura'] shadow-sm ring-1 ring-black/[0.06]">
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815] font-['Futura']">
+        <div className="mt-6 rounded-2xl bg-white font-sans shadow-sm ring-1 ring-black/[0.06]">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815] font-sans">
             <div>Product</div>
-            <div className=" font-['Futura'] text-right">Status</div>
+            <div className=" font-sans text-right">Status</div>
           </div>
         </div>
 
@@ -60,12 +60,12 @@ export default function TrackOrdersPage() {
           {orders.map((item) => (
             <li
               key={item.id}
-              className="rounded-2xl  font-['Futura'] bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
+              className="rounded-2xl  font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
               
             >
-              <div className="grid font-['Futura'] grid-cols-[1fr_auto] items-center gap-4">
-                <div className="flex font-['Futura']  items-center gap-4 min-w-0">
-                  <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0 font-['Futura']" >
+              <div className="grid font-sans grid-cols-[1fr_auto] items-center gap-4">
+                <div className="flex font-sans  items-center gap-4 min-w-0">
+                  <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0 font-sans" >
                     {item.thumbnailSrc ? (
                       <Image
                         src={item.thumbnailSrc}
@@ -75,16 +75,16 @@ export default function TrackOrdersPage() {
                         className="object-cover size-full"
                       />
                     ) : (
-                      <span className=" font-['Futura'] ">Image</span>
+                      <span className=" font-sans ">Image</span>
                     )}
                   </div>
                   <div className="truncate">
-                    <p className=" font-['Futura'] truncate text-neutral-800">
+                    <p className=" font-sans truncate text-neutral-800">
                       {item.name}
                     </p>
                   </div>
                 </div>
-                <div className=" font-['Futura'] text-right text-neutral-700">
+                <div className=" font-sans text-right text-neutral-700">
                   {item.status}
                 </div>
               </div>
@@ -110,19 +110,19 @@ function SiteHeader() {
 
         <div className="ml-2 hidden sm:flex items-center flex-1">
           <div className="w-full max-w-md relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2  font-['Futura']  text-neutral-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2  font-sans  text-neutral-400">
               <SearchIcon />
             </div>
             <input
               type="text"
-              className="w-full h-9 rounded-full  font-['Futura']  bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
+              className="w-full h-9 rounded-full  font-sans  bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
              
             />
           </div>
         </div>
 
         <div className="ml-auto">
-          <button aria-label="Menu" className="size-9  font-['Futura'] rounded-full hover:bg-neutral-100 flex items-center justify-center">
+          <button aria-label="Menu" className="size-9  font-sans rounded-full hover:bg-neutral-100 flex items-center justify-center">
             <MenuIcon />
           </button>
         </div>
@@ -140,19 +140,19 @@ function CartTabs() {
   ];
 
   return (
-    <nav className="mt-6 font-['Futura'] " >
-      <ul className="flex  font-['Futura']  items-center justify-center gap-10 text-sm font-semibold">
+    <nav className="mt-6 font-sans " >
+      <ul className="flex  font-sans  items-center justify-center gap-10 text-sm font-semibold">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || pathname?.startsWith(tab.href + "/");
           return (
             <li
               key={tab.href}
-              className="flex font-['Futura']  flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
+              className="flex font-sans  flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
               
             >
               <Link
                 href={tab.href}
-                className={` font-['Futura'] px-2 py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
+                className={` font-sans px-2 py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
                 aria-current={isActive ? "page" : undefined}
               >
                 {tab.label}

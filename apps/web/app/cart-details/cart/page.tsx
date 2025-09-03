@@ -125,17 +125,17 @@ export default function CartPage() {
   
 
   return (
-    <div className="min-h-screen flex flex-col font-['Futura']" >
+    <div className="min-h-screen flex flex-col font-sans" >
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
 
-        <div className="mt-6 font-['Futura'] rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06]">
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] font-['Futura'] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815]">
-            <div className="pl-40 font-['Futura']">Product</div>
-            <div className="pl-153 font-['Futura']">Quantity</div>
-            <div className="pl-1 font-['Futura']" >Price</div>
+        <div className="mt-6 font-sans rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06]">
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] font-sans items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815]">
+            <div className="pl-40 font-sans">Product</div>
+            <div className="pl-153 font-sans">Quantity</div>
+            <div className="pl-1 font-sans" >Price</div>
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export default function CartPage() {
           {cartItems.map((item) => (
             <li
               key={item.id}
-              className="rounded-2xl font-['Futura'] bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
+              className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
             >
               <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
                 <input
@@ -175,7 +175,7 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center font-['Futura'] justify-center gap-3">
+                <div className="flex items-center font-sans justify-center gap-3">
                   <IconButton
                     label="Decrease quantity"
                     onClick={() => decrementQuantity(item.id)}
@@ -183,17 +183,17 @@ export default function CartPage() {
                   >
                     <MinusIcon />
                   </IconButton>
-                  <span className="w-6 text-center font-['Futura'] select-none font-medium">{item.quantity}</span>
+                  <span className="w-6 text-center font-sans select-none font-medium">{item.quantity}</span>
                   <IconButton
                     label="Increase quantity"
                     onClick={() => incrementQuantity(item.id)}
-                    className="text-[#273815] font-['Futura'] hover:bg-[#273815]/10"
+                    className="text-[#273815] font-sans hover:bg-[#273815]/10"
                   >
                     <PlusIcon />  
                   </IconButton>
                 </div>
 
-                <div className="text-right tabular-nums font-['Futura'] text-neutral-800">
+                <div className="text-right tabular-nums font-sans text-neutral-800">
                   {currency.format(item.unitPrice)}
                 </div>
 
@@ -201,7 +201,7 @@ export default function CartPage() {
                   <IconButton 
                     label="Remove item" 
                     onClick={() => removeItem(item.id)}
-                    className="text-green-800 font-['Futura'] hover:bg-[#273815]/10"
+                    className="text-green-800 font-sans hover:bg-[#273815]/10"
                   >
                     <CloseIcon />
                   </IconButton>
@@ -211,12 +211,12 @@ export default function CartPage() {
           ))}
         </ul>
 
-        <div className="mt-10 flex flex-col-reverse font-['Futura'] gap-4 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col-reverse font-sans gap-4 sm:flex-row sm:items-center">
           <div className="flex-1">
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] font-['Futura'] p-5">
+            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] font-sans p-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-semibold font-['Futura'] text-neutral-800">Total :</p>
-                <p className="text-xl font-semibold font-['Futura'] text-[#636B2F] tabular-num" >
+                <p className="text-xl font-semibold font-sans text-neutral-800">Total :</p>
+                <p className="text-xl font-semibold font-sans text-[#636B2F] tabular-num" >
                   {currency.format(cartTotal)}
                 </p>
               </div>
@@ -227,11 +227,11 @@ export default function CartPage() {
             onClick={() => setIsCheckoutOpen(true)}
             disabled={!someSelected}
             title={!someSelected ? 'Select at least one product to continue' : undefined}
-            className={`inline-flex font-['Futura'] items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
+            className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
             aria-label="Buy now"
             
           >
-            <span className="font-['Futura']">Buy Now</span>
+            <span className="font-sans">Buy Now</span>
           </button>
         </div>
 
@@ -257,20 +257,20 @@ export default function CartPage() {
 
 function SiteHeader() {
   return (
-    <header className="w-full font-['Futura']">
+    <header className="w-full font-sans">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 h-16 flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/Rf-logo.svg" alt="Refurnish" width={28} height={28} />
         </Link>
 
-        <div className="ml-2 font-['Futura'] hidden sm:flex items-center flex-1">
+        <div className="ml-2 font-sans hidden sm:flex items-center flex-1">
           <div className="w-full max-w-md relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
               <SearchIcon />
             </div>
             <input
               type="text"
-              className="w-full h-9 rounded-full font-['Futura'] bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
+              className="w-full h-9 rounded-full font-sans bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
               
             />
           </div>
@@ -295,25 +295,25 @@ function CartTabs() {
   ];
 
   return (
-    <nav className=" font-['Futura'] mt-6" >
+    <nav className=" font-sans mt-6" >
       <ul className="flex items-center justify-center gap-10 text-sm font-semibold">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || pathname?.startsWith(tab.href + "/");
           return (
             <li
               key={tab.href}
-              className="flex font-['Futura'] flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
+              className="flex font-sans flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
               
             >
               <Link
                 href={tab.href}
-                className={`px-2 font-['Futura'] py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
+                className={`px-2 font-sans py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
                 aria-current={isActive ? "page" : undefined}
               
               >
                 {tab.label}
               </Link>
-              <span className={`h-1 font-['Futura'] w-6 rounded-full ${isActive ? 'bg-[#273815]' : 'bg-transparent'}`} />
+              <span className={`h-1 font-sans w-6 rounded-full ${isActive ? 'bg-[#273815]' : 'bg-transparent'}`} />
             </li>
           );
         })}
@@ -379,7 +379,7 @@ function CheckoutModal({
 }) {
   const total = subtotal + shippingFee;
   return (
-    <div className="fixed inset-0 font-['Futura'] z-50 flex items-center justify-center">
+    <div className="fixed inset-0 font-sans z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative mx-4 w-full max-w-5xl rounded-3xl bg-white p-6 sm:p-8 shadow-xl" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
