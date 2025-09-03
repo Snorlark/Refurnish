@@ -22,6 +22,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+
 export default function Shop() {
   const navbarRef = useRef<HTMLElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -38,12 +39,12 @@ export default function Shop() {
       isRefurnishSlide: true
     },
     {
-      image: '/swap-pic.png',
-      scrollTo: 'for-swap'
-    },
-    {
       image: '/sale-pic.png', 
       scrollTo: 'on-sale'
+    },
+    {
+      image: '/swap-pic.png',
+      scrollTo: 'swap'
     }
   ];
 
@@ -189,7 +190,9 @@ export default function Shop() {
               } else if (slide.isRefurnishSlide) {
                 console.log('REFURNISH slide clicked - no scroll action');
               }
-            }}
+            }
+          
+          }
           >
             {slide.isRefurnishSlide && (
 
@@ -451,7 +454,7 @@ export default function Shop() {
       </div>
 
       {/* For Swap Section */}
-      <div id="for-swap" className="py-16 md:mx-10 px-6 lg:px-16 bg-gray-50/30">
+      <div id="swap" className="py-16 md:mx-10 px-6 lg:px-16 bg-gray-50/30">
         <div className="container mx-auto">
           <h2 className="text-2xl font-bold text-(--color-primary) mb-8">For Swap</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
