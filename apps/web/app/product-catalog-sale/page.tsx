@@ -223,12 +223,18 @@ export default function ChairsCatalogPage() {
 
                 {/* Icons */}
                 <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+
+                   <Link href="/cart-details/wishlist" >
+                  <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                     <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
                   </button>
-                  <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                  </Link>
+                  <Link href="/cart-details/cart" >
+                  <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
                     <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
                   </button>
+                  </Link>
+                  
                   <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                     <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
                   </button>
