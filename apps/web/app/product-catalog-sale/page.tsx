@@ -448,7 +448,7 @@ export default function ChairsCatalogPage() {
                 href="/item-view-sale">
                 <div className="p-4">
                   <h3 className="text-[15px] text-(--color-olive) font-semibold">{item.title}</h3>
-                  <div className="mt-1 text-[14px]">₱{item.price}.00</div>
+                  <div className="mt-1 text-[14px] text-black">₱{item.price}.00</div>
                   <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
                     <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
                     <span>{item.location}</span>
