@@ -22,8 +22,8 @@ app.get("/", (req, res) => {
 });
 
 //API routes registration
-app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/products", productRoutes);
 
 //Socket.io setup
 const httpServer = http.createServer(app);

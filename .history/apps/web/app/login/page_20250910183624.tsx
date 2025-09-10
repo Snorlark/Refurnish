@@ -1,24 +1,24 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Sign Up modal state
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -27,15 +27,16 @@ const LoginPage: React.FC = () => {
 
     try {
       // Simulate login API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Login attempt:", { email, password });
-
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Login attempt:', { email, password });
+      
       // Redirect to admin dashboard
-      router.push("/admin/dashboard");
+      router.push('/admin/dashboard');
+      
     } catch (error) {
-      console.error("Login failed:", error);
-      alert("Login failed. Please try again.");
+      console.error('Login failed:', error);
+      alert('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -51,44 +52,38 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setIsSignUpOpen(false);
       }
     };
     if (isSignUpOpen) {
-      window.addEventListener("keydown", onKeyDown);
+      window.addEventListener('keydown', onKeyDown);
     }
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [isSignUpOpen]);
 
   const handleSignUp = async () => {
     // Placeholder submit; replace with API call later
-    if (
-      !firstName ||
-      !lastName ||
-      !signUpEmail ||
-      !signUpPassword ||
-      !confirmPassword
-    ) {
-      alert("Please fill in all fields.");
+    if (!firstName || !lastName || !signUpEmail || !signUpPassword || !confirmPassword) {
+      alert('Please fill in all fields.');
       return;
     }
     if (signUpPassword !== confirmPassword) {
-      alert("Passwords do not match.");
+      alert('Passwords do not match.');
       return;
     }
-    console.log("Sign up attempt:", { firstName, lastName, signUpEmail });
+    console.log('Sign up attempt:', { firstName, lastName, signUpEmail });
     setIsSignUpOpen(false);
   };
 
   const handleForgotPassword = () => {
     // Navigate to forgot password page
-    console.log("Navigate to forgot password page");
-    alert("Navigate to forgot password page");
+    console.log('Navigate to forgot password page');
+    alert('Navigate to forgot password page');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleLogin();
     }
   };
@@ -96,20 +91,20 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Fustat:wght@300;400;500;600;700&display=swap");
-
+        @import url('https://fonts.googleapis.com/css2?family=Fustat:wght@300;400;500;600;700&display=swap');
+        
         * {
-          font-family: "Fustat", sans-serif;
+          font-family: 'Fustat', sans-serif;
         }
       `}</style>
-
-      <div
+      
+      <div 
         className="min-h-screen flex items-center justify-center p-4"
         style={{
           backgroundImage: 'url("/login-bg.png")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }}
       >
         {/* Background Overlay for better text readability
@@ -120,22 +115,20 @@ const LoginPage: React.FC = () => {
           <div className="text-center mb-12">
             {/* Logo */}
             <div className="mb-4">
-              <img
-                src="/Rf-long-logo.svg"
-                alt="REFURNISH"
+              <img 
+                src="/Rf-long-logo.svg" 
+                alt="REFURNISH" 
                 className="h-20 mx-auto"
                 onError={(e) => {
                   // Fallback to text if image fails to load
-                  e.currentTarget.style.display = "none";
-                  (e.currentTarget
-                    .nextElementSibling as HTMLElement)!.style.display =
-                    "block";
+                  e.currentTarget.style.display = 'none';
+                  (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'block';
                 }}
               />
               {/* Fallback text logo */}
-              <h1
+              <h1 
                 className="text-4xl font-bold text-white tracking-wider hidden"
-                style={{ letterSpacing: "0.2em" }}
+                style={{ letterSpacing: '0.2em' }}
               >
                 REFURNISH
               </h1>
@@ -155,10 +148,7 @@ const LoginPage: React.FC = () => {
             <div className="space-y-6">
               {/* Email Field */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-[#273815] mb-2"
-                >
+                <label htmlFor="email" className="block text-sm font-medium text-[#273815] mb-2">
                   Email
                 </label>
                 <input
@@ -175,10 +165,7 @@ const LoginPage: React.FC = () => {
               {/* Password Field */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-[#273815]"
-                  >
+                  <label htmlFor="password" className="block text-sm font-medium text-[#273815]">
                     Password
                   </label>
                   <button
@@ -208,7 +195,7 @@ const LoginPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent transition-all duration-200"
                   placeholder="Enter your password"
                 />
-
+                
                 {/* Forgot Password Link */}
                 <div className="text-right mt-1">
                   <button
@@ -227,14 +214,14 @@ const LoginPage: React.FC = () => {
                 disabled={isLoading || !email || !password}
                 className="w-full bg-[#636B2F] text-white font-semibold py-3 px-4 rounded-full shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Logging in..." : "Log In"}
+                {isLoading ? 'Logging in...' : 'Log In'}
               </button>
             </div>
 
             {/* Register Link */}
             <div className="text-center mt-6">
               <p className="text-[#273815]">
-                Doesnt have an account yet?{" "}
+                Doesnt have an account yet?{' '}
                 <button
                   onClick={handleRegisterClick}
                   className="text-[#273815] font-semibold underline hover:text-gray-900"
@@ -253,16 +240,11 @@ const LoginPage: React.FC = () => {
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={closeSignUp}
-          />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeSignUp} />
           <div className="relative w-full max-w-xl bg-gray-100 rounded-[32px] shadow-2xl z-10">
             <div className="p-6 md:p-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-4xl font-extrabold text-[#273815] text-center w-full">
-                  Sign Up
-                </h2>
+                <h2 className="text-4xl font-extrabold text-[#273815] text-center w-full">Sign Up</h2>
               </div>
 
               {/* Form */}
@@ -270,12 +252,7 @@ const LoginPage: React.FC = () => {
                 {/* Name fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label
-                      htmlFor="firstName"
-                      className="block text-sm font-medium text-[#273815] mb-2"
-                    >
-                      First name
-                    </label>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-[#273815] mb-2">First name</label>
                     <input
                       id="firstName"
                       type="text"
@@ -286,12 +263,7 @@ const LoginPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label
-                      htmlFor="lastName"
-                      className="block text-sm font-medium text-[#273815] mb-2"
-                    >
-                      Last name
-                    </label>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-[#273815] mb-2">Last name</label>
                     <input
                       id="lastName"
                       type="text"
@@ -305,12 +277,7 @@ const LoginPage: React.FC = () => {
 
                 {/* Email */}
                 <div>
-                  <label
-                    htmlFor="signUpEmail"
-                    className="block text-sm font-medium text-[#273815] mb-2"
-                  >
-                    Email address
-                  </label>
+                  <label htmlFor="signUpEmail" className="block text-sm font-medium text-[#273815] mb-2">Email address</label>
                   <input
                     id="signUpEmail"
                     type="email"
@@ -324,12 +291,7 @@ const LoginPage: React.FC = () => {
                 {/* Password */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label
-                      htmlFor="signUpPassword"
-                      className="block text-sm font-medium text-[#273815]"
-                    >
-                      Password
-                    </label>
+                    <label htmlFor="signUpPassword" className="block text-sm font-medium text-[#273815]">Password</label>
                     <button
                       type="button"
                       onClick={() => setShowSignUpPassword(!showSignUpPassword)}
@@ -348,7 +310,7 @@ const LoginPage: React.FC = () => {
                   </div>
                   <input
                     id="signUpPassword"
-                    type={showSignUpPassword ? "text" : "password"}
+                    type={showSignUpPassword ? 'text' : 'password'}
                     value={signUpPassword}
                     onChange={(e) => setSignUpPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
@@ -359,17 +321,10 @@ const LoginPage: React.FC = () => {
                 {/* Confirm Password */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label
-                      htmlFor="confirmPassword"
-                      className="block text-sm font-medium text-[#273815]"
-                    >
-                      Confirm Password
-                    </label>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#273815]">Confirm Password</label>
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="flex items-center text-sm text-[#273815]"
                     >
                       {showConfirmPassword ? (
@@ -385,7 +340,7 @@ const LoginPage: React.FC = () => {
                   </div>
                   <input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] focus:border-transparent"
@@ -402,11 +357,8 @@ const LoginPage: React.FC = () => {
                 </button>
 
                 <p className="text-center text-[#273815]">
-                  Already have an account?{" "}
-                  <button
-                    onClick={closeSignUp}
-                    className="text-[#273815] font-semibold underline"
-                  >
+                  Already have an account?{' '}
+                  <button onClick={closeSignUp} className="text-[#273815] font-semibold underline">
                     Log in here
                   </button>
                 </p>
