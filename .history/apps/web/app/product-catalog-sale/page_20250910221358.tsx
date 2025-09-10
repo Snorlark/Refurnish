@@ -9,23 +9,23 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-type SwapItem = {
+type Product = {
   id: number;
   title: string;
   image: string;
   location: string;
-  swapFor: string; // New field for what the seller wants
+  price: number; // Added for sorting purposes
   dateAdded: string;
 };
 
-const swapCatalog: Record<string, SwapItem[]> = {
+const productCatalog: Record<string, Product[]> = {
   CHAIRS: [
     {
       id: 1,
-      title: "Wooden Chair",
-      image: "/bedroom.png",
-      location: "Amanpulo",
-      swapFor: "Coffee Table",
+      title: "360° Swivel Wooden Office Chair",
+      image: "/products/chair/view1.jpg",
+      location: "Cavite",
+      price: 500,
       dateAdded: "2025-08-25",
     },
     {
@@ -33,8 +33,24 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Classic Rattan Chair",
       image: "/bedroom.png",
       location: "Cebu",
-      swapFor: "Floor Lamp",
-      dateAdded: "2025-08-26",
+      price: 80,
+      dateAdded: "2025-08-20",
+    },
+    {
+      id: 9,
+      title: "Ergonomic Office Chair",
+      image: "/bedroom.png",
+      location: "Makati",
+      price: 250,
+      dateAdded: "2025-08-15",
+    },
+    {
+      id: 10,
+      title: "Vintage Armchair",
+      image: "/bedroom.png",
+      location: "Tagaytay",
+      price: 180,
+      dateAdded: "2025-08-10",
     },
   ],
   TABLES: [
@@ -43,16 +59,32 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Dining Table",
       image: "/bedroom.png",
       location: "Makati",
-      swapFor: "Bookshelf",
-      dateAdded: "2025-08-5",
+      price: 300,
+      dateAdded: "2025-08-22",
     },
     {
       id: 4,
       title: "Coffee Table",
       image: "/bedroom.png",
       location: "Tagaytay",
-      swapFor: "Side Chair",
-      dateAdded: "2025-08-15",
+      price: 150,
+      dateAdded: "2025-08-18",
+    },
+    {
+      id: 11,
+      title: "Study Desk",
+      image: "/bedroom.png",
+      location: "Cebu",
+      price: 120,
+      dateAdded: "2025-08-12",
+    },
+    {
+      id: 12,
+      title: "Console Table",
+      image: "/bedroom.png",
+      location: "Davao",
+      price: 90,
+      dateAdded: "2025-08-08",
     },
   ],
   SOFA: [
@@ -61,8 +93,24 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Modern Sofa",
       image: "/living.png",
       location: "Cebu",
-      swapFor: "Rug",
-      dateAdded: "2025-07-25",
+      price: 450,
+      dateAdded: "2025-08-21",
+    },
+    {
+      id: 13,
+      title: "Leather Loveseat",
+      image: "/living.png",
+      location: "Makati",
+      price: 380,
+      dateAdded: "2025-08-14",
+    },
+    {
+      id: 14,
+      title: "Sectional Sofa",
+      image: "/living.png",
+      location: "Amanpulo",
+      price: 520,
+      dateAdded: "2025-08-05",
     },
   ],
   CABINET: [
@@ -71,8 +119,24 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Classic Cabinet",
       image: "/living.png",
       location: "Davao",
-      swapFor: "Bar Stool",
-      dateAdded: "2025-01-25",
+      price: 200,
+      dateAdded: "2025-08-19",
+    },
+    {
+      id: 15,
+      title: "Bookshelf",
+      image: "/living.png",
+      location: "Tagaytay",
+      price: 160,
+      dateAdded: "2025-08-11",
+    },
+    {
+      id: 16,
+      title: "Wardrobe",
+      image: "/living.png",
+      location: "Palawan",
+      price: 280,
+      dateAdded: "2025-08-07",
     },
   ],
   DECOR: [
@@ -81,8 +145,24 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Decorative Vase",
       image: "/living.png",
       location: "Palawan",
-      swapFor: "Wall Art",
-      dateAdded: "2025-09-25",
+      price: 50,
+      dateAdded: "2025-08-26",
+    },
+    {
+      id: 17,
+      title: "Wall Art",
+      image: "/living.png",
+      location: "Cebu",
+      price: 75,
+      dateAdded: "2025-08-13",
+    },
+    {
+      id: 18,
+      title: "Table Lamp",
+      image: "/living.png",
+      location: "Makati",
+      price: 65,
+      dateAdded: "2025-08-09",
     },
   ],
   MIRROR: [
@@ -91,29 +171,44 @@ const swapCatalog: Record<string, SwapItem[]> = {
       title: "Wall Mirror",
       image: "/dining.png",
       location: "Tagaytay",
-      swapFor: "Console Table",
-      dateAdded: "2025-08-12",
+      price: 180,
+      dateAdded: "2025-08-23",
+    },
+    {
+      id: 19,
+      title: "Floor Mirror",
+      image: "/dining.png",
+      location: "Amanpulo",
+      price: 220,
+      dateAdded: "2025-08-16",
+    },
+    {
+      id: 20,
+      title: "Bathroom Mirror",
+      image: "/dining.png",
+      location: "Davao",
+      price: 95,
+      dateAdded: "2025-08-06",
     },
   ],
-
   LAMP: [],
   VANITY: [],
 
   SHELVES: [],
 };
 
-export default function SwapCatalogPage() {
+export default function ChairsCatalogPage() {
   const navbarRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const categories = ["ALL", ...Object.keys(swapCatalog)];
-  const [isSwapPage, setIsSwapPage] = useState(true); // since this is the Swap page
+  const categories = ["ALL", ...Object.keys(productCatalog)];
+  const defaultCategory = "SALE";
+  const [isSalePage, setIsSalePage] = useState(true); // since this is the Sale page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [sortOption, setSortOption] = useState<string>("newest");
   const [showFilters, setShowFilters] = useState(false);
-  ///  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
-  // Navbar animation
   useEffect(() => {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
@@ -152,16 +247,12 @@ export default function SwapCatalogPage() {
           },
         },
       });
-
-      // keep a reference so cleanup kills this timeline too
-      // (timeline is scoped inside ctx and will be reverted by ctx.revert())
-      // nothing else needed here
     }, navEl);
 
     return () => ctx.revert();
   }, []);
 
-  // Grid animation
+  // Animate product cards whenever activeCategory changes
   useEffect(() => {
     if (!gridRef.current) return;
     const scope = gridRef.current;
@@ -191,17 +282,17 @@ export default function SwapCatalogPage() {
   // Get unique locations from products
   const allLocations = Array.from(
     new Set(
-      Object.values(swapCatalog)
+      Object.values(productCatalog)
         .flat()
         .map((product) => product.location)
     )
   );
 
   // Enhanced filtering logic
-  let filteredItems: SwapItem[] =
+  let filteredItems: Product[] =
     activeCategory === "ALL"
-      ? Object.values(swapCatalog).flat()
-      : swapCatalog[activeCategory] ?? [];
+      ? Object.values(productCatalog).flat()
+      : productCatalog[activeCategory] ?? [];
 
   // Apply location filter
   if (selectedLocations.length > 0) {
@@ -210,20 +301,30 @@ export default function SwapCatalogPage() {
     );
   }
 
-  // Filtering logic (curated & scalable)
-  const filteredProducts: SwapItem[] = isSwapPage
-    ? // Sale page: filter by category under SALE
-      activeCategory === "ALL"
-      ? Object.values(swapCatalog).flat()
-      : swapCatalog[activeCategory] ?? []
-    : // Non-sale page logic (future proof if reused elsewhere)
-    activeCategory === "ALL"
-    ? Object.values(swapCatalog).flat()
-    : swapCatalog[activeCategory] ?? [];
+  // Apply price range filter
+  filteredItems = filteredItems.filter(
+    (item) => item.price >= priceRange[0] && item.price <= priceRange[1]
+  );
+
+  // Apply sorting
+  filteredItems = [...filteredItems].sort((a, b) => {
+    if (sortOption === "lowToHigh") return a.price - b.price;
+    if (sortOption === "highToLow") return b.price - a.price;
+    if (sortOption === "newest")
+      return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    if (sortOption === "oldest")
+      return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+    if (sortOption === "nameAZ") return a.title.localeCompare(b.title);
+    if (sortOption === "nameZA") return b.title.localeCompare(a.title);
+    return 0;
+  });
+
+  // Use the enhanced filteredItems for display
+  const filteredProducts: Product[] = filteredItems;
 
   return (
     <>
-      <main className="bg-white font-sans min-h-screen">
+      <main className="bg-white font-sans min-h-screen transition-all ease-in-out duration-300 ">
         {/* NAVBAR */}
         <nav
           ref={navbarRef}
@@ -234,7 +335,7 @@ export default function SwapCatalogPage() {
             <div className="flex justify-between items-center h-full gap-3">
               {/* Logo */}
               <Link
-                href="/"
+                href="/landing"
                 className="nav-logo flex items-center flex-shrink-0"
               >
                 <img
@@ -283,6 +384,7 @@ export default function SwapCatalogPage() {
                     />
                   </button>
                 </Link>
+
                 <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                   <img
                     src="/icon/menuIcon.png"
@@ -298,7 +400,7 @@ export default function SwapCatalogPage() {
         {/* Spacer for fixed nav */}
         <div className="h-20 sm:h-15" />
 
-        {/* CATEGORY TABS */}
+        {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
           <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
 
@@ -331,29 +433,29 @@ export default function SwapCatalogPage() {
             <div className="flex justify-between items-center mb-4">
               {/* Sale & Swap Buttons */}
               <div className="flex gap-4">
-                <Link
-                  href="/product-catalog-sale"
-                  className="px-6 py-3 bg-white border-2 border-gray-200  rounded-full text-sm font-medium transition-colors text-gray-700 hover:bg-gray-200"
-                >
-                  Sale
-                </Link>
-
                 <button
-                  onClick={() => setIsSwapPage(true)}
+                  onClick={() => setIsSalePage(true)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors ${
-                    isSwapPage
+                    isSalePage
                       ? "bg-(--color-primary) text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Swap
+                  Sale
                 </button>
+
+                <Link
+                  href="/product-catalog-swap"
+                  className="px-6 py-3 bg-white border-2 border-gray-200  rounded-full text-sm font-medium transition-colors text-gray-700 hover:bg-gray-200"
+                >
+                  Swap
+                </Link>
               </div>
 
               {/* Filter Button */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex font-sans items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive) transition-all duration-300 shadow-sm hover:shadow-md"
               >
                 <svg
                   className="w-4 h-4"
@@ -389,7 +491,7 @@ export default function SwapCatalogPage() {
 
             {/* Filter Panel */}
             {showFilters && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
+              <div className="bg-white  font-sans rounded-2xl shadow-lg border border-gray-100 p-6 mb-6 max-w-4xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Sort Options */}
                   <div>
@@ -399,13 +501,54 @@ export default function SwapCatalogPage() {
                     <select
                       value={sortOption}
                       onChange={(e) => setSortOption(e.target.value)}
-                      className="w-full px-4 py-3 border font-sans border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+                      className="w-full px-4 py-3 font-sans  border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
+                      <option value="lowToHigh">Price: Low to High</option>
+                      <option value="highToLow">Price: High to Low</option>
                       <option value="nameAZ">Name: A to Z</option>
                       <option value="nameZA">Name: Z to A</option>
                     </select>
+                  </div>
+
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price Range
+                    </label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={priceRange[0]}
+                          onChange={(e) =>
+                            setPriceRange([
+                              parseInt(e.target.value) || 0,
+                              priceRange[1],
+                            ])
+                          }
+                          placeholder="Min"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none text-sm"
+                        />
+                        <span className="text-gray-400 self-center">-</span>
+                        <input
+                          type="number"
+                          value={priceRange[1]}
+                          onChange={(e) =>
+                            setPriceRange([
+                              priceRange[0],
+                              parseInt(e.target.value) || 600,
+                            ])
+                          }
+                          placeholder="Max"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none text-sm"
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ₱{priceRange[0]} - ₱{priceRange[1]}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Location Filter */}
@@ -452,13 +595,14 @@ export default function SwapCatalogPage() {
                   </div>
 
                   {/* Clear Filters */}
-                  <div className="lg:col-span-3 font-sans flex justify-end">
+                  <div className="lg:col-span-3  font-sans  flex justify-end">
                     <button
                       onClick={() => {
+                        setPriceRange([0, 600]);
                         setSelectedLocations([]);
                         setSortOption("newest");
                       }}
-                      className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-300 rounded-full hover:text-gray-800 transition-colors duration-300"
+                      className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-300"
                     >
                       Clear All Filters
                     </button>
@@ -466,13 +610,15 @@ export default function SwapCatalogPage() {
                 </div>
 
                 {/* Active Filters Display */}
-                {selectedLocations.length > 0 && (
+                {(selectedLocations.length > 0 ||
+                  priceRange[0] > 0 ||
+                  priceRange[1] < 600) && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex flex-wrap gap-2">
                       {selectedLocations.map((location) => (
                         <span
                           key={location}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-gray-300 text-(--color-primary) rounded-full text-xs"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs"
                         >
                           {location}
                           <button
@@ -483,12 +629,23 @@ export default function SwapCatalogPage() {
                                 )
                               )
                             }
-                            className="ml-1 cursor-pointer text-[18px] hover:text-(--color-olive)"
+                            className="ml-1 hover:text-green-600"
                           >
                             ×
                           </button>
                         </span>
                       ))}
+                      {(priceRange[0] > 0 || priceRange[1] < 600) && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                          Price: ₱{priceRange[0]} - ₱{priceRange[1]}
+                          <button
+                            onClick={() => setPriceRange([0, 600])}
+                            className="ml-1 hover:text-purple-600"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -498,13 +655,13 @@ export default function SwapCatalogPage() {
             {/* Results Count */}
             <div className="text-center text-sm text-gray-600 mb-4">
               Showing {filteredItems.length} of{" "}
-              {Object.values(swapCatalog).flat().length} products
+              {Object.values(productCatalog).flat().length} products
             </div>
           </div>
         </section>
 
-        {/* SWAP GRID */}
-        <section className="max-w-7xl mx-auto px-6 lg:px-9 mt-8">
+        {/* PRODUCTS GRID */}
+        <section className="max-w-6xl mx-auto px-6 lg:px-9 mt-8">
           <div
             ref={gridRef}
             className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
@@ -514,42 +671,36 @@ export default function SwapCatalogPage() {
                 No products in this category yet.
               </div>
             ) : (
-              filteredProducts.map((p) => (
+              filteredProducts.map((item) => (
                 <article
-                  key={`${p.id}-${p.title}`}
-                  className="product-card bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
+                  key={`${item.id}-${item.title}`}
+                  className="product-card bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden"
                 >
-                  <div className="relative">
+                  <div className="relative ">
                     <Image
-                      src={p.image}
-                      alt={p.title}
+                      src={item.image}
+                      alt={item.title}
                       width={600}
                       height={420}
                       className="w-full h-44 object-cover"
                     />
                   </div>
 
-                  <Link href="/item-view-swap">
+                  <Link href="/item-view-sale">
                     <div className="p-4">
                       <h3 className="text-[15px] text-(--color-olive) font-semibold">
-                        {p.title}
+                        {item.title}
                       </h3>
-                      <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
-                        <img
-                          src="/icon/swapIcon.png"
-                          alt="Swap"
-                          className="w-4 h-auto"
-                        />
-                        <span>{p.swapFor}</span>
+                      <div className="mt-1 text-[14px] text-black">
+                        ₱{item.price}.00
                       </div>
-
                       <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
                         <img
                           src="/icon/locateIcon.png"
                           alt="Location"
                           className="w-4 h-auto"
                         />
-                        <span>{p.location}</span>
+                        <span>{item.location}</span>
                       </div>
                     </div>
                   </Link>

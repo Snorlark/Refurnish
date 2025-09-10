@@ -504,7 +504,7 @@ export default function SwapCatalogPage() {
         </section>
 
         {/* SWAP GRID */}
-        <section className="max-w-7xl mx-auto px-6 lg:px-9 mt-8">
+        <section className="max-w-6xl mx-auto px-6 lg:px-9 mt-8">
           <div
             ref={gridRef}
             className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
