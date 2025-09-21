@@ -11,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Sign Up modal state
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
@@ -24,18 +25,38 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async () => {
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
-      // Simulate login API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const response = await fetch(`${baseUrl}/api/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      console.log("Login attempt:", { email, password });
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const message = (errorBody && (errorBody.error || errorBody.message)) || "Login failed";
+        throw new Error(message);
+      }
+
+      const data: { token: string; message?: string } = await response.json();
+      if (!data?.token) {
+        throw new Error("Invalid response from server");
+      }
+
+      // Store JWT (you may switch to httpOnly cookies server-side later)
+      localStorage.setItem("rf_auth_token", data.token);
 
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
-      alert("Login failed. Please try again.");
+      const message = error instanceof Error ? error.message : "Login failed. Please try again.";
+      setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
@@ -153,6 +174,13 @@ const LoginPage: React.FC = () => {
             </h2>
 
             <div className="space-y-6">
+              {errorMessage && (
+                <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-[#273815]">
+                  <p className="text-sm">
+                    <span className="font-semibold">Login failed:</span> {errorMessage}
+                  </p>
+                </div>
+              )}
               {/* Email Field */}
               <div>
                 <label
