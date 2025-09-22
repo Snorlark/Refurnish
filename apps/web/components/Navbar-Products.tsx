@@ -57,11 +57,7 @@ export default function Navbar({
           const radius = gsap.utils.interpolate(50, 50, progress);
           const shadowOpacity = gsap.utils.interpolate(0.08, 0.15, progress);
 
-            
-          // gsap.set(navbarRef.current, {
-          //     boxShadow: `inset 4px 4px 8px rgba(0,0,0,${0.05 * opacity}),
-          //                 inset -4px -4px 8px rgba(255,255,255,${0.8 * opacity})`
-          //   });
+        
 
 gsap.set(navbarRef.current, {
     borderRadius: `${radius}px`,

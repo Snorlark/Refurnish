@@ -192,7 +192,7 @@ export default function Home() {
   return (
      <>
     <main className="
-      bg-gradient-to-r from-[#fffef3] to-[#eef0c4de]  
+      bg-gradient-to-r from-[#fffef3] via-[#e9efcf] via-[#dbe6ae] to-[#eef0c4de]  
       animate-gradient-wave 
       font-sans">
       {/* Navbar */}

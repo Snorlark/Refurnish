@@ -53,7 +53,7 @@ html, body {
 
 .animate-gradient-wave {
   background-size: 400% 400%;
-  animation: gradient-wave 10s ease infinite;
+  animation: gradient-wave 15s ease infinite;
 }
 
 :root {

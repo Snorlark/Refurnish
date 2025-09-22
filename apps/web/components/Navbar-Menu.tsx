@@ -82,7 +82,7 @@ export default function NavbarMenu({
       <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 h-full">
         <div className="flex justify-between items-center h-full gap-3">
           <Link href="/landing" className="nav-logo flex items-center flex-shrink-0">
-            <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
+            <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 px-4 w-auto object-cover" />
           </Link>
           <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
             <Link href="/cart-details/wishlist" >
