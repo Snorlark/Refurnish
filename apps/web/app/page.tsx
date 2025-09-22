@@ -191,7 +191,21 @@ export default function Home() {
 
   return (
      <>
-    <main className="bg-white font-sans">
+     {/* bg-gradient-to-br from-white to-[#e1e1b2] */}
+      {/* bg-gradient-to-r from-white via-[#949478] to-[#ffffff] */}
+           {/* bg-gradient-to-r from-[#fffdec] via-[#f7ffd9de] via-[#e9f8ae] to-[#effcd1]  */}
+           
+      {/* bg-gradient-to-r from-[#fffef3] via-[#e8e9c2de]  to-[#edf5da] 
+      animate-gradient-wave */}
+
+             {/* bg-gradient-to-r from-[#fffef3] via-[#fbfdccde]  to-[#f5ffdd]  */}
+
+    {/* aurora-bg */}
+
+    <main className="
+      bg-gradient-to-r from-[#fffef3] to-[#eef0c4de]  
+      animate-gradient-wave 
+      font-sans">
       {/* Navbar */}
       <Navbar 
               variant="shop"
@@ -206,7 +220,7 @@ export default function Home() {
             />
 
       {/* Hero Section */}
-      <div className="h-20 bg-(--color-white)"></div>
+      {/* <div className="h-20 bg-(--color-white)"></div> */}
       <div className="relative  h-screen bg-cover bg-center" style={{backgroundImage: 'url(/bg-heropage.png)'}}>
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10 h-full flex items-center justify-end pl-7 pr-8 md:pr-20 lg:pr-32">
@@ -219,8 +233,8 @@ export default function Home() {
               Enjoy a 10% discount on your first two furniture purchases when you sign up today.
             </p>
             <Link href='/login'>
-            <button className="bg-(--color-olive) hover:text-(--color-white) hover:bg-(--color-primary) hover:font-bold hover:translate-y-1 hover:tracking-[0.15em] tracking-[0.1em] text-white px-10 py-4 rounded-full font-normal cursor-pointer transition-modern text-[12px] md:text-[14px]">
-              BUY NOW
+            <button className="bg-(--color-olive) hover:text-(--color-white) hover:bg-(--color-primary) hover:font-bold hover:translate-y-1 hover:tracking-[0.15em] tracking-[0.1em] text-white px-8 py-4 rounded-full font-normal cursor-pointer transition-modern text-[12px] md:text-[14px]">
+              SIGN UP NOW &nbsp; ➤
             </button>
             </Link>
           </div>
@@ -275,7 +289,7 @@ export default function Home() {
       <div className="border-t-[0.2px] border-(--color-olive) mx-20 text-center"></div>
 
       {/* Our Products Section */}
-      <div className="py-20 px-6 lg:px-16 bg-gray-50/50">
+      <div className="py-20 px-6 lg:px-16 ">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-7 leading-tight tracking-tight">
@@ -421,7 +435,7 @@ export default function Home() {
       </div>
 
       {/* Giving Furniture Section */}
-      <div className="py-24 px-6 lg:px-16 bg-gray-50/50">
+      <div className="py-24 px-6 lg:px-16">
         <div className="container mx-auto text-center">
           <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-5 leading-tight tracking-tight">
             Giving Furniture a Second Home

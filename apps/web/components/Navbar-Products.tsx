@@ -52,7 +52,22 @@ export default function Navbar({
           const marginX = gsap.utils.interpolate(32, 18, progress);
           const marginY = gsap.utils.interpolate(0, 16, progress);
           const paddingX = gsap.utils.interpolate(26, 16, progress);
+          const opacity = gsap.utils.interpolate(0, 1, progress);
           
+          const radius = gsap.utils.interpolate(50, 50, progress);
+          const shadowOpacity = gsap.utils.interpolate(0.08, 0.15, progress);
+
+            
+          // gsap.set(navbarRef.current, {
+          //     boxShadow: `inset 4px 4px 8px rgba(0,0,0,${0.05 * opacity}),
+          //                 inset -4px -4px 8px rgba(255,255,255,${0.8 * opacity})`
+          //   });
+
+gsap.set(navbarRef.current, {
+    borderRadius: `${radius}px`,
+    boxShadow: `0 6px 20px rgba(0,0,0,${shadowOpacity})`,
+    // background: `rgba(253,253,253,${0.85 + 0.1 * progress})`
+  });
           gsap.set(navbarRef.current, {
             height: height,
             marginLeft: marginX,
@@ -202,7 +217,7 @@ export default function Navbar({
                   onAuthClick?.();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Profile</span>
@@ -213,7 +228,7 @@ export default function Navbar({
                   setIsSearchOpen(true);
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <img src="/icon/searchIcon.png" alt="Search" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Search</span>
@@ -224,7 +239,7 @@ export default function Navbar({
                   onWishlistClick?.();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors relative"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors relative"
               >
                 <img src="/icon/heartIcon.png" alt="Wishlist" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Wishlist</span>
@@ -240,7 +255,7 @@ export default function Navbar({
                   onCartClick?.();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors relative"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors relative"
               >
                 <img src="/icon/cartIcon.png" alt="Cart" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Cart</span>
@@ -266,10 +281,23 @@ export default function Navbar({
     <>
       <nav 
         ref={navbarRef}
-        className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
+        // className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
+          // className="bg-[#f8f8f4] backdrop-blur-md rounded-2xl mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.8)]"
+  className="
+    bg-[#fdfdfd]/70 
+    backdrop-blur-md
+    rounded-full
+    border border-white/60 
+    shadow-[0_4px_10px_rgba(0,0,0,0.07)] 
+    mx-4 md:mx-10 fixed top-4 left-0 right-0 z-50 
+    transition-all duration-300 ease-out
+  "
+
         style={{ height: '80px' }}
       >
-        <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full">
+        {/* <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full"> */}
+       <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full  justify-between items-center">
+          
           <div className="flex justify-between items-center h-full">
             {/* Logo */}
             <div className="nav-logo flex items-center">

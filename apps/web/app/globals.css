@@ -12,8 +12,49 @@
 html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
 
+@keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.aurora-bg {
+  background: linear-gradient(
+    115deg,
+    #ffffff 0%,
+    #f5f5dc 30%,
+    #f5e9c8 60%,
+    #fff9e6 100%
+  );
+  background-size: 300% 300%;
+  animation: aurora 5s ease-in-out infinite;
+}
+
+@keyframes gradient-wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-wave {
+  background-size: 400% 400%;
+  animation: gradient-wave 10s ease infinite;
+}
 
 :root {
   --background: #ffffff;
@@ -48,7 +89,7 @@ html, body {
 
 
 html, body {
-  background: var(--background);
+  /* background: var(--background); */
   color: var(--foreground);
  
   line-height: 1.6;
