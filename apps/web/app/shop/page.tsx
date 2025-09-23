@@ -154,7 +154,9 @@ export default function Shop() {
 
 
   return (
-    <main className="bg-white font-sans">
+    <main className="
+      bg-gradient-to-r from-[#fffef3] via-[#e9efcf] via-[#dbe6ae] to-[#eef0c4de]  
+      animate-gradient-wave font-sans">
       {/* Navbar */}
       <Navbar 
         variant="shop"
@@ -169,7 +171,7 @@ export default function Shop() {
       />
 
       {/* Hero Carousel Section */}
-      <div className="h-20 bg-white"></div>
+      <div className="h-20 bg-[#fbfbfb]/72 "></div>
       <div className="relative h-screen overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -313,7 +315,7 @@ export default function Shop() {
       </div>
 
       {/* New Products Section */}
-      <div className="py-16 px-6 lg:px-16  md:mx-10  bg-gray-50/30">
+      <div className="py-16 px-6 lg:px-16  md:mx-10 ">
         <div className="container mx-auto">
           <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">New Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -454,7 +456,7 @@ export default function Shop() {
       </div>
 
       {/* For Swap Section */}
-      <div id="swap" className="py-16 md:mx-10 px-6 lg:px-16 bg-gray-50/30">
+      <div id="swap" className="py-16 md:mx-10 px-6 lg:px-16 ">
         <div className="container mx-auto">
           <h2 className="text-2xl font-bold text-(--color-primary) mb-8">For Swap</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

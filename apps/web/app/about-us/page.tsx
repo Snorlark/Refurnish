@@ -34,9 +34,6 @@ export default function AboutUs() {
 
   return (
     <>
-    
-    <div className="h-20 bg-(--color-white)"></div>
-    
     <div className="min-h-screen relative">
       
       {/* Background Image with Blur */}

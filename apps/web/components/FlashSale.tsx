@@ -38,7 +38,7 @@ export default function FlashSale() {
   }, []);
 
   return (
-    <div className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-16 bg-gray-50/50">
+    <div className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-16 ">
       <div className="container mx-auto">
         <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-center shadow-xl relative overflow-hidden max-w-6xl mx-auto">
           {/* Percentage Badge - Top Left */}
