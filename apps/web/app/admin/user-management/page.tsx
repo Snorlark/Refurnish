@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Menu, Users, MoreVertical, Search } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -36,10 +37,10 @@ const UserManagementPage: React.FC = () => {
   const pageSize = 9;
 
   const navItems = [
-    { label: 'Dashboard Overview', href: '/admin/dashboard', active: false },
-    { label: 'User Management', href: '/admin/user-management', active: true },
-    { label: 'Product Moderation', href: '/admin/product-moderation', active: false },
-  ];
+  { label: 'Dashboard Overview', href: '/admin/dashboard', active: false, icon: <LayoutDashboard className="w-5 h-5 text-gray-500" /> },
+  { label: 'User Management', href: '/admin/user-management', active: true, icon: <Users className="w-5 h-5 text-gray-500" /> },
+  { label: 'Product Moderation', href: '/admin/product-moderation', active: false, icon: <PackageCheck className="w-5 h-5 text-gray-500" /> },
+];
 
   const filteredUsers = useMemo(() => {
     if (!search.trim()) {
@@ -63,11 +64,11 @@ const UserManagementPage: React.FC = () => {
   const currentPageUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div className={`${montserrat.className} flex min-h-screen bg-gray-50`}>
-      {/* Sidebar */}
-      <div className="w-80 bg-white shadow-sm">
-        {/* Header */}
-        <div className="p-6 border-b">
+    <>
+    <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
+      <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
+        <div className="p-6 border-b flex-grow">
+          {/* Header */}
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
               <Image src="/Rf-logo.svg" alt="Rf" width={40} height={40} />
@@ -87,36 +88,44 @@ const UserManagementPage: React.FC = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="mt-12">
+          <nav className="mt-8">
             <div className="px-2">
-              <div className="px-4 text-xs font-semibold tracking-wider text-gray-500 mb-3">NAVIGATION</div>
+              <div className="px-4 text-xs font-medium tracking-wider text-gray-500 mb-3">NAVIGATION</div>
+              
               <div className="space-y-2">
                 {navItems.map((item) => (
+                 
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`block w-full px-4 py-3 rounded-lg text-sm transition-colors ${
-                      item.active
-                        ? 'bg-gray-100 text-gray-900 font-semibold'
+                    className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition-colors ${
+                      item.active 
+                        ? 'bg-gray-100 text-gray-900 font-semibold' 
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    {item.label}
+                    <span className="w-4 h-4">{item.icon}</span>
+                    <span>{item.label}</span>
                   </Link>
+
                 ))}
               </div>
-              <div className="mt-4">
-                <button onClick={() => router.push('/')} className="w-full text-left px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  Log out
-                </button>
-              </div>
+
             </div>
           </nav>
         </div>
+        <div className="p-6 border-t border-gray-200 mt-auto">
+          <button onClick={() => router.push('/')} className="w-full cursor-pointer flex items-center justify-start gap-2 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+            <LogOut className="w-5 h-5 text-gray-500" />
+            <span>Log out</span>
+          </button>
+        </div>
       </div>
-
+    </div>
+    
+    <div className={`${montserrat.className} flex min-h-screen bg-gray-50`}>
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 ml-80 p-8 overflow-y-auto">
         {/* Header */}
         <div className="flex items-center mb-8">
           <Menu className="w-6 h-6 text-gray-600 mr-4" />
@@ -225,6 +234,8 @@ const UserManagementPage: React.FC = () => {
         </div>
       </div>
     </div>
+    
+    </>
   );
 };
 
