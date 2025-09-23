@@ -48,10 +48,10 @@ export default function Navbar({
         scrub: 0.5,
         onUpdate: (self) => {
           const progress = self.progress;
-          const height = gsap.utils.interpolate(80, 60, progress);
+          const height = gsap.utils.interpolate(64, 60, progress);
           const marginX = gsap.utils.interpolate(32, 18, progress);
-          const marginY = gsap.utils.interpolate(0, 16, progress);
-          const paddingX = gsap.utils.interpolate(26, 16, progress);
+          const marginY = gsap.utils.interpolate(0, 8, progress);
+          const paddingX = gsap.utils.interpolate(22, 16, progress);
           const opacity = gsap.utils.interpolate(0, 1, progress);
           
           const radius = gsap.utils.interpolate(50, 50, progress);
@@ -208,7 +208,7 @@ gsap.set(navbarRef.current, {
             
             {/* Mobile Action Buttons */}
             <div className="mt-12 space-y-4">
-              <button 
+              {/* <button 
                 onClick={() => {
                   onAuthClick?.();
                   setIsMobileMenuOpen(false);
@@ -217,7 +217,7 @@ gsap.set(navbarRef.current, {
               >
                 <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Profile</span>
-              </button>
+              </button> */}
               
               <button 
                 onClick={() => {
@@ -280,7 +280,7 @@ gsap.set(navbarRef.current, {
         // className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
           // className="bg-[#f8f8f4] backdrop-blur-md rounded-2xl mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.8)]"
   className="
-    bg-[#fdfdfd]/70 
+    bg-[#fbfbfb]/72 
     backdrop-blur-md
     rounded-full
     border border-white/60 
@@ -289,7 +289,7 @@ gsap.set(navbarRef.current, {
     transition-all duration-300 ease-out
   "
 
-        style={{ height: '80px' }}
+        style={{ height: '64px' }}
       >
         {/* <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full"> */}
        <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full  justify-between items-center">
@@ -315,12 +315,12 @@ gsap.set(navbarRef.current, {
 
             {/* Right Icons - Desktop Only */}
             <div className="nav-icons hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8 text-gray-700">
-              <div 
+              {/* <div 
                 onClick={onAuthClick}
                 className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
               >
                 <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto object-cover" />            
-              </div>
+              </div> */}
               <div 
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
@@ -358,7 +358,7 @@ gsap.set(navbarRef.current, {
 
       {/* Search Bar - Toggle visibility when search icon is clicked */}
       {isSearchOpen && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
+        <div className="fixed top-23 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-1">
             <form onSubmit={handleSearchSubmit} className="flex items-center">
               <div className="flex-1 flex items-center px-4 py-3">

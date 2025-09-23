@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 if (typeof window !== "undefined") {
@@ -103,6 +104,10 @@ const swapCatalog: Record<string, SwapItem[]> = {
 };
 
 export default function SwapCatalogPage() {
+  
+  const [menuOpen, setMenuOpen, ] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
+  const menuBtnRef = useRef<HTMLButtonElement | null>(null);
   const navbarRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const categories = ["ALL", ...Object.keys(swapCatalog)];
@@ -225,82 +230,176 @@ export default function SwapCatalogPage() {
     <>
       <main className="bg-white font-sans min-h-screen">
         {/* NAVBAR */}
+        
         <nav
-          ref={navbarRef}
-          className="bg-white/95 backdrop-blur-md rounded-full mx-3 sm:mx-6 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
-          style={{ height: 72 }}
-        >
-          <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
-            <div className="flex justify-between items-center h-full gap-3">
-              {/* Logo */}
-              <Link
-                href="/"
-                className="nav-logo flex items-center flex-shrink-0"
-              >
-                <img
-                  src="/icon/RF.png"
-                  alt="Logo"
-                  className="h-6 sm:h-7 w-auto object-cover"
-                />
-              </Link>
-
-              {/* Search bar (hidden on xs, expands on sm+) */}
-              <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
-                <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
-                  <svg
-                    className="w-4 h-4 text-gray-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <circle cx="11" cy="11" r="7" strokeWidth="2" />
-                    <path d="M21 21l-3.5-3.5" strokeWidth="2" />
-                  </svg>
-                  <input
-                    className="bg-transparent outline-none text-sm flex-1"
-                    placeholder="Search"
-                  />
-                </div>
-              </div>
-
-              {/* Icons */}
-              <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                <Link href="/cart-details/wishlist">
-                  <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                    <img
-                      src="/icon/heartIcon.png"
-                      alt="Wishlist"
-                      className="h-4 w-auto"
+                  ref={navbarRef}
+                  className="bg-[#ffffff] backdrop-blur-md  border border-green/10
+            shadow-[0_4px_10px_rgba(0,0,0,0.07)]  rounded-full  sm:mx-6 md:mx-8 my-2 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
+                  style={{ height: 64 }}
+                >
+                  <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
+                    <div className="flex justify-between items-center h-full gap-3">
+                      {/* Logo */}
+                      <Link
+                        href="/landing"
+                        className="nav-logo flex items-center flex-shrink-0"
+                      >
+                        <img
+                          src="/icon/RF.png"
+                          alt="Logo"
+                          className="h-6 sm:h-7 w-auto object-cover"
+                        />
+                      </Link>
+        
+                      {/* Search bar (hidden on xs, expands on sm+) */}
+                      <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
+                        <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
+                          <svg
+                            className="w-4 h-4 text-gray-500"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <circle cx="11" cy="11" r="7" strokeWidth="2" />
+                            <path d="M21 21l-3.5-3.5" strokeWidth="2" />
+                          </svg>
+                          <input
+                            className="bg-transparent outline-none text-sm flex-1"
+                            placeholder="Search"
+                          />
+                        </div>
+                      </div>
+        
+                      {/* Icons */}
+                      <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
+                        <Link href="/cart-details/wishlist">
+                          <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                            <img
+                              src="/icon/heartIcon.png"
+                              alt="Wishlist"
+                              className="h-4 w-auto"
+                            />
+                          </button>
+                        </Link>
+                        <Link href="/cart-details/cart">
+                          <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                            <img
+                              src="/icon/cartIcon.png"
+                              alt="Cart"
+                              className="h-4 w-auto"
+                            />
+                          </button>
+                        </Link>
+        
+                        <button                 
+                          onClick={() => setMenuOpen(true)}
+                          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                          <img
+                            src="/icon/menuIcon.png"
+                            alt="Account"
+                            className="h-4 w-auto"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </nav>
+                
+          <AnimatePresence>
+                {menuOpen && (
+                  <>
+                    {/* overlay: placed after the nav so it will blur/dim the page (including nav) */}
+                    <motion.div
+                      className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm  "
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setMenuOpen(false)}
                     />
-                  </button>
-                </Link>
-                <Link href="/cart-details/cart">
-                  <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
-                    <img
-                      src="/icon/cartIcon.png"
-                      alt="Cart"
-                      className="h-4 w-auto"
-                    />
-                  </button>
-                </Link>
-                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                  <img
-                    src="/icon/menuIcon.png"
-                    alt="Account"
-                    className="h-4 w-auto"
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+        
+                    {/* dropdown: fixed and positioned using computed top/right so it aligns with the menu button's right edge */}
+                    <motion.div
+                      role="menu"
+                      aria-label="User shortcuts"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.16 }}
+                      onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+                      style={
+                        dropdownPos
+                          ? { position: "fixed", top: dropdownPos.top, right: dropdownPos.right, zIndex: 60 }
+                          : { position: "fixed", top: 80, right: 16, zIndex: 60 } // fallback
+                      }
+                      className="w-56 bg-[#ffffff] 2xl:mr-18 xl:mr-12 lg:mr-8 md:mr-6 mr-4 backdrop-blur-md rounded-2xl shadow-lg border mt-2 border-gray-200 overflow-hidden"
+                    >
+                      {/* small top-right back/close icon */}
+                      <div className="flex justify-end p-2 border-b border-gray-100">
+                        <button
+                          onClick={() => setMenuOpen(false)}
+                          className="text-gray-500 hover:text-gray-700 p-1 rounded"
+                          aria-label="Close menu"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                      </div>
+        
+                      <Link
+                        href="/user-profile"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <img src="/icon/account.png" alt="" className="w-4 h-4" />
+                        Account
+                      </Link>
+        
+                      <Link
+                        href="/messages-section"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <img src="/icon/chat.png" alt="" className="w-4 h-4" />
+                        Chat
+                      </Link>
+        
+                      <Link
+                        href="/seller-dashboard"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <img src="/icon/dashboard.png" alt="" className="w-4 h-4" />
+                        Seller Dashboard
+                      </Link>
+        
+                      <button
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          // TODO: logout logic
+                        }}
+                      >
+                        <img src="/icon/logout.png" alt="" className="w-4 h-4" />
+                        Log Out
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
 
         {/* Spacer for fixed nav */}
-        <div className="h-20 sm:h-15" />
+        <div className="h-20" />
 
         {/* CATEGORY TABS */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
-          <div className="border-t-[0.1px] border-(--color-primary) mx-5 md:mx-20 text-center opacity-50"></div>
 
           {/* CATEGORY TABS (centered) */}
           <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">

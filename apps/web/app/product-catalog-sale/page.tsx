@@ -228,10 +228,10 @@ export default function ChairsCatalogPage() {
             const progress = self.progress;
             // const height = gsap.utils.interpolate(72, 60, progress);
             // const marginX = gsap.utils.interpolate(12, 6, progress);
-                      const height = gsap.utils.interpolate(80, 60, progress);
+                      const height = gsap.utils.interpolate(64, 60, progress);
                       const marginX = gsap.utils.interpolate(32, 18, progress);
-                      const marginY = gsap.utils.interpolate(0, 16, progress);
-                      const paddingX = gsap.utils.interpolate(26, 16, progress);
+                      const marginY = gsap.utils.interpolate(0, 8, progress);
+                      const paddingX = gsap.utils.interpolate(22, 16, progress);
             // use gsap.set to avoid layout thrash
             gsap.set(navEl, {
               height,
@@ -359,15 +359,15 @@ export default function ChairsCatalogPage() {
 
   return (
     <>
-      <main className="bg-white font-sans  min-h-screen transition-all ease-in-out duration-300 ">
+      <main className="bg-[#fcfcfc] font-sans   min-h-screen transition-all ease-in-out duration-300 ">
         {/* NAVBAR */}
        
 
         <nav
           ref={navbarRef}
-          className="bg-white/95 backdrop-blur-md 
+          className="bg-[#ffffff] backdrop-blur-md  border border-green/10
     shadow-[0_4px_10px_rgba(0,0,0,0.07)]  rounded-full  sm:mx-6 md:mx-8 my-2 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
-          style={{ height: 72 }}
+          style={{ height: 64 }}
         >
           <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
             <div className="flex justify-between items-center h-full gap-3">
@@ -463,7 +463,7 @@ export default function ChairsCatalogPage() {
                   ? { position: "fixed", top: dropdownPos.top, right: dropdownPos.right, zIndex: 60 }
                   : { position: "fixed", top: 80, right: 16, zIndex: 60 } // fallback
               }
-              className="w-56 bg-white/95 2xl:mr-18 xl:mr-12 lg:mr-8 md:mr-6 mr-4 backdrop-blur-md rounded-2xl shadow-lg border mt-2 border-gray-200 overflow-hidden"
+              className="w-56 bg-[#ffffff] 2xl:mr-18 xl:mr-12 lg:mr-8 md:mr-6 mr-4 backdrop-blur-md rounded-2xl shadow-lg border mt-2 border-gray-200 overflow-hidden"
             >
               {/* small top-right back/close icon */}
               <div className="flex justify-end p-2 border-b border-gray-100">
