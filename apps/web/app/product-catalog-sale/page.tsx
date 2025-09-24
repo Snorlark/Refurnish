@@ -535,46 +535,7 @@ export default function ChairsCatalogPage() {
       </AnimatePresence>
 
         {/* Spacer for fixed nav */}
-        <div className="h-20 " />
-
-
-                {/* Search bar (hidden on xs, expands on sm+) */}
-                <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
-                  <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <circle cx="11" cy="11" r="7" strokeWidth="2" />
-                      <path d="M21 21l-3.5-3.5" strokeWidth="2" />
-                    </svg>
-                    <input
-                      className="bg-transparent outline-none text-sm flex-1"
-                      placeholder="Search"
-                    />
-                  </div>
-                </div>
-
-                {/* Icons */}
-                <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                    <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
-                  </button>
-                  <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
-                    <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
-                  </button>
-                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
-                    <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </nav>
-
-          {/* Spacer for fixed nav */}
-          <div className="h-20 sm:h-15" />
+        <div className="h-20" />
 
       {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
@@ -887,15 +848,12 @@ export default function ChairsCatalogPage() {
               ))
 
             )}
-
-            {/* Results Count */}
-            <div className="text-center text-sm text-gray-600 mb-4">
-              Showing {filteredItems.length} of {Object.values(productCatalog).flat().length} products
-            </div>
           </div>
 
+        </section>
+
         {/* FOOTER */}
-        <div className="border-t-[0.2px] border-(--color-olive) mt-12  text-center"></div>
+        <div className="border-t-[0.2px] border-(--color-olive) mt-12 text-center"></div>
 
         <footer className="bg-(--color-white) text-(--color-primary) py-16 px-6 lg:px-16">
           <div className="max-w-7xl px-6 lg:px-9 py-4 container mx-auto">
