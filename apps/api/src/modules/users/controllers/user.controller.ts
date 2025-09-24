@@ -117,40 +117,60 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const googleAuth = async (req: Request, res: Response) => {
   try {
+    console.log('Google Auth request received:', req.body);
     const { googleId, email, firstName, lastName, profilePicture } = req.body;
 
-    if (!googleId || !email || !firstName || !lastName) {
+    // More lenient validation - only require googleId and email
+    if (!googleId || !email) {
+      console.log('Google Auth: Missing required fields', { googleId, email, firstName, lastName });
       return res.status(400).json({ error: "Google authentication data incomplete" });
     }
 
+    // Use email as fallback for names if not provided
+    const finalFirstName = firstName || email.split('@')[0];
+    const finalLastName = lastName || '';
+
     // Check if user exists with Google ID
     let user = await User.findOne({ googleId });
+    console.log('Google Auth: User found by googleId:', !!user);
     
     if (!user) {
       // Check if user exists with email but no Google ID
       user = await User.findOne({ email });
+      console.log('Google Auth: User found by email:', !!user);
+      
       if (user) {
         // Link Google account to existing user
+        console.log('Google Auth: Linking Google account to existing user');
         user.googleId = googleId;
         user.profilePicture = profilePicture;
         await user.save();
       } else {
         // Create new user
+        console.log('Google Auth: Creating new user');
         user = new User({
           googleId,
           email,
-          firstName,
-          lastName,
+          firstName: finalFirstName,
+          lastName: finalLastName,
           profilePicture,
           isEmailVerified: true,
           role: 'buyer'
         });
         await user.save();
+        console.log('Google Auth: New user created:', user._id);
+      }
+    } else {
+      // Update existing user's profile picture if it's different
+      if (user.profilePicture !== profilePicture) {
+        console.log('Google Auth: Updating profile picture for existing user');
+        user.profilePicture = profilePicture;
+        await user.save();
       }
     }
 
     const token = user.generateAuthToken();
-    res.json({ 
+    const responseData = { 
       token, 
       user: {
         id: user._id,
@@ -161,8 +181,12 @@ export const googleAuth = async (req: Request, res: Response) => {
         profilePicture: user.profilePicture
       },
       message: "Google authentication successful!" 
-    });
+    };
+    
+    console.log('Google Auth: Sending response:', responseData);
+    res.json(responseData);
   } catch (err: any) {
+    console.error('Google Auth error:', err);
     res.status(400).json({ error: err.message });
   }
 };

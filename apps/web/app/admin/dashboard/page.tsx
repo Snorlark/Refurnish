@@ -99,8 +99,22 @@ const AdminDashboard: React.FC = () => {
 
           {/* Admin Profile */}
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-[#636B2F] rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-lg">
+            <div className="w-12 h-12 bg-[#636B2F] rounded-full flex items-center justify-center overflow-hidden">
+              {user?.profilePicture ? (
+                <img 
+                  src={user.profilePicture} 
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to initials if image fails to load
+                    const target = e.currentTarget as HTMLImageElement;
+                    const nextElement = target.nextElementSibling as HTMLElement;
+                    target.style.display = 'none';
+                    if (nextElement) nextElement.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <span className={`${user?.profilePicture ? 'hidden' : 'flex'} items-center justify-center w-full h-full text-white font-semibold text-lg`}>
                 {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'A'}
               </span>
             </div>

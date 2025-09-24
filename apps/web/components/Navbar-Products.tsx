@@ -39,6 +39,14 @@ export default function Navbar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // Debug: Log user data to see profile picture
+  useEffect(() => {
+    if (user) {
+      console.log('Navbar: User data:', user);
+      console.log('Navbar: Profile picture URL:', user.profilePicture);
+    }
+  }, [user]);
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -411,9 +419,25 @@ gsap.set(navbarRef.current, {
                 <div className="relative">
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="w-10 h-10 rounded-full bg-[#636B2F] flex items-center justify-center hover:bg-[#4d5323] transition-modern cursor-pointer text-white font-semibold"
+                    className="w-10 h-10 rounded-full bg-[#636B2F] flex items-center justify-center hover:bg-[#4d5323] transition-modern cursor-pointer text-white font-semibold overflow-hidden"
                   >
-                    {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    {user?.profilePicture ? (
+                      <img 
+                        src={user.profilePicture} 
+                        alt={`${user.firstName} ${user.lastName}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to initials if image fails to load
+                          const target = e.currentTarget as HTMLImageElement;
+                          const nextElement = target.nextElementSibling as HTMLElement;
+                          target.style.display = 'none';
+                          if (nextElement) nextElement.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <span className={`${user?.profilePicture ? 'hidden' : 'flex'} items-center justify-center w-full h-full`}>
+                      {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
                   </button>
                   
                   {/* Profile Dropdown */}

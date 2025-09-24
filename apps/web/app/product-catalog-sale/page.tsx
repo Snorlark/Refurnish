@@ -198,10 +198,7 @@ const productCatalog: Record<string, Product[]> = {
   SHELVES: [],
 };
 
-
-
 export default function ChairsCatalogPage() {
-
   const [menuOpen, setMenuOpen, ] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -229,7 +226,6 @@ export default function ChairsCatalogPage() {
           scrub: 0.5,
           onUpdate: (self) => {
             const progress = self.progress;
-
             // const height = gsap.utils.interpolate(72, 60, progress);
             // const marginX = gsap.utils.interpolate(12, 6, progress);
                       const height = gsap.utils.interpolate(64, 60, progress);
@@ -242,7 +238,6 @@ export default function ChairsCatalogPage() {
               marginLeft: marginX,
               marginRight: marginX,
             });
-
 
             const logo = navEl.querySelector(
               ".nav-logo img"
@@ -261,7 +256,6 @@ export default function ChairsCatalogPage() {
           },
         },
       });
-
     }, navEl);
 
     return () => ctx.revert();
@@ -365,7 +359,6 @@ export default function ChairsCatalogPage() {
 
   return (
     <>
-
       <main className="bg-[#fcfcfc] font-sans   min-h-screen transition-all ease-in-out duration-300 ">
         {/* NAVBAR */}
        
@@ -534,17 +527,17 @@ export default function ChairsCatalogPage() {
         )}
       </AnimatePresence>
 
-        {/* Spacer for fixed nav */}
+
         <div className="h-20" />
 
       {/* CATEGORY TABS (centered) */}
+
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
           <div className=" mx-5 md:mx-20 text-center opacity-50"></div>
 
           {/* CATEGORY TABS (centered) */}
           <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
             {categories.map((c) => {
-
               const active = c === activeCategory;
               return (
                 <button
@@ -640,7 +633,6 @@ export default function ChairsCatalogPage() {
                       value={sortOption}
                       onChange={(e) => setSortOption(e.target.value)}
                       className="w-full px-4 py-3 font-sans  border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
-
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
@@ -649,7 +641,6 @@ export default function ChairsCatalogPage() {
                       <option value="nameAZ">Name: A to Z</option>
                       <option value="nameZA">Name: Z to A</option>
                     </select>
-
                   </div>
 
                   {/* Price Range */}
@@ -846,9 +837,9 @@ export default function ChairsCatalogPage() {
                   </Link>
                 </article>
               ))
-
             )}
           </div>
+        </section>
 
         </section>
 
@@ -955,7 +946,6 @@ export default function ChairsCatalogPage() {
           </div>
         </footer>
       </main>
-
     </>
   );
 }

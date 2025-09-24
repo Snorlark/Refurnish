@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 export interface IUser extends Document {
   firstName: string;
-  lastName: string;
+  lastName?: string;
   email: string;
   password?: string;
   role: 'buyer' | 'seller' | 'admin';
@@ -16,7 +16,7 @@ export interface IUser extends Document {
 
 const UserSchema: Schema = new Schema({
   firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  lastName: { type: String, required: function() { return !this.googleId; }, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: function() { return !this.googleId; } },
   role: { type: String, enum: ['buyer', 'seller', 'admin'], default: 'buyer' },
@@ -45,7 +45,7 @@ UserSchema.methods.generateAuthToken = function () {
       email: this.email, 
       role: this.role,
       firstName: this.firstName,
-      lastName: this.lastName
+      lastName: this.lastName || ''
     }, 
     process.env.JWT_SECRET as string, 
     {
