@@ -118,6 +118,7 @@ const SellerDashboardPage = () => {
         }));
     };
 
+
     const handleSellerRegistrationCheckboxChange = (field: 'transactionOptions', value: string, checked: boolean) => {
         setSellerRegistrationForm(prev => ({
             ...prev,
@@ -473,7 +474,9 @@ const SellerDashboardPage = () => {
                 onSubmit={handleSubmitSellerRegistration}
             />
 
+
         </>
+
     );
 };
 

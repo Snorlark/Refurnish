@@ -63,7 +63,10 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                   type="text"
                   value={formData.shopName}
                   onChange={(e) => onFormChange("shopName", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+                  placeholder='James and Che Salon and Spa'
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl 
+             focus:ring-2 focus:ring-green-500 focus:border-green-500 
+             bg-gray-50 text-black placeholder-gray-600"
                 />
               </div>
 
@@ -77,7 +80,9 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                   value={formData.address}
                   onChange={(e) => onFormChange("address", e.target.value)}
                   placeholder="Region/Province/City/Barangay/Postal Code"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl 
+             focus:ring-2 focus:ring-green-500 focus:border-green-500 
+             bg-gray-50 text-black placeholder-gray-600"
                 />
               </div>
 
@@ -91,7 +96,9 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                   value={formData.detailedAddress}
                   onChange={(e) => onFormChange("detailedAddress", e.target.value)}
                   placeholder="House/Building #"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl 
+             focus:ring-2 focus:ring-green-500 focus:border-green-500 
+             bg-gray-50 text-black placeholder-gray-600"
                 />
               </div>
 
@@ -104,7 +111,10 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                   type="tel"
                   value={formData.contactNumber}
                   onChange={(e) => onFormChange("contactNumber", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+                  placeholder='09123495961'
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl 
+             focus:ring-2 focus:ring-green-500 focus:border-green-500 
+             bg-gray-50 text-black placeholder-gray-600"
                 />
               </div>
 
@@ -155,7 +165,7 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Government IDs <span className="text-red-500">*</span>
                 </label>
-                
+
                 {/* ID 1 */}
                 <div className="mb-4">
                   <div className="text-xs text-gray-600 font-medium mb-2">ID 1:</div>
@@ -187,7 +197,7 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Back */}
                     <div>
                       <div className="text-xs text-gray-500 mb-1">Government ID Back</div>
@@ -249,7 +259,7 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Back */}
                     <div>
                       <div className="text-xs text-gray-500 mb-1">Government ID Back</div>
@@ -316,7 +326,7 @@ const SellerRegistrationModal: React.FC<SellerRegistrationModalProps> = ({
           </button>
           <button
             onClick={onSubmit}
-            className="px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition font-medium"
+            className="px-6 py-2 bg-green text-white rounded-full hover:bg-green-700 transition font-medium"
           >
             Submit
           </button>

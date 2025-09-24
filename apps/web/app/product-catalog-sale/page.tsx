@@ -198,7 +198,10 @@ const productCatalog: Record<string, Product[]> = {
   SHELVES: [],
 };
 
+
+
 export default function ChairsCatalogPage() {
+
   const [menuOpen, setMenuOpen, ] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -226,6 +229,7 @@ export default function ChairsCatalogPage() {
           scrub: 0.5,
           onUpdate: (self) => {
             const progress = self.progress;
+
             // const height = gsap.utils.interpolate(72, 60, progress);
             // const marginX = gsap.utils.interpolate(12, 6, progress);
                       const height = gsap.utils.interpolate(64, 60, progress);
@@ -238,6 +242,7 @@ export default function ChairsCatalogPage() {
               marginLeft: marginX,
               marginRight: marginX,
             });
+
 
             const logo = navEl.querySelector(
               ".nav-logo img"
@@ -256,6 +261,7 @@ export default function ChairsCatalogPage() {
           },
         },
       });
+
     }, navEl);
 
     return () => ctx.revert();
@@ -359,6 +365,7 @@ export default function ChairsCatalogPage() {
 
   return (
     <>
+
       <main className="bg-[#fcfcfc] font-sans   min-h-screen transition-all ease-in-out duration-300 ">
         {/* NAVBAR */}
        
@@ -530,13 +537,53 @@ export default function ChairsCatalogPage() {
         {/* Spacer for fixed nav */}
         <div className="h-20 " />
 
-        {/* CATEGORY TABS (centered) */}
+
+                {/* Search bar (hidden on xs, expands on sm+) */}
+                <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
+                  <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <circle cx="11" cy="11" r="7" strokeWidth="2" />
+                      <path d="M21 21l-3.5-3.5" strokeWidth="2" />
+                    </svg>
+                    <input
+                      className="bg-transparent outline-none text-sm flex-1"
+                      placeholder="Search"
+                    />
+                  </div>
+                </div>
+
+                {/* Icons */}
+                <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
+                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                    <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
+                  </button>
+                  <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                    <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
+                  </button>
+                  <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                    <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          {/* Spacer for fixed nav */}
+          <div className="h-20 sm:h-15" />
+
+      {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
           <div className=" mx-5 md:mx-20 text-center opacity-50"></div>
 
           {/* CATEGORY TABS (centered) */}
           <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
             {categories.map((c) => {
+
               const active = c === activeCategory;
               return (
                 <button
@@ -632,6 +679,7 @@ export default function ChairsCatalogPage() {
                       value={sortOption}
                       onChange={(e) => setSortOption(e.target.value)}
                       className="w-full px-4 py-3 font-sans  border border-gray-200 rounded-xl focus:ring-2 focus:ring-(--color-olive) focus:border-(--color-olive) outline-none transition-all duration-300 bg-white"
+
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
@@ -640,6 +688,7 @@ export default function ChairsCatalogPage() {
                       <option value="nameAZ">Name: A to Z</option>
                       <option value="nameZA">Name: Z to A</option>
                     </select>
+
                   </div>
 
                   {/* Price Range */}
@@ -836,9 +885,14 @@ export default function ChairsCatalogPage() {
                   </Link>
                 </article>
               ))
+
             )}
+
+            {/* Results Count */}
+            <div className="text-center text-sm text-gray-600 mb-4">
+              Showing {filteredItems.length} of {Object.values(productCatalog).flat().length} products
+            </div>
           </div>
-        </section>
 
         {/* FOOTER */}
         <div className="border-t-[0.2px] border-(--color-olive) mt-12  text-center"></div>
@@ -943,6 +997,7 @@ export default function ChairsCatalogPage() {
           </div>
         </footer>
       </main>
+
     </>
   );
 }
