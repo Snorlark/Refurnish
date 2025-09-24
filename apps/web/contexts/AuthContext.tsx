@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut as nextAuthSignOut } from 'next-auth/react';
 
 interface User {
   id: string;
@@ -32,21 +33,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const isAuthenticated = !!user && !!token;
   const isAdmin = user?.role === 'admin';
 
-  // Initialize auth state from localStorage
+  // Sync NextAuth session with AuthContext
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('user');
+    console.log('AuthContext: Session status changed', { status, session });
     
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    if (status === 'loading') {
+      setIsLoading(true);
+      return;
     }
+
+    if (session?.backendUser && session?.backendToken) {
+      console.log('AuthContext: Setting user from NextAuth session', session.backendUser);
+      console.log('AuthContext: Profile picture URL:', session.backendUser.profilePicture);
+      setUser(session.backendUser as User);
+      setToken(session.backendToken);
+      localStorage.setItem('token', session.backendToken);
+      localStorage.setItem('user', JSON.stringify(session.backendUser));
+    } else if (status === 'unauthenticated') {
+      console.log('AuthContext: User unauthenticated, clearing state');
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    
     setIsLoading(false);
-  }, []);
+  }, [session, status]);
+
+  // Initialize auth state from localStorage (only if not using NextAuth)
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    }
+  }, [status]);
 
   const login = async (email: string, password: string, adminSecret?: string) => {
     try {
@@ -67,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirect based on role
@@ -102,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       router.push('/shop');
@@ -132,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirect based on role
@@ -149,16 +179,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    // Redirect first to prevent 404 flash
-    router.push('/');
-    
-    // Then clear state after redirect
-    setTimeout(() => {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-    }, 100);
+    // Use NextAuth signOut for Google OAuth users
+    if (session) {
+      nextAuthSignOut({ callbackUrl: '/' });
+    } else {
+      // For regular users, just clear local state
+      router.push('/');
+      setTimeout(() => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }, 100);
+    }
   };
 
   const value = {
