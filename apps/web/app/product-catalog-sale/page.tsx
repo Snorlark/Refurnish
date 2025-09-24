@@ -5,6 +5,8 @@ import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useSearchParams, useRouter } from "next/navigation";
+
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -213,6 +215,25 @@ export default function ChairsCatalogPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const categoryParam = searchParams.get("category");
+
+  // Keep in sync when user lands with a category from Shop page
+  useEffect(() => {
+    if (categoryParam && categoryParam !== activeCategory) {
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam]);
+
+  const handleCategoryClick = (c: string) => {
+    setActiveCategory(c);
+    router.push(`/product-catalog-sale?category=${encodeURIComponent(c)}`);
+  };
+
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -530,12 +551,11 @@ export default function ChairsCatalogPage() {
         {/* Spacer for fixed nav */}
         <div className="h-20 " />
 
-        {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
           <div className=" mx-5 md:mx-20 text-center opacity-50"></div>
 
           {/* CATEGORY TABS (centered) */}
-          <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
+          {/* <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
             {categories.map((c) => {
               const active = c === activeCategory;
               return (
@@ -555,7 +575,29 @@ export default function ChairsCatalogPage() {
                 </button>
               );
             })}
+          </div> */}
+          <div className="mt-3 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm">
+            {categories.map((c) => {
+              const active = c === activeCategory;
+              return (
+                <button
+                  key={c}
+                  onClick={() => handleCategoryClick(c)}
+                  className={`relative pb-1 sm:pb-2 transition-colors ${
+                    active
+                      ? "font-semibold text-black"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {c}
+                  {active && (
+                    <span className="absolute -bottom-[3px] left-0 right-0 mx-auto block h-[4px] w-3 sm:w-4 rounded-full bg-black" />
+                  )}
+                </button>
+              );
+            })}
           </div>
+
 
           {/* FILTER SECTION */}
           <div className="mt-6 mb-8 mx-22">
