@@ -83,7 +83,7 @@ export default function AboutUs() {
                 <p>
                   At Refurnish, we believe every piece of furniture has a story — and deserves a second one. 
                   We are a Philippines-based online marketplace dedicated to giving pre-loved, unused, and 
-                  "didn't-fit-the-space" furniture a new home. Whether you're downsizing, moving, or just 
+                  &quot;didn't-fit-the-space&quot; furniture a new home. Whether you&apos;re downsizing, moving, or just 
                   looking for something new, Refurnish connects sellers and buyers in a safe, convenient, 
                   and sustainable way.
                 </p>
