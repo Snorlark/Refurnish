@@ -12,7 +12,16 @@ const app = express();
 //Middleware
 app.use(
   cors({
+    origin: [
+      'http://localhost:3000',           // Local development
+      'http://localhost:3001',           // Alternative local port
+      'https://refurnish.vercel.app',    // Production Vercel domain
+      'https://refurnish-blond.vercel.app', // Alternative Vercel domain
+      
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   })
 );
 app.use(express.json());
