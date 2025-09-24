@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  outputFileTracingRoot: ".",
-  // Remove turbopack config for production builds
-  // turbopack is only used in development
+  // Explicitly disable turbopack for production builds
+  experimental: {
+    // No experimental features that might conflict with Vercel
+  },
+  // Let Vercel handle all build optimizations
+  swcMinify: true,
 };
 
 export default nextConfig;
