@@ -221,7 +221,7 @@ export default function Home() {
               Enjoy a 10% discount on your first two furniture purchases when you sign up today.
             </p>
             <Link href='/login'>
-            <button className="bg-(--color-olive) hover:text-(--color-white) hover:bg-(--color-primary) hover:font-bold hover:translate-y-1 hover:tracking-[0.15em] tracking-[0.1em] text-white px-10 py-4 rounded-full font-normal cursor-pointer transition-modern text-[12px] md:text-[14px]">
+            <button className="bg-(--color-olive) hover:text-(--color-white) hover:bg-(--color-primary) hover:font-bold hover:translate-y-1 hover:tracking-[0.15em] tracking-[0.1em] text-white px-8 py-4 rounded-full font-normal cursor-pointer transition-modern text-[10px] md:text-[12px]">
                SIGN UP NOW &nbsp; ➤
             </button>
             </Link>

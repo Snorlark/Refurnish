@@ -116,6 +116,8 @@ const MessagesPage = () => {
     };
 
     const renderChatList = () => (
+
+        
         <div className="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col">
             <div className="p-4 border-b border-gray-200">
                 <h2 className="text-xl font-semibold text-(--color-olive)">Messages</h2>
@@ -299,21 +301,20 @@ const MessagesPage = () => {
 
     return (
         <>
-        <div className="min-h-screen bg-gray-50">
+            <UserProfileSidebar
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
+         
             {/* NAVBAR */}
             <NavbarMenu 
                 onWishlistClick={handleWishlistClick}
                 onCartClick={handleCartClick}
             />
 
-            <div className="flex justify-center">
-                <div className="flex max-w-7xl w-full">
-                    {/* Sidebar */}
-                    <UserProfileSidebar
-                        isMobileMenuOpen={isMobileMenuOpen}
-                        setIsMobileMenuOpen={setIsMobileMenuOpen}
-                    />
-
+            <div className="flex min-h-screen bg-gray-50">
+                <div className="flex-1 ml-80 p-8 overflow-y-auto">
+                   
                     {/* Main Content */}
                     <div className="flex-1 pt-20">
                         <div className="h-[calc(100vh-5rem)] flex">
@@ -348,11 +349,10 @@ const MessagesPage = () => {
                             </div>
                         </div>
                     </div>
+            <Footer />
                 </div>
             </div>
 
-            <Footer />
-        </div>
         </>
     );
 };

@@ -402,21 +402,21 @@ const SellerDashboardPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* NAVBAR */}
-             <NavbarMenu 
+        <>
+
+         {/* Sidebar */}
+            <UserProfileSidebar
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
+        {/* NAVBAR */}
+            <NavbarMenu 
                 onWishlistClick={handleWishlistClick}
                 onCartClick={handleCartClick}
             />
 
-            <div className="flex justify-center">
-                <div className="flex max-w-7xl w-full">
-                    {/* Sidebar */}
-                    <UserProfileSidebar
-                        isMobileMenuOpen={isMobileMenuOpen}
-                        setIsMobileMenuOpen={setIsMobileMenuOpen}
-                    />
-
+            <div className="flex min-h-screen bg-gray-50">
+                <div className="flex-1 ml-80 p-8 overflow-y-auto">    
                     {/* Main Content */}
                     <div className="flex-1 pt-20">
                         <div className="p-4 sm:p-6 lg:p-8">
@@ -447,6 +447,7 @@ const SellerDashboardPage = () => {
                             </div>
                         </div>
                     </div>
+            <Footer />
                 </div>
             </div>
 
@@ -472,8 +473,7 @@ const SellerDashboardPage = () => {
                 onSubmit={handleSubmitSellerRegistration}
             />
 
-            <Footer />
-        </div>
+        </>
     );
 };
 
