@@ -119,7 +119,7 @@ const AboutPage = () => {
                             At REFURNISH, we believe that quality furniture deserves more than one life. Our mission is to create a sustainable marketplace where pre-owned furniture finds new homes, reducing waste while making beautiful, quality pieces accessible to everyone.
                           </p>
                           <p className="text-gray-600 leading-relaxed">
-                            We're committed to building a circular economy for furniture, where every piece has the opportunity to be loved again, reducing environmental impact while connecting people with amazing finds.
+                            We&apos;re committed to building a circular economy for furniture, where every piece has the opportunity to be loved again, reducing environmental impact while connecting people with amazing finds.
                           </p>
                         </div>
                         <div className="bg-gray-50 rounded-2xl p-6 text-center">
@@ -186,7 +186,7 @@ const AboutPage = () => {
                           REFURNISH was born from a simple observation: too much quality furniture ends up in landfills while people struggle to find affordable, well-made pieces for their homes. Our founders, passionate about both design and sustainability, saw an opportunity to create a platform that would solve both problems.
                         </p>
                         <p className="text-gray-600 leading-relaxed mb-6">
-                          What started as a small marketplace for pre-owned furniture has grown into a thriving community of sellers and buyers who share our vision of sustainable living. We've facilitated thousands of transactions, saved countless pieces from waste, and helped create beautiful homes across the country.
+                          What started as a small marketplace for pre-owned furniture has grown into a thriving community of sellers and buyers who share our vision of sustainable living. We&apos;ve facilitated thousands of transactions, saved countless pieces from waste, and helped create beautiful homes across the country.
                         </p>
                         <p className="text-gray-600 leading-relaxed">
                           Today, REFURNISH continues to grow, but our mission remains the same: to make quality furniture accessible while protecting our planet for future generations.
