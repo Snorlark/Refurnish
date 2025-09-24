@@ -6,6 +6,7 @@ import { Users, TrendingUp, ShoppingBag, Clock, Menu } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
+import { useAuth } from '../../../contexts/AuthContext';
 import {
   LineChart,
   Line,
@@ -45,6 +46,7 @@ interface Order {
 
 const AdminDashboard: React.FC = () => {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const navItems = [
    { label: 'Dashboard Overview', href: '/admin/dashboard', active: true, icon: <LayoutDashboard className="w-5 h-5 text-gray-500" /> },
@@ -78,10 +80,14 @@ const AdminDashboard: React.FC = () => {
   const handleEdit = (orderId: string) => console.log(`Edit order: ${orderId}`);
   const handleDelete = (orderId: string) => console.log(`Delete order: ${orderId}`);
 
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
-    <>
-    <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
-      <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
+    <div className="flex min-h-screen bg-gray-50">
+      <div className="fixed top-0 left-0 h-screen w-80 bg-white shadow-sm">
+        <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
         <div className="p-6 border-b flex-grow">
           {/* Header */}
           <div className="flex items-center space-x-3 mb-6">
@@ -93,11 +99,15 @@ const AdminDashboard: React.FC = () => {
 
           {/* Admin Profile */}
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Users className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-[#636B2F] rounded-full flex items-center justify-center">
+              <span className="text-white font-semibold text-lg">
+                {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'A'}
+              </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">Juan Dela Cruz</div>
+              <div className="font-semibold text-gray-900">
+                {user?.firstName} {user?.lastName}
+              </div>
               <div className="text-sm text-gray-500">Administrator</div>
             </div>
           </div>
@@ -130,17 +140,16 @@ const AdminDashboard: React.FC = () => {
           </nav>
         </div>
         <div className="p-6 border-t border-gray-200 mt-auto">
-          <button onClick={() => router.push('/')} className="w-full cursor-pointer flex items-center justify-start gap-2 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+          <button onClick={handleLogout} className="w-full cursor-pointer flex items-center justify-start gap-2 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
             <LogOut className="w-5 h-5 text-gray-500" />
             <span>Log out</span>
           </button>
         </div>
+        </div>
       </div>
-    </div>
 
-    <div className={`${montserrat.className} flex min-h-screen bg-gray-50`}>
       {/* Main Content */}
-      <div className="flex-1 ml-80 p-8 overflow-y-auto">
+      <div className={`${montserrat.className} flex-1 ml-80 p-8 overflow-y-auto`}>
         {/* Header */}
       <div className="flex items-center mb-6">
         <Menu className="w-5 h-5 text-gray-600 mr-3" />
@@ -248,8 +257,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    
-    </>
   );
 };
 

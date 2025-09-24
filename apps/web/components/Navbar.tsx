@@ -91,6 +91,9 @@ export default function Navbar() {
               <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
                 <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
               </button>
+              <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto" />
+              </button>
               <button
                 onClick={() => setMenuOpen(true)}
                 className="w-8 h-8 sm:w-9 sm:h-9 flex items-center cursor-pointer justify-center hover:text-(--color-olive)"

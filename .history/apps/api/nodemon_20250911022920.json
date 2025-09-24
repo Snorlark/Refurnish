@@ -1,5 +1,0 @@
-{
-  "watch": ["index"],
-  "ext": ".ts,.js",
-  "exec": "ts-node ./src/config/index"
-}

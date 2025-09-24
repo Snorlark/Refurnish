@@ -31,7 +31,13 @@ const authMiddleware = async (
     const decoded: any = jwt.verify(token, config.jwtSecret);
 
     // Attach user to the request object
-    req.user = { _id: decoded._id };
+    req.user = { 
+      _id: decoded._id,
+      email: decoded.email,
+      role: decoded.role,
+      firstName: decoded.firstName,
+      lastName: decoded.lastName
+    };
 
     // Proceed to the next middleware or route handler
     next();

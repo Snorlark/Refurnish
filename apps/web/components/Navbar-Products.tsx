@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -36,6 +37,25 @@ export default function Navbar({
   const navbarRef = useRef<HTMLElement>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileMenuOpen) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.profile-menu')) {
+          setIsProfileMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -208,16 +228,57 @@ gsap.set(navbarRef.current, {
             
             {/* Mobile Action Buttons */}
             <div className="mt-12 space-y-4">
-              {/* <button 
-                onClick={() => {
-                  onAuthClick?.();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
-                <span className="text-gray-700 font-medium">Profile</span>
-              </button> */}
+              {isAuthenticated ? (
+                <div className="p-4 bg-gray-50 rounded-full">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#636B2F] flex items-center justify-center text-white font-semibold mr-3">
+                      {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Link
+                      href="/user-profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 text-center px-3 py-2 text-sm bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    {user?.role === 'admin' && (
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex-1 text-center px-3 py-2 text-sm bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex-1 text-center px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link 
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
+                  <span className="text-gray-700 font-medium">Profile</span>
+                </Link>
+              )}
               
               <button 
                 onClick={() => {
@@ -315,12 +376,6 @@ gsap.set(navbarRef.current, {
 
             {/* Right Icons - Desktop Only */}
             <div className="nav-icons hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8 text-gray-700">
-              {/* <div 
-                onClick={onAuthClick}
-                className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
-              >
-                <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto object-cover" />            
-              </div> */}
               <div 
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
@@ -351,6 +406,62 @@ gsap.set(navbarRef.current, {
                   </span>
                 )}
               </button>
+
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="w-10 h-10 rounded-full bg-[#636B2F] flex items-center justify-center hover:bg-[#4d5323] transition-modern cursor-pointer text-white font-semibold"
+                  >
+                    {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </button>
+                  
+                  {/* Profile Dropdown */}
+                  {isProfileMenuOpen && (
+                    <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="p-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
+                      </div>
+                      <div className="py-1">
+                        <Link
+                          href="/user-profile"
+                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        {user?.role === 'admin' && (
+                          <Link
+                            href="/admin/dashboard"
+                            className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link href="/login">
+                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer">
+                    <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto object-cover" />            
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "nodemon",
+    "init-admin": "node src/scripts/initAdmin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

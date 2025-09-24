@@ -6,6 +6,7 @@ import { Menu, Users } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
+import ProtectedRoute from '../../../components/ProtectedRoute';
 
 
 const montserrat = Montserrat({
@@ -38,7 +39,7 @@ const navItems = [
 ];
 
   return (
-    <>
+    <ProtectedRoute requireAdmin={true}>
       <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
         <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
           <div className="p-6 border-b flex-grow">
@@ -283,7 +284,7 @@ const navItems = [
         )}
       </div>
     </div>
-     </>
+    </ProtectedRoute>
   );
 };
 

@@ -2,14 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff,  XCircle, CheckCircle  } from "lucide-react";
+import { Eye, EyeOff, XCircle, CheckCircle } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import Link from "next/link";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
+  const { login, register, googleLogin, isLoading, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
   // Sign Up modal state
@@ -23,24 +25,21 @@ const LoginPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async () => {
-    setIsLoading(true);
     setAlert(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (!email || !password) {
         setAlert({ type: "error", message: "Please enter both email and password." });
         return;
       }
-      router.push("/admin/dashboard");
-      console.log("Login attempt:", { email, password });
-      setAlert({ type: "success", message: "Login successful! Redirecting..." });
 
-    } catch (error) {
-      setAlert({ type: "error", message: "Login failed. Please try again." });
-    } finally {
-      setIsLoading(false);
+      // Check for hardcoded admin credentials
+      const isAdminCredential = email === "admin@refurnish.dev" && password === "Refurnish2024!@#Admin";
+      
+      await login(email, password, isAdminCredential ? "REFURNISH_ADMIN_SECRET_2024" : undefined);
+      setAlert({ type: "success", message: "Login successful! Redirecting..." });
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Login failed. Please try again." });
     }
   };
 
@@ -56,15 +55,34 @@ const LoginPage: React.FC = () => {
   }, [isSignUpOpen]);
 
   const handleSignUp = async () => {
-    if (!firstName || !lastName || !signUpEmail || !signUpPassword || !confirmPassword) {
-      setAlert({ type: "error", message: "Please fill in all fields." });
-      return;
+    setAlert(null);
+
+    try {
+      if (!firstName || !lastName || !signUpEmail || !signUpPassword || !confirmPassword) {
+        setAlert({ type: "error", message: "Please fill in all fields." });
+        return;
+      }
+      if (signUpPassword !== confirmPassword) {
+        setAlert({ type: "error", message: "Passwords do not match." });
+        return;
+      }
+
+      await register(firstName, lastName, signUpEmail, signUpPassword);
+      setAlert({ type: "success", message: "Registration successful! Redirecting..." });
+      setIsSignUpOpen(false);
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Registration failed. Please try again." });
     }
-    if (signUpPassword !== confirmPassword) {
-      setAlert({ type: "error", message: "Passwords do not match." });
-      return;
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      // This would integrate with Google OAuth
+      // For now, we'll simulate it
+      setAlert({ type: "error", message: "Google OAuth integration coming soon!" });
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Google login failed." });
     }
-    setIsSignUpOpen(false);
   };
 
   const handleForgotPassword = () => {
@@ -148,7 +166,10 @@ const LoginPage: React.FC = () => {
               Log In
             </h2>
             <div className="space-y-4  ">
-              <button className="w-full cursor-pointer flex text-base items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-black">
+              <button 
+                onClick={handleGoogleLogin}
+                className="w-full cursor-pointer flex text-base items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-black"
+              >
                 <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -234,6 +255,7 @@ const LoginPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+
 
               {/* Login Button */}
               <button
@@ -412,6 +434,17 @@ const LoginPage: React.FC = () => {
                 >
                   Sign Up
                 </button>
+
+                <p className="text-center text-xs text-gray-600">
+                  By signing up, you agree to Refurnish's{" "}
+                  <Link href="/help/terms" className="text-[#636B2F] underline hover:text-[#4d5323]">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/help/privacy" className="text-[#636B2F] underline hover:text-[#4d5323]">
+                    Privacy Policy
+                  </Link>
+                </p>
 
                 <p className="text-center text-sm text-[#273815]">
                   Already have an account?{" "}

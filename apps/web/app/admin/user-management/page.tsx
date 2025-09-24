@@ -6,6 +6,7 @@ import { Menu, Users, MoreVertical, Search } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
+import ProtectedRoute from '../../../components/ProtectedRoute';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -64,8 +65,8 @@ const UserManagementPage: React.FC = () => {
   const currentPageUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
 
   return (
-    <>
-    <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
+    <ProtectedRoute requireAdmin={true}>
+      <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
       <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
         <div className="p-6 border-b flex-grow">
           {/* Header */}
@@ -235,8 +236,7 @@ const UserManagementPage: React.FC = () => {
         </div>
       </div>
     </div>
-    
-    </>
+    </ProtectedRoute>
   );
 };
 
