@@ -15,18 +15,21 @@ const authOptions: NextAuthOptions = {
         try {
           console.log('Google OAuth user data:', { user, account, profile });
           
+          // Cast profile to include Google-specific properties
+          const googleProfile = profile as any;
+          
           // Extract name parts more carefully, with fallbacks
           const fullName = user.name || profile?.name || '';
           const nameParts = fullName.split(' ');
-          const firstName = nameParts[0] || profile?.given_name || '';
-          const lastName = nameParts.slice(1).join(' ') || profile?.family_name || '';
+          const firstName = nameParts[0] || googleProfile?.given_name || '';
+          const lastName = nameParts.slice(1).join(' ') || googleProfile?.family_name || '';
           
           const googleData = {
             googleId: user.id,
             email: user.email,
             firstName: firstName,
             lastName: lastName,
-            profilePicture: user.image || profile?.picture,
+            profilePicture: user.image || googleProfile?.picture,
           };
           
           console.log('Sending to backend:', googleData);
