@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -36,6 +37,25 @@ export default function Navbar({
   const navbarRef = useRef<HTMLElement>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileMenuOpen) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.profile-menu')) {
+          setIsProfileMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -48,11 +68,22 @@ export default function Navbar({
         scrub: 0.5,
         onUpdate: (self) => {
           const progress = self.progress;
-          const height = gsap.utils.interpolate(80, 60, progress);
+          const height = gsap.utils.interpolate(64, 60, progress);
           const marginX = gsap.utils.interpolate(32, 18, progress);
-          const marginY = gsap.utils.interpolate(0, 16, progress);
-          const paddingX = gsap.utils.interpolate(26, 16, progress);
+          const marginY = gsap.utils.interpolate(0, 8, progress);
+          const paddingX = gsap.utils.interpolate(22, 16, progress);
+          const opacity = gsap.utils.interpolate(0, 1, progress);
           
+          const radius = gsap.utils.interpolate(50, 50, progress);
+          const shadowOpacity = gsap.utils.interpolate(0.08, 0.15, progress);
+
+        
+
+gsap.set(navbarRef.current, {
+    borderRadius: `${radius}px`,
+    boxShadow: `0 6px 20px rgba(0,0,0,${shadowOpacity})`,
+    // background: `rgba(253,253,253,${0.85 + 0.1 * progress})`
+  });
           gsap.set(navbarRef.current, {
             height: height,
             marginLeft: marginX,
@@ -107,34 +138,34 @@ export default function Navbar({
     if (variant === 'home') {
       return (
         <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-          <Link href="/" className="hover:text-green-900 transition-modern text-green-900">Home</Link>
-          <Link href="/shop" className="hover:text-green-900 transition-modern">Shop</Link>
-          <Link href="/about" className="hover:text-green-900 transition-modern">About</Link>
-          <button onClick={scrollToContact} className="hover:text-green-900 transition-modern">Contact</button>
+          <Link href="/landing" className="hover:text-(--color-olive) transition-modern text-(--color-primary)">Home</Link>
+          <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
+          <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
+          <button onClick={scrollToContact} className="hover:text-(--color-olive) cursor-pointer transition-modern">Contact</button>
         </div>
       );
     }
 
     return (
       <div className="nav-links hidden md:flex space-x-22 md:space-x-10 lg:space-x-18 xl:space-x-22 text-sm font-medium text-gray-700">
-        <Link href="/" className="hover:text-green-900 transition-modern">Home</Link>
-        <Link href="/shop" className="hover:text-green-900 transition-modern text-green-900">Shop</Link>
-        <Link href="/about" className="hover:text-green-900 transition-modern">About</Link>
-        <button onClick={scrollToContact} className="hover:text-green-900 transition-modern">Contact</button>
+        <Link href="/landing" className="hover:text-(--color-olive) transition-modern">Home</Link>
+        <Link href="/shop" className="hover:text-(--color-olive) transition-modern">Shop</Link>
+        <Link href="/about-us" className="hover:text-(--color-olive) transition-modern">About</Link>
+        <button onClick={scrollToContact} className="hover:text-(--color-olive) cursor-pointer transition-modern">Contact</button>
       </div>
     );
   };
 
   const renderMobileMenu = () => {
     const links = variant === 'home' ? [
-      { href: '/', label: 'Home', active: true },
+      { href: '/landing', label: 'Home', active: true },
       { href: '/shop', label: 'Shop', active: false },
-      { href: '/about', label: 'About', active: false },
+      { href: '/about-us', label: 'About', active: false },
       { href: '#contact', label: 'Contact', active: false, onClick: scrollToContact }
     ] : [
-      { href: '/', label: 'Home', active: false },
+      { href: '/landing', label: 'Home', active: false },
       { href: '/shop', label: 'Shop', active: true },
-      { href: '/about', label: 'About', active: false },
+      { href: '/about-us', label: 'About', active: false },
       { href: '#contact', label: 'Contact', active: false, onClick: scrollToContact }
     ];
 
@@ -175,7 +206,7 @@ export default function Navbar({
                       setIsMobileMenuOpen(false);
                     }}
                     className={`block w-full text-left text-lg font-medium transition-colors ${
-                      link.active ? 'text-green-900' : 'text-gray-700 hover:text-green-900'
+                      link.active ? 'text-(--color-primary)' : 'text-gray-700 hover:text-(--color-olive)'
                     }`}
                   >
                     {link.label}
@@ -186,7 +217,7 @@ export default function Navbar({
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`block text-lg font-medium transition-colors ${
-                      link.active ? 'text-green-900' : 'text-gray-700 hover:text-green-900'
+                      link.active ? 'text-(--color-primary)' : 'text-gray-700 hover:text-(--color-olive)'
                     }`}
                   >
                     {link.label}
@@ -197,23 +228,64 @@ export default function Navbar({
             
             {/* Mobile Action Buttons */}
             <div className="mt-12 space-y-4">
-              <button 
-                onClick={() => {
-                  onAuthClick?.();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
-                <span className="text-gray-700 font-medium">Profile</span>
-              </button>
+              {isAuthenticated ? (
+                <div className="p-4 bg-gray-50 rounded-full">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#636B2F] flex items-center justify-center text-white font-semibold mr-3">
+                      {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Link
+                      href="/user-profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 text-center px-3 py-2 text-sm bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    {user?.role === 'admin' && (
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex-1 text-center px-3 py-2 text-sm bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex-1 text-center px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link 
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <img src="/icon/userIcon.png" alt="Profile" className="h-5 w-5 mr-3" />
+                  <span className="text-gray-700 font-medium">Profile</span>
+                </Link>
+              )}
               
               <button 
                 onClick={() => {
                   setIsSearchOpen(true);
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <img src="/icon/searchIcon.png" alt="Search" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Search</span>
@@ -224,7 +296,7 @@ export default function Navbar({
                   onWishlistClick?.();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors relative"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors relative"
               >
                 <img src="/icon/heartIcon.png" alt="Wishlist" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Wishlist</span>
@@ -240,7 +312,7 @@ export default function Navbar({
                   onCartClick?.();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors relative"
+                className="flex items-center w-full p-4 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors relative"
               >
                 <img src="/icon/cartIcon.png" alt="Cart" className="h-5 w-5 mr-3" />
                 <span className="text-gray-700 font-medium">Cart</span>
@@ -266,10 +338,23 @@ export default function Navbar({
     <>
       <nav 
         ref={navbarRef}
-        className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
-        style={{ height: '80px' }}
+        // className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
+          // className="bg-[#f8f8f4] backdrop-blur-md rounded-2xl mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.8)]"
+  className="
+    bg-[#fbfbfb]/72 
+    backdrop-blur-md
+    rounded-full
+    border border-white/60 
+    shadow-[0_4px_10px_rgba(0,0,0,0.07)] 
+    mx-4 md:mx-10 fixed top-4 left-0 right-0 z-50 
+    transition-all duration-300 ease-out
+  "
+
+        style={{ height: '64px' }}
       >
-        <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full">
+        {/* <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full"> */}
+       <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full  justify-between items-center">
+          
           <div className="flex justify-between items-center h-full">
             {/* Logo */}
             <div className="nav-logo flex items-center">
@@ -292,12 +377,6 @@ export default function Navbar({
             {/* Right Icons - Desktop Only */}
             <div className="nav-icons hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8 text-gray-700">
               <div 
-                onClick={onAuthClick}
-                className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
-              >
-                <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto object-cover" />            
-              </div>
-              <div 
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer"
               >
@@ -310,7 +389,7 @@ export default function Navbar({
               >
                 <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto object-cover" />
                 {wishlistItemsCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center cursor-pointer justify-center font-bold">
                     {wishlistItemsCount}
                   </span>
                 )}
@@ -327,6 +406,62 @@ export default function Navbar({
                   </span>
                 )}
               </button>
+
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="w-10 h-10 rounded-full bg-[#636B2F] flex items-center justify-center hover:bg-[#4d5323] transition-modern cursor-pointer text-white font-semibold"
+                  >
+                    {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </button>
+                  
+                  {/* Profile Dropdown */}
+                  {isProfileMenuOpen && (
+                    <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="p-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
+                      </div>
+                      <div className="py-1">
+                        <Link
+                          href="/user-profile"
+                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        {user?.role === 'admin' && (
+                          <Link
+                            href="/admin/dashboard"
+                            className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link href="/login">
+                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-modern cursor-pointer">
+                    <img src="/icon/userIcon.png" alt="Profile" className="h-4 w-auto object-cover" />            
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -334,7 +469,7 @@ export default function Navbar({
 
       {/* Search Bar - Toggle visibility when search icon is clicked */}
       {isSearchOpen && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
+        <div className="fixed top-23 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-1">
             <form onSubmit={handleSearchSubmit} className="flex items-center">
               <div className="flex-1 flex items-center px-4 py-3">
@@ -353,7 +488,7 @@ export default function Navbar({
               <div className="flex items-center space-x-1 pr-1">
                 <button 
                   type="submit"
-                  className="p-2.5 bg-green-900 text-white rounded-xl hover:bg-green-800 transition-colors"
+                  className="p-2.5 bg-(--color-olive) cursor-pointer text-white rounded-xl hover:bg-(--color-primary) transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -362,7 +497,7 @@ export default function Navbar({
                 <button 
                   type="button"
                   onClick={() => setIsSearchOpen(false)}
-                  className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2.5 text-gray-400 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

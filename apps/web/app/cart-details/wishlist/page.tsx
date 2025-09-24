@@ -3,6 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import Footer from '../../../components/Footer';
 import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -88,18 +89,18 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+    <div className="min-h-screen flex flex-col font-sans" >
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
 
-        <div className="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06]">
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815]" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+        <div className="mt-6 rounded-2xl bg-white shadow-sm ring-1 font-sans  ring-black/[0.06]">
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815] font-sans">
             <span className="sr-only">Select</span>
-            <div className="pl-40" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Product</div>
-            <div className="pl-153" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Quantity</div>
-            <div className="pl-1" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Price</div>
+            <div className="pl-40 font-sans">Product</div>
+            <div className="pl-153 font-sans">Quantity</div>
+            <div className="pl-1 font-sans">Price</div>
           </div>
         </div>
 
@@ -107,20 +108,20 @@ export default function WishlistPage() {
           {cartItems.map((item) => (
             <li
               key={item.id}
-              className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
-              style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}
+              className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
+              
             >
-              <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
+              <div className="grid font-sans grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
                 <input
                   aria-label="Select item"
                   type="checkbox"
                   checked={item.selected}
                   onChange={() => toggleItemSelection(item.id)}
-                  className="size-4 accent-green-800"
+                  className="size-4 font-sans accent-green-800"
                 />
 
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                  <div className="size-14 font-sans  rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
                     {item.thumbnailSrc ? (
                       <Image
                         src={item.thumbnailSrc}
@@ -130,11 +131,11 @@ export default function WishlistPage() {
                         className="object-cover size-full"
                       />
                     ) : (
-                      <span style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Image</span>
+                      <span className=" font-sans " >Image</span>
                     )}
                   </div>
                   <div className="truncate">
-                    <p className="truncate text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                    <p className="truncate text-neutral-800  font-sans " >
                       {item.name}
                     </p>
                   </div>
@@ -148,7 +149,7 @@ export default function WishlistPage() {
                   >
                     <MinusIcon />
                   </IconButton>
-                  <span className="w-6 text-center select-none font-medium" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>{item.quantity}</span>
+                  <span className="w-6 text-center select-none font-sans  font-medium">{item.quantity}</span>
                   <IconButton
                     label="Increase quantity"
                     onClick={() => incrementQuantity(item.id)}
@@ -158,7 +159,7 @@ export default function WishlistPage() {
                   </IconButton>
                 </div>
 
-                <div className="text-right tabular-nums text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                <div className="text-right tabular-nums font-sans text-neutral-800">
                   {currency.format(item.unitPrice)}
                 </div>
 
@@ -166,7 +167,7 @@ export default function WishlistPage() {
                   <IconButton 
                     label="Remove item" 
                     onClick={() => removeItem(item.id)}
-                    className="text-green-800 hover:bg-[#273815]/10"
+                    className="text-green-800 font-sans hover:bg-[#273815]/10"
                   >
                     <CloseIcon />
                   </IconButton>
@@ -176,12 +177,12 @@ export default function WishlistPage() {
           ))}
         </ul>
 
-        <div className="mt-10 flex flex-col-reverse gap-4 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col-reverse font-sans gap-4 sm:flex-row sm:items-center">
           <div className="flex-1">
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] p-5" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+            <div className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] p-5" >
               <div className="flex items-center justify-between">
-                <p className="text-xl font-semibold text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Total :</p>
-                <p className="text-xl font-semibold text-[#636B2F] tabular-nums" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                <p className="text-xl font-semibold font-sans  text-neutral-800">Total :</p>
+                <p className="text-xl font-semibold font-sans  text-[#636B2F] tabular-nums" >
                   {currency.format(cartTotal)}
                 </p>
               </div>
@@ -192,16 +193,15 @@ export default function WishlistPage() {
             onClick={() => setIsCheckoutOpen(true)}
             disabled={!someSelected}
             title={!someSelected ? 'Select at least one product to continue' : undefined}
-            className={`inline-flex items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
+            className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
             aria-label="Buy now"
-            style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}
           >
-            <span style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Buy Now</span>
+            <span className=" font-sans ">Add to Cart</span>
           </button>
         </div>
 
         {!someSelected && (
-          <p className="mt-2 text-sm text-neutral-500">Select at least one product to proceed to checkout.</p>
+          <p className="mt-2 font-sans text-sm text-neutral-500">Select at least one product to proceed to checkout.</p>
         )}
 
         {isCheckoutOpen && (
@@ -213,16 +213,17 @@ export default function WishlistPage() {
           />
         )}
       </main>
-
-      <SiteFooter />
+    {/* footer */}
+    <Footer />
+    
     </div>
   );
 }
 
 function SiteHeader() {
   return (
-    <header className="w-full" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 h-16 flex items-center gap-4">
+    <header className="w-full font-sans " >
+      <div className="mx-auto font-sans w-full max-w-6xl px-4 sm:px-6 md:px-8 h-16 flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/Rf-logo.svg" alt="Refurnish" width={28} height={28} />
         </Link>
@@ -234,8 +235,8 @@ function SiteHeader() {
             </div>
             <input
               type="text"
-              className="w-full h-9 rounded-full bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
-              style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}
+              className="w-full font-sans  h-9 rounded-full bg-neutral-100 ring-1 ring-black/[0.06] pl-10 pr-4 text-sm focus:outline-none focus:ring-green-800/40"
+              
             />
           </div>
         </div>
@@ -259,21 +260,20 @@ function CartTabs() {
   ];
 
   return (
-    <nav className="mt-6" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+    <nav className="mt-6 font-sans ">
       <ul className="flex items-center justify-center gap-10 text-sm font-semibold">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || pathname?.startsWith(tab.href + "/");
           return (
             <li
               key={tab.href}
-              className="flex flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
-              style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}
+              className="flex font-sans flex-col items-center gap-1 text-neutral-700 hover:text-neutral-900 transition-colors"
+             
             >
               <Link
                 href={tab.href}
-                className={`px-2 py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
+                className={`px-2 font-sans  py-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
                 aria-current={isActive ? "page" : undefined}
-                style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}
               >
                 {tab.label}
               </Link>

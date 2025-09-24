@@ -1,10 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import {
-    Menu,
-    Search,
-    ShoppingCart,
-    Heart,
     MessageSquare,
     Send,
     MoreHorizontal,
@@ -13,12 +9,24 @@ import {
 } from "lucide-react";
 import UserProfileSidebar from "../../components/UserProfileSidebar";
 import Footer from "../../components/Footer";
+import NavbarMenu from "../../components/Navbar-Menu";
+import Link from "next/link";
 
 const MessagesPage = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [selectedChat, setSelectedChat] = useState<number | null>(null);
     const [messageInput, setMessageInput] = useState("");
+
+    // Handlers for navbar actions
+    const handleWishlistClick = () => {
+        // Add wishlist functionality here
+        console.log('Wishlist clicked');
+    };
+
+    const handleCartClick = () => {
+        // Add cart functionality here
+        console.log('Cart clicked');
+    };
 
     // Sample chat data
     const chats = [
@@ -107,83 +115,12 @@ const MessagesPage = () => {
         }
     };
 
-    const renderNavbar = () => (
-        <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 fixed top-0 left-0 right-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <img src="/icon/RF.png" alt="RF Logo" className="h-8 w-auto" />
-                    </div>
-
-                    {/* Search Bar - Desktop */}
-                    <div className="hidden md:flex flex-1 max-w-lg mx-8">
-                        <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green focus:border-green"
-                                placeholder="Search messages..."
-                            />
-                        </div>
-                    </div>
-
-                    {/* Right Icons */}
-                    <div className="flex items-center space-x-4">
-                        {/* Mobile Search */}
-                        <button
-                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            onClick={() => setIsSearchOpen(!isSearchOpen)}
-                        >
-                            <Search className="h-5 w-5 text-gray-600" />
-                        </button>
-
-                        {/* Cart & Wishlist */}
-                        <div className="hidden sm:flex items-center space-x-2">
-                            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                                <ShoppingCart className="h-5 w-5 text-gray-600" />
-                            </button>
-                            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                                <Heart className="h-5 w-5 text-gray-600" />
-                            </button>
-                        </div>
-
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                            <Menu className="h-6 w-6 text-gray-600" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Search Bar */}
-                {isSearchOpen && (
-                    <div className="md:hidden pb-4">
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green focus:border-green"
-                                placeholder="Search messages..."
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-                )}
-            </div>
-        </nav>
-    );
-
     const renderChatList = () => (
+
+        
         <div className="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col">
             <div className="p-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
+                <h2 className="text-xl font-semibold text-(--color-olive)">Messages</h2>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -241,6 +178,7 @@ const MessagesPage = () => {
 
         return (
             <div className="flex-1 flex flex-col bg-gray-50">
+                
                 {/* Mobile back button */}
                 <div className="md:hidden bg-white border-b border-gray-200 p-2 flex items-center">
                     <button
@@ -277,12 +215,12 @@ const MessagesPage = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <Phone className="h-5 w-5 text-gray-600" />
                         </button>
                         <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <Video className="h-5 w-5 text-gray-600" />
-                        </button>
+                        </button> */}
                         <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <MoreHorizontal className="h-5 w-5 text-gray-600" />
                         </button>
@@ -362,17 +300,21 @@ const MessagesPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {renderNavbar()}
+        <>
+            <UserProfileSidebar
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
+         
+            {/* NAVBAR */}
+            <NavbarMenu 
+                onWishlistClick={handleWishlistClick}
+                onCartClick={handleCartClick}
+            />
 
-            <div className="flex justify-center">
-                <div className="flex max-w-7xl w-full">
-                    {/* Sidebar */}
-                    <UserProfileSidebar
-                        isMobileMenuOpen={isMobileMenuOpen}
-                        setIsMobileMenuOpen={setIsMobileMenuOpen}
-                    />
-
+            <div className="flex min-h-screen bg-gray-50">
+                <div className="flex-1 ml-80 p-8 overflow-y-auto">
+                   
                     {/* Main Content */}
                     <div className="flex-1 pt-20">
                         <div className="h-[calc(100vh-5rem)] flex">
@@ -407,11 +349,11 @@ const MessagesPage = () => {
                             </div>
                         </div>
                     </div>
+            <Footer />
                 </div>
             </div>
 
-            <Footer />
-        </div>
+        </>
     );
 };
 

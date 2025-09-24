@@ -22,6 +22,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+
 export default function Shop() {
   const navbarRef = useRef<HTMLElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -38,12 +39,12 @@ export default function Shop() {
       isRefurnishSlide: true
     },
     {
-      image: '/swap-pic.png',
-      scrollTo: 'for-swap'
-    },
-    {
       image: '/sale-pic.png', 
       scrollTo: 'on-sale'
+    },
+    {
+      image: '/swap-pic.png',
+      scrollTo: 'swap'
     }
   ];
 
@@ -153,7 +154,9 @@ export default function Shop() {
 
 
   return (
-    <main className="bg-white font-['Futura']">
+    <main className="
+      bg-gradient-to-r from-[#fffef3] via-[#e9efcf] via-[#dbe6ae] to-[#eef0c4de]  
+      animate-gradient-wave font-sans">
       {/* Navbar */}
       <Navbar 
         variant="shop"
@@ -168,7 +171,7 @@ export default function Shop() {
       />
 
       {/* Hero Carousel Section */}
-      <div className="h-32 bg-white"></div>
+      <div className="h-20 bg-[#fbfbfb]/72 "></div>
       <div className="relative h-screen overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -189,30 +192,35 @@ export default function Shop() {
               } else if (slide.isRefurnishSlide) {
                 console.log('REFURNISH slide clicked - no scroll action');
               }
-            }}
+            }
+          
+          }
           >
             {slide.isRefurnishSlide && (
-              <div className="relative z-10 h-full flex items-center justify-center">
-                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-12 shadow-2xl max-w-2xl mx-8">
-                  <div className="text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight tracking-tight text-green-800">
-                      REFURNISH
-                    </h1>
-                    <p className="text-lg md:text-xl mb-8 font-normal text-gray-700">
-                      From their home to yours.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <button className="bg-green-800 text-white px-8 py-3 rounded-full font-medium hover:bg-green-900 transition-all text-base shadow-lg">
-                        SHOP NOW
-                      </button>
-                      <div className="text-gray-600">
-                        <p className="text-sm mb-1">Ready to start selling?</p>
-                        <button className="text-green-800 underline hover:text-green-900 transition-colors text-sm font-medium">
-                          Learn more →
-                        </button>
-                      </div>
-                    </div>
+
+              <div className="relative py-18 px-6 h-screen lg:px-16" style={{backgroundImage: 'url(/refurnishSection.png)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10 container mx-auto text-center">
+                        <img src="/refurnishlogoSection.png" alt="Feature 1" className=" lg:ml-110 xl:ml-150 w-100 h-auto object-center" />
+                  
+                  <div className="flex flex-col sm:flex-row mt-2 lg:ml-110  xl:ml-150 gap-6">
+                    <Link href='/login'>
+                    <button className=" text-(--color-olive) hover:text-(--color-white) hover:bg-(--color-olive) hover:scale-105 hover:font-medium hover:translate-y-1 cursor-pointer tracking-[0.1em] rounded-full border-2 border-(--color-olive) px-7 py-3 font-semibold transition-modern text-[12px]">
+                      BUY NOW
+                    </button>
+                    </Link>
+                    
+                  
                   </div>
+                  <p className="text-(--color-olive) text-right pt-60 font-bold">
+                      Ready to start  
+                    </p>
+                    <p className="text-(--color-olive) text-right text-[24px] font-bold">
+                      selling? 
+                    </p > 
+                    <p className="text-(--color-olive) font-normal underline cursor-pointer text-[16px]  text-right transition-modern">
+                    Learn More 
+                    </p>
                 </div>
               </div>
             )}
@@ -258,9 +266,10 @@ export default function Shop() {
       </div>
 
       {/* On Sale Section */}
-      <div id="on-sale" className="py-16 px-6 lg:px-16">
+      <div id="on-sale" className="py-16 md:mx-10 font-sans px-6 lg:px-16">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">On Sale</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">
+            On Sale</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {saleProducts.map((product, index) => (
               <div 
@@ -284,18 +293,18 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-lg">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base">{product.price}.00</p>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center text-gray-600 text-xs">
-                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
+                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-4 mr-2" />
                       {product.location}
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      className="p-2 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -306,9 +315,9 @@ export default function Shop() {
       </div>
 
       {/* New Products Section */}
-      <div className="py-16 px-6 lg:px-16 bg-gray-50/30">
+      <div className="py-16 px-6 lg:px-16  md:mx-10 ">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">New Products</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">New Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {newProducts.map((product, index) => (
               <div 
@@ -327,7 +336,7 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <button 
                     onClick={() => wishlist.toggleWishlist(product)}
-                    className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
+                    className={`absolute  cursor-pointer top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
                       wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
                     }`}
                   >
@@ -339,8 +348,8 @@ export default function Shop() {
                   </button>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-base mb-2">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base mb-2">{product.price}.00</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-gray-600 text-xs">
                       <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
@@ -348,9 +357,9 @@ export default function Shop() {
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
+                      className="p-2  cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -392,9 +401,9 @@ export default function Shop() {
       <FlashSale />
 
       {/* Just For You Section */}
-      <div className="py-16 px-6 lg:px-16">
+      <div className="py-16 px-6  md:mx-10  lg:px-16">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-[32px] font-bold text-green-900 mb-12 text-center">Just For You</h2>
+          <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12 text-center">Just For You</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {justForYouProducts.map((product, index) => (
               <div 
@@ -413,7 +422,7 @@ export default function Shop() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <button 
                     onClick={() => wishlist.toggleWishlist(product)}
-                    className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
+                    className={`absolute  cursor-pointer top-3 right-3 p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
                       wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
                     }`}
                   >
@@ -425,18 +434,18 @@ export default function Shop() {
                   </button>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-green-900 font-bold text-base mb-2">{product.price}</p>
+                  <h3 className="font-semibold text-(--color-olive) text-md mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-(--color-primary) font-bold text-base mb-2">{product.price}.00</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center text-gray-600 text-xs">
-                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-3 mr-1" />
+                    <div className="flex  items-center text-gray-600 text-xs">
+                      <img src="/icon/locateIcon.png" alt="location" className="w-3 h-4 mr-2" />
                       {product.location}
                     </div>
                     <button 
                       onClick={() => cart.addToCart(product)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
+                      className="p-2  cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
                     >
-                      <img src="/icon/addtocart.png" alt="add to cart" className="w-5 h-5" />
+                      <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-7" />
                     </button>
                   </div>
                 </div>
@@ -447,9 +456,9 @@ export default function Shop() {
       </div>
 
       {/* For Swap Section */}
-      <div id="for-swap" className="py-16 px-6 lg:px-16 bg-gray-50/30">
+      <div id="swap" className="py-16 md:mx-10 px-6 lg:px-16 ">
         <div className="container mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">For Swap</h2>
+          <h2 className="text-2xl font-bold text-(--color-primary) mb-8">For Swap</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {forSwapProducts.map((product) => (
               <div key={product.id} className="bg-white radius-20 shadow-modern hover:shadow-modern-hover transition-modern overflow-hidden group">
@@ -461,14 +470,15 @@ export default function Shop() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-semibold text-gray-900 text-lg mb-2">{product.name}</h3>
-                  <div className="flex items-center text-gray-600 text-sm mb-1">
-                    <span className="mr-2">📋</span>
+                  <h3 className="font-bold text-(--color-olive) text-lg mb-2">{product.name}</h3>
+                  <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
+                    {/* <span className="mr-2">📋</span> */}
+                    <img src="/icon/swapIcon.png" alt="Swap" className="w-4 h-auto" />
                     <span>{product.condition}</span>
                   </div>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <img src="/icon/locateIcon.png" alt="location" className="w-4 h-4 mr-2" />
-                    <span>Near {product.location} - check details</span>
+                  <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
+                    <img src="/icon/locateIcon.png" alt="location" className="w-4 h-5 mr-2" />
+                    <span> {product.location}</span>
                   </div>
                 </div>
               </div>

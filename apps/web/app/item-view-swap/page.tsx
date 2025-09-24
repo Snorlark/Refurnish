@@ -104,7 +104,7 @@ export default function ItemViewSwapPage() {
 
   return (
     <>
-      <main className="bg-white font-['Futura'] min-h-screen transition-all ease-in-out duration-300">
+      <main className="bg-white font-sans min-h-screen transition-all ease-in-out duration-300">
         {/* NAVBAR */}
         <nav
           ref={navbarRef}
@@ -113,7 +113,7 @@ export default function ItemViewSwapPage() {
         >
           <div className="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 h-full">
             <div className="flex justify-between items-center h-full gap-3">
-              <Link href="/" className="nav-logo flex items-center flex-shrink-0">
+              <Link href="/landing" className="nav-logo flex items-center flex-shrink-0">
                 <img src="/icon/RF.png" alt="Logo" className="h-6 sm:h-7 w-auto object-cover" />
               </Link>
 
@@ -145,29 +145,29 @@ export default function ItemViewSwapPage() {
         <div className="h-20 sm:h-15" />
 
         {/* MAIN CONTENT */}
-        <div className="max-w-7xl mx-30 px-4 sm:px-6 lg:px-9 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             
             {/* LEFT SECTION */}
             <div className="lg:col-span-2">
-              <Link href="/product-catalog-swap" className="inline-flex items-center gap-2 mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
-                <div className="w-7 h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/product-catalog-swap" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </div>
-                <span className="text-sm font-medium">Back to Products</span>
+                <span className="text-xs sm:text-sm font-medium">Back to Products</span>
               </Link>
 
               {/* Product Images Carousel */}
-              <div className="relative mb-8">
-                <div className="h-120 w-110 object-center justify-center mx-auto rounded-2xl overflow-hidden bg-gray-100">
+              <div className="relative mb-6 sm:mb-8">
+                <div className="h-64 sm:h-80 md:h-96 lg:h-120 w-full max-w-lg mx-auto rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
                   <Image 
                     src={currentSwapProduct.images[currentImageIndex]} 
                     alt={currentSwapProduct.title}
                     width={500}
                     height={600}
-                    className="w-full h-120 object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 
@@ -185,95 +185,95 @@ export default function ItemViewSwapPage() {
                   ))}
                 </div>
 
-                <button onClick={prevImage} className="absolute border-1 border-(--color-primary) cursor-pointer mx-0 left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onClick={prevImage} className="absolute border-1 border-(--color-primary) cursor-pointer left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <button onClick={nextImage} className="absolute border-1 border-(--color-primary) cursor-pointer mx-0 right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onClick={nextImage} className="absolute border-1 border-(--color-primary) cursor-pointer right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-200 transition-all duration-300">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
 
               {/* Product Title & Swap Info */}
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">{currentSwapProduct.title}</h1>
+              <div className="mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">{currentSwapProduct.title}</h1>
                 
                 {/* Swap Want Item - Prominently Displayed */}
-                <div className="bg-(--color-white) text-(--color-olive) rounded-xl mb-4">
+                <div className="bg-(--color-white) text-(--color-olive) rounded-lg sm:rounded-xl mb-3 sm:mb-4">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
-                    <span className="font-semibold text-[18px]">Want: {currentSwapProduct.wantItem}</span>
+                    <span className="font-semibold text-sm sm:text-base lg:text-lg">Want: {currentSwapProduct.wantItem}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-gray-600 mb-4">
-                  <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
-                  <span>{currentSwapProduct.location}</span>
+                <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
+                  <img src="/icon/locateIcon.png" alt="Location" className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-sm sm:text-base">{currentSwapProduct.location}</span>
                 </div>
               </div>
 
               {/* Product Details */}
-              <div className="space-y-4 mb-8">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Condition</h3>
-                  <p className="text-gray-700">{currentSwapProduct.condition}</p>
+              <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Condition</h3>
+                  <p className="text-gray-700 text-sm sm:text-base">{currentSwapProduct.condition}</p>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Material</h3>
-                  <p className="text-gray-700">{currentSwapProduct.material}</p>
+                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Material</h3>
+                  <p className="text-gray-700 text-sm sm:text-base">{currentSwapProduct.material}</p>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Age</h3>
-                  <p className="text-gray-700">{currentSwapProduct.age}</p>
+                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Age</h3>
+                  <p className="text-gray-700 text-sm sm:text-base">{currentSwapProduct.age}</p>
                 </div>
               </div>
 
               {/* Seller Information */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-8">
-                <div className="flex items-center justify-between">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-6 sm:mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-(--color-olive) rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-(--color-olive) rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                       </svg>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{currentSwapProduct.seller}</p>
-                      <p className="text-sm text-gray-600">Verified Seller</p>
+                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{currentSwapProduct.seller}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Verified Seller</p>
                     </div>
                   </div>
-                  <button className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-300 transition-colors">
+                  <button className="px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 rounded-full text-xs sm:text-sm font-medium hover:bg-gray-300 transition-colors">
                     Chat Now
                   </button>
                 </div>
               </div>
 
               {/* Product Description */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-gray-900 mb-3">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{currentSwapProduct.description}</p>
+              <div className="mb-6 sm:mb-8">
+                <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Description</h3>
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{currentSwapProduct.description}</p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
-                <button onClick={() => setIsLiked(!isLiked)} className={`flex-1 py-3 px-6 rounded-full border-2 font-medium transition-all duration-300 ${
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <button onClick={() => setIsLiked(!isLiked)} className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-full border-2 font-medium transition-all duration-300 text-sm sm:text-base ${
                   isLiked ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive)'
                 }`}>
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                     {isLiked ? 'Liked' : 'Like'}
                   </div>
                 </button>
-                <button className="flex-1 py-3 px-6 bg-(--color-olive) text-white rounded-full font-medium hover:bg-(--color-primary) transition-colors">
+                <button className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-(--color-olive) text-white rounded-full font-medium hover:bg-(--color-primary) transition-colors text-sm sm:text-base">
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                     Swap
@@ -284,44 +284,30 @@ export default function ItemViewSwapPage() {
 
             {/* RIGHT SECTION - Related Sale Products */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Products</h3>
-                <div className="space-y-4">
+              <div className="sticky top-20 sm:top-24 mx-10">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Related Products</h3>
+                <div className="space-y-3 sm:space-y-4">
                   {relatedSaleProducts.map((product) => (
-                    <Link key={product.id} href={`/item-view-sale/${product.id}`} className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+                    <Link key={product.id} href={`/item-view-sale/${product.id}`} className="block bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                       <div className="aspect-square">
                         <Image src={product.image} alt={product.title} width={300} height={300} className="w-full h-full object-cover" />
                       </div>
-                      <div className="p-4">
-                        <h4 className="font-semibold text-[18px] text-(--color-olive) mb-1">{product.title}</h4>
-                        <div className="bg-(--color-white) text-(--color-primary) rounded-xl mb-2">
+                      <div className="p-3 sm:p-4">
+                        <h4 className="font-semibold text-sm sm:text-base lg:text-lg text-(--color-olive) mb-1">{product.title}</h4>
+                        <div className="bg-(--color-white) text-(--color-primary) rounded-lg sm:rounded-xl mb-2">
                             <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                 </svg>
-                                <span className="font-semibold text-[15px]">Want: {currentSwapProduct.wantItem}</span>
+                                <span className="font-semibold text-xs sm:text-sm lg:text-base">Want: {currentSwapProduct.wantItem}</span>
                             </div>
                         </div>                        
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <img src="/icon/locateIcon.png" alt="Location" className="w-3 h-auto" />
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                          <img src="/icon/locateIcon.png" alt="Location" className="w-2 h-2 sm:w-3 sm:h-3" />
                           <span>{product.location}</span>
                         </div>
                       </div>
                     </Link>
-
-                        // <h3 className="text-[15px] text-(--color-olive) font-semibold">{p.title}</h3>
-                        // <div className="mt-2 flex items-center gap-2 text-[14px] text-(--color-black)">
-                        //   <img src="/icon/swapIcon.png" alt="Swap" className="w-4 h-auto" />
-                        //   <span>{p.swapFor}</span>
-                        // </div>
-
-                        // <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
-                        //   <img src="/icon/locateIcon.png" alt="Location" className="w-4 h-auto" />
-                        //   <span>{p.location}</span>
-                        // </div>
-
-
-
                   ))}
                 </div>
               </div>

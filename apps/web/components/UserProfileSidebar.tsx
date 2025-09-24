@@ -60,7 +60,7 @@ const UserProfileSidebar = ({ isMobileMenuOpen = false, setIsMobileMenuOpen }: U
   };
 
   const renderDesktopSidebar = () => (
-    <div className="bg-white border-r border-gray-200 min-h-screen pt-20 w-[300px]">
+    <div className="fixed top-0 left-0 h-screen bg-white border-r border-gray-200 min-h-screen pt-20 w-[300px]">
       <div className="p-6">
         <nav className="space-y-2">
           {sidebarItems.map((item) => {
