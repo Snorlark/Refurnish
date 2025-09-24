@@ -127,14 +127,14 @@ const UserManagementPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 ml-80 p-8 overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Menu className="w-6 h-6 text-gray-600 mr-4" />
-          <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
+        <div className="flex items-center mb-6">
+          <Menu className="w-5 h-5 text-gray-600 mr-3" /> 
+          <h1 className="text-xl font-semibold text-gray-900">User Management</h1>
         </div>
 
         {/* Users Title and Search */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Users ({filteredUsers.length})</h2>
+        <div className="mb-6">  
+            <h2 className="text-base font-semibold text-gray-900 mb-3">Users ({filteredUsers.length})</h2> {/* was text-lg mb-4 */}
           <div className="relative max-w-xl">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-gray-400" />
@@ -144,7 +144,7 @@ const UserManagementPage: React.FC = () => {
               placeholder="Search by user name, email, or ID"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
         </div>
@@ -155,12 +155,12 @@ const UserManagementPage: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -168,16 +168,16 @@ const UserManagementPage: React.FC = () => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-9 h-9 rounded-full bg-green-700 text-white flex items-center justify-center mr-3 text-sm font-semibold">JD</div>
+                      <div className="w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center mr-2 text-xs font-semibold">JD</div>
                         <div className="text-sm">
                           <div className="text-gray-900 font-medium">Sample User</div>
                           <div className="text-gray-500 text-xs">{user.id}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 underline">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
+                    <td className="px-4 py-2.5 whitespace-nowrap text-sm text-blue-600 underline">{user.email}</td>
+                    <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">
                       <div>{user.createdDate}</div>
                       <div className="text-gray-500 text-xs">{user.createdTime}</div>
                     </td>
@@ -186,8 +186,9 @@ const UserManagementPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
                       <button className="p-1 rounded hover:bg-gray-100">
-                        <MoreVertical className="w-5 h-5" />
+                        <MoreVertical className="w-4 h-4" /> {/* was w-5 h-5 */}
                       </button>
+
                     </td>
                   </tr>
                 ))}
@@ -196,7 +197,7 @@ const UserManagementPage: React.FC = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 text-sm text-gray-600">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-xs text-gray-600">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
@@ -213,12 +214,12 @@ const UserManagementPage: React.FC = () => {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`h-8 min-w-8 px-2 rounded-md text-xs ${
+                    className={`h-7 min-w-7 px-1.5 rounded-md text-xs ${
                       isActive ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
                     }`}
                   >
                     {page}
-                  </button>
+                  </button> 
                 );
               })}
             </div>

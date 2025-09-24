@@ -194,10 +194,10 @@ const AccountPage = () => {
 
     return (
         <>
-         <UserProfileSidebar
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
-        />
+            <UserProfileSidebar
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
          
             {/* NAVBAR */}
             <NavbarMenu 

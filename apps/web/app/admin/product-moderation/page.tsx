@@ -103,13 +103,16 @@ const navItems = [
       {/* Main Content */}
       <div className="flex-1 ml-80 p-8 overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Menu className="w-6 h-6 text-gray-600 mr-4" />
-          <h1 className="text-2xl font-semibold text-gray-900">Product Moderation</h1>
+       <div className="flex items-center mb-6">
+          <Menu className="w-5 h-5 text-gray-600 mr-3" /> {/* was w-6 h-6 */}
+          <h1 className="text-xl font-semibold text-gray-900">Product Moderation</h1> {/* was text-2xl */}
         </div>
 
+
         {/* Top summary */}
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Listings for Approval (10)</h2>
+        <h2 className="text-base font-semibold text-gray-900 mb-3">
+          Listings for Approval (10)
+        </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Order statistics */}
@@ -118,12 +121,12 @@ const navItems = [
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-100 rounded-xl p-5">
                 <div className="text-sm text-gray-600 mb-3">Listings for Approval</div>
-                <div className="text-4xl font-bold text-gray-900 mb-2">20</div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">20</div>
                 <div className="h-1 rounded-full bg-red-400" style={{ width: '40%' }} />
               </div>
               <div className="border border-gray-100 rounded-xl p-5">
                 <div className="text-sm text-gray-600 mb-3">Active listings on website</div>
-                <div className="text-4xl font-bold text-gray-900 mb-2">50</div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">50</div>
                 <div className="h-1 rounded-full bg-blue-300" style={{ width: '60%' }} />
               </div>
             </div>
@@ -132,7 +135,7 @@ const navItems = [
           {/* Site earnings */}
           <div className="bg-white border border-gray-100 rounded-xl p-6 w-fit h-fit justify-self-start">
             <div className="text-sm text-gray-600">Site earnings this month</div>
-            <div className="mt-3 text-5xl font-extrabold text-gray-900">₱100K</div>
+            <div className="mt-2 text-3xl font-extrabold text-gray-900">₱100K</div>
           </div>
         </div>
 
@@ -143,22 +146,22 @@ const navItems = [
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Listing by</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Evaluate</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Listing by</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evaluate</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {listings.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.lister}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.category}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.product}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.price}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <button onClick={() => setIsEvaluateOpen(true)} className="px-4 py-1.5 bg-gray-800 text-white rounded-md hover:bg-gray-900">Evaluate</button>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">{row.lister}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">{row.category}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">{row.product}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-sm text-gray-900">{row.price}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-right text-sm">
+                        <button onClick={() => setIsEvaluateOpen(true)}  className="px-3 py-1 bg-gray-800 text-white text-sm rounded-md hover:bg-gray-900">Evaluate</button>
                       </td>
                     </tr>
                   ))}
