@@ -527,11 +527,10 @@ export default function ChairsCatalogPage() {
         )}
       </AnimatePresence>
 
+        {/* Spacer for fixed nav */}
+        <div className="h-20 " />
 
-        <div className="h-20" />
-
-      {/* CATEGORY TABS (centered) */}
-
+        {/* CATEGORY TABS (centered) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9">
           <div className=" mx-5 md:mx-20 text-center opacity-50"></div>
 
@@ -839,8 +838,6 @@ export default function ChairsCatalogPage() {
               ))
             )}
           </div>
-        </section>
-
         </section>
 
         {/* FOOTER */}
