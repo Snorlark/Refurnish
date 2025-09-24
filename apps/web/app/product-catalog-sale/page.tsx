@@ -841,7 +841,7 @@ export default function ChairsCatalogPage() {
         </section>
 
         {/* FOOTER */}
-        <div className="border-t-[0.2px] border-(--color-olive) mt-12  text-center"></div>
+        <div className="border-t-[0.2px] border-(--color-olive) mt-12 text-center"></div>
 
         <footer className="bg-(--color-white) text-(--color-primary) py-16 px-6 lg:px-16">
           <div className="max-w-7xl px-6 lg:px-9 py-4 container mx-auto">
