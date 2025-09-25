@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useSearchParams, useRouter } from "next/navigation";
-
+import { Suspense } from "react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -199,10 +199,20 @@ const productCatalog: Record<string, Product[]> = {
 
   SHELVES: [],
 };
-
 export default function ChairsCatalogPage() {
-  const [menuOpen, setMenuOpen, ] = useState(false);
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChairsCatalogContent />
+    </Suspense>
+  );
+}
+
+function ChairsCatalogContent() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const navbarRef = useRef<HTMLElement>(null);
@@ -216,8 +226,8 @@ export default function ChairsCatalogPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
-
   const searchParams = useSearchParams();
+
   const router = useRouter();
 
   const categoryParam = searchParams.get("category");
@@ -234,7 +244,6 @@ export default function ChairsCatalogPage() {
     router.push(`/product-catalog-sale?category=${encodeURIComponent(c)}`);
   };
 
-
   useEffect(() => {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
@@ -249,10 +258,10 @@ export default function ChairsCatalogPage() {
             const progress = self.progress;
             // const height = gsap.utils.interpolate(72, 60, progress);
             // const marginX = gsap.utils.interpolate(12, 6, progress);
-                      const height = gsap.utils.interpolate(64, 60, progress);
-                      const marginX = gsap.utils.interpolate(32, 18, progress);
-                      const marginY = gsap.utils.interpolate(0, 8, progress);
-                      const paddingX = gsap.utils.interpolate(22, 16, progress);
+            const height = gsap.utils.interpolate(64, 60, progress);
+            const marginX = gsap.utils.interpolate(32, 18, progress);
+            const marginY = gsap.utils.interpolate(0, 8, progress);
+            const paddingX = gsap.utils.interpolate(22, 16, progress);
             // use gsap.set to avoid layout thrash
             gsap.set(navEl, {
               height,
@@ -352,7 +361,7 @@ export default function ChairsCatalogPage() {
   // Use the enhanced filteredItems for display
   const filteredProducts: Product[] = filteredItems;
 
- const updateDropdownPos = () => {
+  const updateDropdownPos = () => {
     const btn = menuBtnRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
@@ -366,7 +375,9 @@ export default function ChairsCatalogPage() {
     updateDropdownPos();
     const onResize = () => updateDropdownPos();
     const onScroll = () => updateDropdownPos();
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("keydown", onKey);
@@ -377,12 +388,10 @@ export default function ChairsCatalogPage() {
     };
   }, [menuOpen]);
 
-
   return (
     <>
       <main className="bg-[#fcfcfc] font-sans   min-h-screen transition-all ease-in-out duration-300 ">
         {/* NAVBAR */}
-       
 
         <nav
           ref={navbarRef}
@@ -444,9 +453,10 @@ export default function ChairsCatalogPage() {
                   </button>
                 </Link>
 
-                <button                 
+                <button
                   onClick={() => setMenuOpen(true)}
-                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)"
+                >
                   <img
                     src="/icon/menuIcon.png"
                     alt="Account"
@@ -457,96 +467,107 @@ export default function ChairsCatalogPage() {
             </div>
           </div>
         </nav>
-        
-  <AnimatePresence>
-        {menuOpen && (
-          <>
-            {/* overlay: placed after the nav so it will blur/dim the page (including nav) */}
-            <motion.div
-              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm  "
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-            />
 
-            {/* dropdown: fixed and positioned using computed top/right so it aligns with the menu button's right edge */}
-            <motion.div
-              role="menu"
-              aria-label="User shortcuts"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.16 }}
-              onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-              style={
-                dropdownPos
-                  ? { position: "fixed", top: dropdownPos.top, right: dropdownPos.right, zIndex: 60 }
-                  : { position: "fixed", top: 80, right: 16, zIndex: 60 } // fallback
-              }
-              className="w-56 bg-[#ffffff] 2xl:mr-18 xl:mr-12 lg:mr-8 md:mr-6 mr-4 backdrop-blur-md rounded-2xl shadow-lg border mt-2 border-gray-200 overflow-hidden"
-            >
-              {/* small top-right back/close icon */}
-              <div className="flex justify-end p-2 border-b border-gray-100">
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 p-1 rounded"
-                  aria-label="Close menu"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="w-5 h-5"
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              {/* overlay: placed after the nav so it will blur/dim the page (including nav) */}
+              <motion.div
+                className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm  "
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMenuOpen(false)}
+              />
+
+              {/* dropdown: fixed and positioned using computed top/right so it aligns with the menu button's right edge */}
+              <motion.div
+                role="menu"
+                aria-label="User shortcuts"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.16 }}
+                onClick={(e: React.MouseEvent<HTMLDivElement>) =>
+                  e.stopPropagation()
+                }
+                style={
+                  dropdownPos
+                    ? {
+                        position: "fixed",
+                        top: dropdownPos.top,
+                        right: dropdownPos.right,
+                        zIndex: 60,
+                      }
+                    : { position: "fixed", top: 80, right: 16, zIndex: 60 } // fallback
+                }
+                className="w-56 bg-[#ffffff] 2xl:mr-18 xl:mr-12 lg:mr-8 md:mr-6 mr-4 backdrop-blur-md rounded-2xl shadow-lg border mt-2 border-gray-200 overflow-hidden"
+              >
+                {/* small top-right back/close icon */}
+                <div className="flex justify-end p-2 border-b border-gray-100">
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-500 hover:text-gray-700 p-1 rounded"
+                    aria-label="Close menu"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <Link
+                  href="/user-profile"
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <img src="/icon/account.png" alt="" className="w-4 h-4" />
+                  Account
+                </Link>
+
+                <Link
+                  href="/messages-section"
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <img src="/icon/chat.png" alt="" className="w-4 h-4" />
+                  Chat
+                </Link>
+
+                <Link
+                  href="/seller-dashboard"
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <img src="/icon/dashboard.png" alt="" className="w-4 h-4" />
+                  Seller Dashboard
+                </Link>
+
+                <button
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    // TODO: logout logic
+                  }}
+                >
+                  <img src="/icon/logout.png" alt="" className="w-4 h-4" />
+                  Log Out
                 </button>
-              </div>
-
-              <Link
-                href="/user-profile"
-                className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
-                onClick={() => setMenuOpen(false)}
-              >
-                <img src="/icon/account.png" alt="" className="w-4 h-4" />
-                Account
-              </Link>
-
-              <Link
-                href="/messages-section"
-                className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
-                onClick={() => setMenuOpen(false)}
-              >
-                <img src="/icon/chat.png" alt="" className="w-4 h-4" />
-                Chat
-              </Link>
-
-              <Link
-                href="/seller-dashboard"
-                className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
-                onClick={() => setMenuOpen(false)}
-              >
-                <img src="/icon/dashboard.png" alt="" className="w-4 h-4" />
-                Seller Dashboard
-              </Link>
-
-              <button
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: logout logic
-                }}
-              >
-                <img src="/icon/logout.png" alt="" className="w-4 h-4" />
-                Log Out
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Spacer for fixed nav */}
         <div className="h-20 " />
@@ -597,7 +618,6 @@ export default function ChairsCatalogPage() {
               );
             })}
           </div>
-
 
           {/* FILTER SECTION */}
           <div className="mt-6 mb-8 mx-22">
