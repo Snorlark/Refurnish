@@ -36,7 +36,18 @@ app.use("/api/products", productRoutes);
 
 //Socket.io setup
 const httpServer = http.createServer(app);
-const io = new SocketIOServer(httpServer);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://refurnish.vercel.app',
+      'https://refurnish-blond.vercel.app',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST']
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
@@ -56,4 +67,4 @@ io.on("connection", (socket) => {
   });
 });
 
-export { app, httpServer };
+export { app, httpServer, io };
