@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, Users, MoreVertical, Search } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
 import ProtectedRoute from '../../../components/ProtectedRoute';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -22,20 +23,16 @@ interface UserRow {
   status: 'Active' | 'Inactive' | 'Banned';
 }
 
-const sampleUsers: UserRow[] = Array.from({ length: 9 }).map((_, idx) => ({
-  id: `123456789`,
-  name: 'Sample User',
-  email: idx % 3 === 0 ? 'SampleUser@email.com' : idx % 3 === 1 ? 'SampleUser@email.com' : 'SampleUser@email.com',
-  createdDate: 'Sept 11, 2025',
-  createdTime: '09:11',
-  status: 'Active',
-}));
-
 const UserManagementPage: React.FC = () => {
   const router = useRouter();
+  const { token } = useAuth();
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 9;
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
 
   const navItems = [
   { label: 'Dashboard Overview', href: '/admin/dashboard', active: false, icon: <LayoutDashboard className="w-5 h-5 text-gray-500" /> },
@@ -43,26 +40,64 @@ const UserManagementPage: React.FC = () => {
   { label: 'Product Moderation', href: '/admin/product-moderation', active: false, icon: <PackageCheck className="w-5 h-5 text-gray-500" /> },
 ];
 
-  const filteredUsers = useMemo(() => {
-    if (!search.trim()) {
-      return sampleUsers;
-    }
-    const term = search.trim().toLowerCase();
-    return sampleUsers.filter((u) =>
-      u.name.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term) ||
-      u.id.toLowerCase().includes(term)
-    );
-  }, [search]);
+  const filteredUsers = users; // server-side filtered via query
 
   // Reset to first page when the search term changes
   useEffect(() => {
     setCurrentPage(1);
   }, [search]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentPageUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
+  // Fetch users whenever page/search changes
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchUsers = async () => {
+      if (!token) return;
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          limit: String(pageSize),
+        });
+        if (search.trim()) params.set('search', search.trim());
+        const res = await fetch(`${API_BASE_URL}/api/users?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || 'Failed to load users');
+
+        const mapped: UserRow[] = (data.data || []).map((u: any) => {
+          const created = new Date(u.createdDate);
+          const createdDate = created.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+          const createdTime = created.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+          return {
+            id: u.id || u._id,
+            name: u.name,
+            email: u.email,
+            createdDate,
+            createdTime,
+            status: (u.status as any) || 'Active',
+          } as UserRow;
+        });
+        setUsers(mapped);
+        setTotalPages(data?.pagination?.totalPages || 1);
+      } catch {
+        // Optionally show a toast
+        setUsers([]);
+        setTotalPages(1);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+    return () => controller.abort();
+  }, [token, API_BASE_URL, currentPage, pageSize, search]);
+
+  const currentPageUsers = filteredUsers; // already paginated by server
 
   return (
     <ProtectedRoute requireAdmin={true}>
@@ -135,7 +170,7 @@ const UserManagementPage: React.FC = () => {
 
         {/* Users Title and Search */}
         <div className="mb-6">  
-            <h2 className="text-base font-semibold text-gray-900 mb-3">Users ({filteredUsers.length})</h2> {/* was text-lg mb-4 */}
+            <h2 className="text-base font-semibold text-gray-900 mb-3">Users ({filteredUsers.length})</h2>
           <div className="relative max-w-xl">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-gray-400" />
@@ -152,6 +187,9 @@ const UserManagementPage: React.FC = () => {
 
         {/* Users Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          {isLoading && (
+            <div className="px-4 py-2 text-xs text-gray-500">Loading users…</div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">

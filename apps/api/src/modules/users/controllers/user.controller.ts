@@ -271,3 +271,59 @@ export const getProfile = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Admin: List users with pagination and optional search
+export const listUsers = async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(parseInt((req.query.page as string) || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt((req.query.limit as string) || "10", 10), 1),
+      100
+    );
+    const search = ((req.query.search as string) || "").trim();
+
+    const filter: any = {};
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(filter),
+      User.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select("firstName lastName email role createdAt")
+        .lean(),
+    ]);
+
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const data = users.map((u: any) => ({
+      _id: u._id,
+      name: [u.firstName, u.lastName].filter(Boolean).join(" ").trim(),
+      email: u.email,
+      role: u.role,
+      createdDate: u.createdAt,
+    }));
+
+    return res.status(200).json({
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
