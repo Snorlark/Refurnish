@@ -24,6 +24,31 @@ const LoginPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string; textColor: string; barColor: string }>({ score: 0, label: "", textColor: "", barColor: "" });
+
+  const evaluatePasswordStrength = (value: string) => {
+    let score = 0;
+    const lengthGood = value.length >= 8;
+    const hasLower = /[a-z]/.test(value);
+    const hasUpper = /[A-Z]/.test(value);
+    const hasNumber = /[0-9]/.test(value);
+    const hasSymbol = /[^A-Za-z0-9]/.test(value);
+
+    if (lengthGood) score += 1;
+    if (hasLower && hasUpper) score += 1;
+    if (hasNumber) score += 1;
+    if (hasSymbol) score += 1;
+
+    let label = "Very weak";
+    let textColor = "text-red-600";
+    let barColor = "bg-red-500";
+    if (score === 1) { label = "Weak"; textColor = "text-orange-600"; barColor = "bg-orange-500"; }
+    if (score === 2) { label = "Fair"; textColor = "text-yellow-700"; barColor = "bg-yellow-500"; }
+    if (score === 3) { label = "Good"; textColor = "text-green-700"; barColor = "bg-green-500"; }
+    if (score >= 4) { label = "Strong"; textColor = "text-emerald-700"; barColor = "bg-emerald-500"; }
+
+    return { score, label, textColor, barColor };
+  };
 
   const handleLogin = async () => {
     setAlert(null);
@@ -429,10 +454,32 @@ const LoginPage: React.FC = () => {
                     id="signUpPassword"
                     type={showSignUpPassword ? "text" : "password"}
                     value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSignUpPassword(val);
+                      setPasswordStrength(val ? evaluatePasswordStrength(val) : { score: 0, label: "", textColor: "", barColor: "" });
+                    }}
                     className="w-full px-3 py-2  text-sm bg-white border border-gray-300 rounded-md text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F]"
                     placeholder="Enter password"
                   />
+                  {signUpPassword && (
+                    <div className="mt-2">
+                      <div className="flex gap-1" aria-hidden>
+                        {Array.from({ length: 4 }).map((_, idx) => {
+                          const filled = idx < passwordStrength.score;
+                          return (
+                            <div
+                              key={idx}
+                              className={`${filled ? passwordStrength.barColor : "bg-gray-200"} h-1.5 flex-1 rounded`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className={`mt-1 text-xs font-medium ${passwordStrength.textColor}`}>
+                        Password strength: {passwordStrength.label}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm Password */}
