@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/user.model";
+import { io } from "../../../app";
 import config from "../../../config/config";
 
 // Validation helper
@@ -269,5 +270,131 @@ export const getProfile = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: List users with pagination and optional search
+export const listUsers = async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(parseInt((req.query.page as string) || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt((req.query.limit as string) || "10", 10), 1),
+      100
+    );
+    const search = ((req.query.search as string) || "").trim();
+
+    const filter: any = {};
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(filter),
+      User.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select("firstName lastName email role createdAt profilePicture")
+        .lean(),
+    ]);
+
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const data = users.map((u: any) => ({
+      _id: u._id,
+      name: [u.firstName, u.lastName].filter(Boolean).join(" ").trim(),
+      email: u.email,
+      role: u.role,
+      profilePicture: u.profilePicture,
+      createdDate: u.createdAt,
+    }));
+
+    return res.status(200).json({
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
+
+// Admin: Update a user's basic fields
+export const adminUpdateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const { firstName, lastName, email, role } = req.body as {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      role?: 'buyer' | 'seller' | 'admin';
+    };
+
+    const updates: any = {};
+    if (typeof firstName === 'string') updates.firstName = firstName;
+    if (typeof lastName === 'string') updates.lastName = lastName;
+    if (typeof email === 'string') {
+      if (!validateEmail(email)) return res.status(400).json({ message: 'Invalid email format' });
+      updates.email = email;
+    }
+    if (role) updates.role = role;
+
+    const updated = await User.findByIdAndUpdate(id, updates, { new: true }).select('-password');
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+
+    // Notify listeners
+    io.emit('user_updated', { id: updated._id });
+
+    return res.status(200).json({
+      message: 'User updated successfully',
+      user: {
+        id: updated._id,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        email: updated.email,
+        role: updated.role,
+      },
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to update user' });
+  }
+};
+
+// Admin: Delete a user after confirming admin password
+export const adminDeleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const { adminPassword } = req.body as { adminPassword: string };
+
+    // Verify the requester is an admin and password matches
+    const adminUser = await User.findById((req as any).user._id);
+    if (!adminUser || adminUser.role !== 'admin' || !adminUser.password) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const ok = await bcrypt.compare(adminPassword, adminUser.password);
+    if (!ok) return res.status(401).json({ message: 'Invalid admin password' });
+
+    const deleted = await User.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'User not found' });
+
+    // Notify listeners
+    io.emit('user_deleted', { id });
+
+    return res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to delete user' });
   }
 };

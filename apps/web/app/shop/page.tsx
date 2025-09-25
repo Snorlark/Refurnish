@@ -145,11 +145,11 @@ export default function Shop() {
   const categoryButtons = [
     { name: 'Chairs', image: '/living.png', category: 'chairs' },
     { name: 'Tables', image: '/dining.png', category: 'tables' },
-    { name: 'Bedroom', image: '/bedroom.png', category: 'bedroom' },
-    { name: 'Sofa', image: '/living.png', category: 'sofa' },
-    { name: 'Cabinet', image: '/dining.png', category: 'cabinet' },
-    { name: 'Decor', image: '/bedroom.png', category: 'decor' },
-    { name: 'Mirror', image: '/living.png', category: 'mirror' }
+    { name: 'Sofa', image: '/bedroom.png', category: 'sofa' },
+    { name: 'Cabinet', image: '/living.png', category: 'cabinet' },
+    { name: 'Decor', image: '/dining.png', category: 'decor' },
+    { name: 'Mirror', image: '/bedroom.png', category: 'mirror' },
+    { name: 'Lamp', image: '/living.png', category: 'lamp' }
   ];
 
 
@@ -375,23 +375,46 @@ export default function Shop() {
           <h2 className="text-2xl md:text-[32px] font-bold text-(--color-primary) mb-12">Select a Category of Your Choice</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 max-w-6xl mx-auto">
             {categoryButtons.map((category, index) => (
-              <Link
-                key={index}
-                href={`/product-catalog?category=${category.category}`}
-                className="group text-center transform hover:scale-105 transition-all duration-300"
-              >
-                <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden mb-4 group-hover:-translate-y-2">
-                  <div className="relative overflow-hidden">
-                    <img 
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              // <Link
+              //   key={index}
+              //   href={`/product-catalog?category=${category.category}`}
+              //   className="group text-center transform hover:scale-105 transition-all duration-300"
+              // >
+              //   <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden mb-4 group-hover:-translate-y-2">
+              //     <div className="relative overflow-hidden">
+              //       <img 
+              //         src={category.image}
+              //         alt={category.name}
+              //         className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-500"
+              //       />
+              //       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              //     </div>
+              //   </div>
+              //   <h3 className="text-sm font-medium text-(--color-primary) group-hover:text-(--color-olive) transition-colors duration-300">{category.name}</h3>
+              // </Link>
+
+                <Link
+                  key={index}
+                  href={`/product-catalog-sale?category=${encodeURIComponent(category.category.toUpperCase())}`}
+                  className="group text-center transform hover:scale-105 transition-all duration-300"
+                >
+                  <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden mb-4 group-hover:-translate-y-2">
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-sm font-medium text-(--color-primary) group-hover:text-(--color-olive) transition-colors duration-300">{category.name}</h3>
-              </Link>
+                  <h3 className="text-sm font-medium text-(--color-primary) group-hover:text-(--color-olive) transition-colors duration-300">
+                    {category.name}
+                  </h3>
+                </Link>
+
+
+
             ))}
           </div>
         </div>
