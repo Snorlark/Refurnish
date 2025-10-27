@@ -7,6 +7,7 @@ interface CartSidebarProps {
   onUpdateQuantity: (productId: number, quantity: number) => void;
   onRemoveItem: (productId: number) => void;
   totalPrice: number;
+  isBackendAvailable?: boolean;
 }
 
 export default function CartSidebar({
@@ -15,7 +16,8 @@ export default function CartSidebar({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
-  totalPrice
+  totalPrice,
+  isBackendAvailable = true
 }: CartSidebarProps) {
   if (!isOpen) return null;
 
@@ -24,7 +26,15 @@ export default function CartSidebar({
       <div className="absolute inset-0 bg-black/50" onClick={onClose}></div>
       <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-lg font-semibold text-black">Shopping Cart</h2>
+          <div className="flex flex-col">
+            <h2 className="text-lg font-semibold text-black">Shopping Cart</h2>
+            {!isBackendAvailable && (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-xs text-orange-600">Offline Mode</span>
+              </div>
+            )}
+          </div>
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full text-black"

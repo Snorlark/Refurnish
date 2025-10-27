@@ -1,4 +1,3 @@
-//hehe
 "use client";
 
 import Image from "next/image";
@@ -6,15 +5,7 @@ import Link from "next/link";
 import Footer from '../../../components/Footer';
 import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-
-type CartItem = {
-  id: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  thumbnailSrc?: string;
-  selected: boolean;
-};
+import { useWishlistContext } from '../../../contexts/WishlistContext';
 
 const currency = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -22,70 +13,42 @@ const currency = new Intl.NumberFormat("en-PH", {
 });
 
 export default function WishlistPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "chair-360",
-      name: "360° Swivel Wooden Office Chair",
-      unitPrice: 750,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "corner-cabinet",
-      name: "Vintage Mahogany Corner Shelf/Cabinet",
-      unitPrice: 9750,
-      quantity: 1,
-      selected: false,
-    },
-    {
-        id: "study-table",
-        name: "Yaring Narra Study Table",
-        unitPrice: 1450,
-        quantity: 1,
-        selected: false,
-      },
-
-  ]);
+  const wishlist = useWishlistContext();
+  const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
 
   const cartTotal = useMemo(() => {
-    return cartItems
-      .filter((item) => item.selected)
-      .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  }, [cartItems]);
+    return wishlist.wishlistItems
+      .filter((item) => selectedItems.has(item.id))
+      .reduce((sum, item) => sum + item.priceNum, 0);
+  }, [wishlist.wishlistItems, selectedItems]);
 
-  const selectedItems = useMemo(() => cartItems.filter((i) => i.selected), [cartItems]);
-  const someSelected = cartItems.some((i) => i.selected);
-  const shippingFee = selectedItems.length > 0 ? 150 : 0;
+  const selectedWishlistItems = useMemo(() => 
+    wishlist.wishlistItems.filter((i) => selectedItems.has(i.id)), 
+    [wishlist.wishlistItems, selectedItems]
+  );
+  const someSelected = selectedItems.size > 0;
+  const shippingFee = selectedItems.size > 0 ? 150 : 0;
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  function toggleItemSelection(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, selected: !item.selected } : item
-      )
-    );
+  function toggleItemSelection(itemId: string | number) {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   }
 
-  function incrementQuantity(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  }
-
-  function decrementQuantity(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      )
-    );
-  }
-
-  function removeItem(itemId: string) {
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+  function removeItem(itemId: string | number) {
+    wishlist.removeFromWishlist(itemId);
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(itemId);
+      return newSet;
+    });
   }
 
   return (
@@ -94,73 +57,93 @@ export default function WishlistPage() {
 
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
+        
+        {/* Back to Products Navigation */}
+        <Link href="/product-catalog-sale" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <span className="text-xs sm:text-sm font-medium">Back to Products</span>
+        </Link>
 
-        <div className="mt-6 rounded-2xl bg-white shadow-sm ring-1 font-sans  ring-black/[0.06]">
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815] font-sans">
-            <span className="sr-only">Select</span>
-            <div className="pl-40 font-sans">Product</div>
-            <div className="pl-153 font-sans">Quantity</div>
-            <div className="pl-1 font-sans">Price</div>
+        <div className="mt-6 rounded-2xl bg-white shadow-sm ring-1 font-sans ring-black/[0.06]">
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 sm:px-6 py-4 text-sm font-semibold text-[#273815] font-sans">
+            <div className="font-sans flex justify-center">Select</div>
+            <div className="font-sans">Product</div>
+            <div className="font-sans text-center">Quantity</div>
+            <div className="font-sans text-right">Price</div>
+            <div className="font-sans text-center">Action</div>
           </div>
         </div>
 
-        <ul className="space-y-4 mt-4">
-          {cartItems.map((item) => (
+        {wishlist.wishlistItems.length === 0 ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
+            <p className="text-gray-500 mb-6">Save items you love for later</p>
+            {!wishlist.isBackendAvailable && (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-xs text-orange-600">Offline Mode</span>
+              </div>
+            )}
+            <Link href="/product-catalog-sale" className="inline-flex items-center px-6 py-3 bg-[#636B2F] text-white rounded-full hover:bg-[#4A5A2A] transition-colors">
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-4 mt-4">
+            {wishlist.wishlistItems.map((item) => (
             <li
               key={item.id}
               className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
               
             >
               <div className="grid font-sans grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
-                <input
-                  aria-label="Select item"
-                  type="checkbox"
-                  checked={item.selected}
-                  onChange={() => toggleItemSelection(item.id)}
-                  className="size-4 font-sans accent-green-800"
-                />
+                <div className="flex justify-center">
+                  <input
+                    aria-label="Select item"
+                    type="checkbox"
+                    checked={selectedItems.has(item.id)}
+                    onChange={() => toggleItemSelection(item.id)}
+                    className="size-4 font-sans accent-green-800"
+                  />
+                </div>
 
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="size-14 font-sans  rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
-                    {item.thumbnailSrc ? (
+                  <div className="size-14 font-sans rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                    {item.image ? (
                       <Image
-                        src={item.thumbnailSrc}
+                        src={item.image}
                         alt=""
                         width={56}
                         height={56}
                         className="object-cover size-full"
                       />
                     ) : (
-                      <span className=" font-sans " >Image</span>
+                      <span className="font-sans">Image</span>
                     )}
                   </div>
                   <div className="truncate">
-                    <p className="truncate text-neutral-800  font-sans " >
+                    <p className="truncate text-neutral-800 font-sans">
                       {item.name}
                     </p>
+                    <p className="text-xs text-gray-500">{item.location}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-3">
-                  <IconButton
-                    label="Decrease quantity"
-                    onClick={() => decrementQuantity(item.id)}
-                    className="text-[#273815] hover:bg-[#273815]/10"
-                  >
-                    <MinusIcon />
-                  </IconButton>
-                  <span className="w-6 text-center select-none font-sans  font-medium">{item.quantity}</span>
-                  <IconButton
-                    label="Increase quantity"
-                    onClick={() => incrementQuantity(item.id)}
-                    className="text-[#273815] hover:bg-[#273815]/10"
-                  >
-                    <PlusIcon />  
-                  </IconButton>
+                  <span className="text-sm text-gray-500">Wishlist Item</span>
                 </div>
 
                 <div className="text-right tabular-nums font-sans text-neutral-800">
-                  {currency.format(item.unitPrice)}
+                  {currency.format(item.priceNum)}
                 </div>
 
                 <div className="flex justify-center">
@@ -174,39 +157,26 @@ export default function WishlistPage() {
                 </div>
               </div>
             </li>
-          ))}
-        </ul>
+            ))}
+          </ul>
+        )}
 
-        <div className="mt-10 flex flex-col-reverse font-sans gap-4 sm:flex-row sm:items-center">
-          <div className="flex-1">
-            <div className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] p-5" >
-              <div className="flex items-center justify-between">
-                <p className="text-xl font-semibold font-sans  text-neutral-800">Total :</p>
-                <p className="text-xl font-semibold font-sans  text-[#636B2F] tabular-nums" >
-                  {currency.format(cartTotal)}
-                </p>
-              </div>
-            </div>
-          </div>
-
+        <div className="mt-10 flex justify-end">
           <button
             onClick={() => setIsCheckoutOpen(true)}
             disabled={!someSelected}
             title={!someSelected ? 'Select at least one product to continue' : undefined}
-            className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
-            aria-label="Buy now"
+            className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-8 h-12 shrink-0 transition-all duration-200 ${someSelected ? 'bg-[#636B2F] text-white hover:bg-[#4A5A2A] shadow-lg hover:shadow-xl' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
+            aria-label="Add to cart"
           >
-            <span className=" font-sans ">Add to Cart</span>
+            <span className="font-sans font-medium">Add to Cart</span>
           </button>
         </div>
 
-        {!someSelected && (
-          <p className="mt-2 font-sans text-sm text-neutral-500">Select at least one product to proceed to checkout.</p>
-        )}
 
         {isCheckoutOpen && (
           <CheckoutModal
-            items={selectedItems}
+            items={selectedWishlistItems}
             subtotal={cartTotal}
             shippingFee={shippingFee}
             onClose={() => setIsCheckoutOpen(false)}
@@ -256,6 +226,7 @@ function CartTabs() {
   const tabs = [
     { href: "/cart-details/cart", label: "CART" },
     { href: "/cart-details/wishlist", label: "WISHLIST" },
+    { href: "/cart-details/swap", label: "SWAP" },
     { href: "/cart-details/track-orders", label: "TRACK ORDERS" },
   ];
 
@@ -286,49 +257,6 @@ function CartTabs() {
   );
 }
 
-function SiteFooter() {
-  return (
-    <footer className="mt-16 border-t border-black/[0.08] py-10" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-neutral-600">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Image src="/Rf-long-black-logo.svg" alt="Refurnish" width={140} height={32} />
-          </div>
-          <div className="flex items-center gap-3 text-neutral-500">
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <InstagramIcon />
-            </a>
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <TikTokIcon />
-            </a>
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <FacebookIcon />
-            </a>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Information</h3>
-          <ul className="space-y-2">
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Privacy</a></li>
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Terms of Use</a></li>
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>About us</a></li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Contact Us</h3>
-          <ul className="space-y-1">
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Email: <a className="hover:text-neutral-800" href="mailto:support@refurnish.ph" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>support@refurnish.ph</a></li>
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Mobile / Viber: +63 912 345 6789</li>
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Messenger: m.me/refurnishph</li>
-            <li className="pt-2 text-xs text-neutral-500" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>© 2025 NOVU. All rights reserved.</li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 function CheckoutModal({
   items,
@@ -336,7 +264,7 @@ function CheckoutModal({
   shippingFee,
   onClose,
 }: {
-  items: CartItem[];
+  items: any[];
   subtotal: number;
   shippingFee: number;
   onClose: () => void;
@@ -369,19 +297,20 @@ function CheckoutModal({
                 <li key={item.id} className="flex items-center justify-between gap-4 rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-sm p-4">
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="size-16 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0">
-                      {item.thumbnailSrc ? (
-                        <Image src={item.thumbnailSrc} alt="" width={64} height={64} className="object-cover size-full" />
+                      {item.image ? (
+                        <Image src={item.image} alt="" width={64} height={64} className="object-cover size-full" />
                       ) : (
                         <span>Image</span>
                       )}
                     </div>
                     <div className="truncate">
                       <p className="truncate text-neutral-800">{item.name}</p>
+                      <p className="text-xs text-gray-500">{item.location}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6 shrink-0">
-                    <span className="w-6 text-center">{item.quantity}</span>
-                    <span className="tabular-nums">{currency.format(item.unitPrice)}</span>
+                    <span className="text-sm text-gray-500">Wishlist</span>
+                    <span className="tabular-nums">{currency.format(item.priceNum)}</span>
                   </div>
                 </li>
               ))}
@@ -448,21 +377,6 @@ function IconButton({
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-4 text-[#273815]">
-      <path d="M10 4v12M4 10h12" stroke="#273815" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MinusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-4 text-[#273815]">
-      <path d="M4 10h12" stroke="#273815" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function CloseIcon() {
   return (

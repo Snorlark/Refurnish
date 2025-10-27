@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -39,7 +40,22 @@ export default function Navbar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  
+  const router = useRouter();
+
+  type BackendProduct = {
+    _id: string;
+    title: string;
+    images: string[];
+    category?: string;
+    status?: string;
+    listedAs?: string;
+  };
+  type SuggestProduct = { id: string; title: string; category: string; listedAs: string };
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
+  const [allProducts, setAllProducts] = useState<SuggestProduct[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   // Debug: Log user data to see profile picture
   useEffect(() => {
     if (user) {
@@ -64,6 +80,38 @@ export default function Navbar({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isProfileMenuOpen]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const [saleRes, bothRes, swapRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=sale`, { signal: controller.signal }),
+          fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=both`, { signal: controller.signal }),
+          fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=swap`, { signal: controller.signal }),
+        ]);
+        if (!saleRes.ok || !bothRes.ok || !swapRes.ok) return;
+        const sale: BackendProduct[] = await saleRes.json();
+        const both: BackendProduct[] = await bothRes.json();
+        const swap: BackendProduct[] = await swapRes.json();
+        const merged = [...sale, ...both, ...swap];
+        const mapped: SuggestProduct[] = merged.map((p) => ({
+          id: p._id,
+          title: p.title,
+          category: (p.category || 'UNCATEGORIZED').toUpperCase(),
+          listedAs: p.listedAs || 'sale',
+        }));
+        setAllProducts(mapped);
+        setAllCategories(Array.from(new Set(mapped.map((m) => m.category))).filter(Boolean));
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('Navbar suggestions fetch error:', e);
+        }
+      }
+    };
+    load();
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -339,29 +387,39 @@ gsap.set(navbarRef.current, {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearchSubmit?.(e);
+    if (onSearchSubmit) {
+      onSearchSubmit(e);
+    } else if ((searchQuery || '').trim()) {
+      window.location.href = `/product-catalog-sale?search=${encodeURIComponent(searchQuery!)}`;
+      setIsSearchOpen(false);
+    }
   };
+
+  const norm = (s: string) => (s || '').toLowerCase().trim();
+  const q = norm(searchQuery || '');
+  const categoryMatches = q
+    ? allCategories.filter((c) => c.toLowerCase().includes(q)).slice(0, 5)
+    : [];
+  const titleMatches = q
+    ? allProducts.filter((p) => norm(p.title).includes(q)).slice(0, 8)
+    : [];
 
   return (
     <>
       <nav 
         ref={navbarRef}
-        // className="bg-white/95 backdrop-blur-md rounded-full mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out"
-          // className="bg-[#f8f8f4] backdrop-blur-md rounded-2xl mx-4 md:mx-10 my-0 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out shadow-[inset_4px_4px_8px_rgba(0,0,0,0.05),inset_-4px_-4px_8px_rgba(255,255,255,0.8)]"
-  className="
-    bg-[#fbfbfb]/72 
-    backdrop-blur-md
-    rounded-full
-    border border-white/60 
-    shadow-[0_4px_10px_rgba(0,0,0,0.07)] 
-    mx-4 md:mx-10 fixed top-4 left-0 right-0 z-50 
-    transition-all duration-300 ease-out
-  "
-
+        className="
+          bg-[#fbfbfb]/72 
+          backdrop-blur-md
+          rounded-full
+          border border-white/60 
+          shadow-[0_4px_10px_rgba(0,0,0,0.07)] 
+          mx-4 md:mx-10 fixed top-4 left-0 right-0 z-50 
+          transition-all duration-300 ease-out
+        "
         style={{ height: '64px' }}
       >
-        {/* <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full"> */}
-       <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full  justify-between items-center">
+        <div className="nav-inner max-w-7xl mx-auto px-4 md:px-6 lg:px-9 h-full  justify-between items-center">
           
           <div className="flex justify-between items-center h-full">
             {/* Logo */}
@@ -417,8 +475,8 @@ gsap.set(navbarRef.current, {
 
               {isAuthenticated ? (
                 <div className="relative">
-                  <button
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  <Link
+                    href={`/user-profile/${user?.email?.replace('@gmail.com', '').replace('@', '') || ''}`}
                     className="w-10 h-10 rounded-full bg-[#636B2F] flex items-center justify-center hover:bg-[#4d5323] transition-modern cursor-pointer text-white font-semibold overflow-hidden"
                   >
                     {user?.profilePicture ? (
@@ -438,46 +496,7 @@ gsap.set(navbarRef.current, {
                     <span className={`${user?.profilePicture ? 'hidden' : 'flex'} items-center justify-center w-full h-full`}>
                       {user?.firstName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
-                  </button>
-                  
-                  {/* Profile Dropdown */}
-                  {isProfileMenuOpen && (
-                    <div className="profile-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                      <div className="p-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">
-                          {user?.firstName} {user?.lastName}
-                        </p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
-                      </div>
-                      <div className="py-1">
-                        <Link
-                          href="/user-profile"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          Profile
-                        </Link>
-                        {user?.role === 'admin' && (
-                          <Link
-                            href="/admin/dashboard"
-                            className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => setIsProfileMenuOpen(false)}
-                          >
-                            Admin Dashboard
-                          </Link>
-                        )}
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsProfileMenuOpen(false);
-                          }}
-                          className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                  </Link>
                 </div>
               ) : (
                 <Link href="/login">
@@ -495,18 +514,34 @@ gsap.set(navbarRef.current, {
       {isSearchOpen && (
         <div className="fixed top-23 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-1">
-            <form onSubmit={handleSearchSubmit} className="flex items-center">
+            <form onSubmit={handleSearchSubmit} className="flex items-center relative">
               <div className="flex-1 flex items-center px-4 py-3">
                 <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search for furniture, chairs, tables..."
+                  placeholder="Search by category or title"
                   value={searchQuery}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  onChange={(e) => {
+                    onSearchChange?.(e.target.value);
+                    setShowSuggestions(true);
+                  }}
                   className="flex-1 bg-transparent border-none outline-none text-black placeholder-gray-400 text-sm"
                   autoFocus
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const exactCat = allCategories.find((c) => c.toLowerCase() === q);
+                      if (exactCat) {
+                        setShowSuggestions(false);
+                        router.push(`/product-catalog-sale?category=${encodeURIComponent(exactCat)}`);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }
+                    if (e.key === 'Escape') setShowSuggestions(false);
+                  }}
                 />
               </div>
               <div className="flex items-center space-x-1 pr-1">
@@ -528,6 +563,46 @@ gsap.set(navbarRef.current, {
                   </svg>
                 </button>
               </div>
+              {showSuggestions && q && (
+                <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+                  <ul className="max-h-72 overflow-auto py-2 text-sm">
+                    {categoryMatches.map((c) => (
+                      <li key={`cat-${c}`}>
+                        <button
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setShowSuggestions(false);
+                            router.push(`/product-catalog-sale?category=${encodeURIComponent(c)}`);
+                            setIsSearchOpen(false);
+                          }}
+                        >
+                          Category: {c}
+                        </button>
+                      </li>
+                    ))}
+                    {titleMatches.map((p) => (
+                      <li key={`title-${p.id}`}>
+                        <button
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setShowSuggestions(false);
+                            const toSale = (p.listedAs || 'sale').toLowerCase() !== 'swap';
+                            router.push(toSale ? `/item-view-sale?id=${encodeURIComponent(p.id)}` : `/item-view-swap?id=${encodeURIComponent(p.id)}`);
+                            setIsSearchOpen(false);
+                          }}
+                        >
+                          {p.title}
+                        </button>
+                      </li>
+                    ))}
+                    {categoryMatches.length === 0 && titleMatches.length === 0 && (
+                      <li className="px-4 py-2 text-gray-500">No results</li>
+                    )}
+                  </ul>
+                </div>
+              )}
             </form>
           </div>
         </div>

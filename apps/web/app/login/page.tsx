@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, XCircle, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, XCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -24,6 +24,42 @@ const LoginPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string; textColor: string; barColor: string }>({ score: 0, label: "", textColor: "", barColor: "" });
+
+  // 2FA State
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpType, setOtpType] = useState<'registration' | 'login' | 'admin'>('login');
+  const [isOTPLoading, setIsOTPLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [otpExpired, setOtpExpired] = useState(false);
+  const [currentOTP, setCurrentOTP] = useState("");
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
+
+  const evaluatePasswordStrength = (value: string) => {
+    let score = 0;
+    const lengthGood = value.length >= 8;
+    const hasLower = /[a-z]/.test(value);
+    const hasUpper = /[A-Z]/.test(value);
+    const hasNumber = /[0-9]/.test(value);
+    const hasSymbol = /[^A-Za-z0-9]/.test(value);
+
+    if (lengthGood) score += 1;
+    if (hasLower && hasUpper) score += 1;
+    if (hasNumber) score += 1;
+    if (hasSymbol) score += 1;
+
+    let label = "Very weak";
+    let textColor = "text-red-600";
+    let barColor = "bg-red-500";
+    if (score === 1) { label = "Weak"; textColor = "text-orange-600"; barColor = "bg-orange-500"; }
+    if (score === 2) { label = "Fair"; textColor = "text-yellow-700"; barColor = "bg-yellow-500"; }
+    if (score === 3) { label = "Good"; textColor = "text-green-700"; barColor = "bg-green-500"; }
+    if (score >= 4) { label = "Strong"; textColor = "text-emerald-700"; barColor = "bg-emerald-500"; }
+
+    return { score, label, textColor, barColor };
+  };
 
   const handleLogin = async () => {
     setAlert(null);
@@ -37,7 +73,38 @@ const LoginPage: React.FC = () => {
       // Check for hardcoded admin credentials
       const isAdminCredential = email === "admin@refurnish.dev" && password === "Refurnish2024!@#Admin";
       
-      await login(email, password, isAdminCredential ? "REFURNISH_ADMIN_SECRET_2024" : undefined);
+      // Check if user needs 2FA (admin always needs it, regular users if last login > 1 month)
+      if (isAdminCredential) {
+        setIsAdminLoading(true);
+        setOtpType('admin');
+        setShowOTPForm(true);
+        
+        try {
+          await sendOTPCode(email, 'admin');
+          // Automatically fetch the current OTP for admin in development
+          if (process.env.NODE_ENV === 'development') {
+            setTimeout(() => getCurrentOTP(), 1000);
+          }
+        } catch (error) {
+          setShowOTPForm(false);
+          throw error;
+        } finally {
+          setIsAdminLoading(false);
+        }
+        return;
+      }
+
+      // Check if regular user needs 2FA
+      const needsOTP = await checkLastLogin(email);
+      if (needsOTP) {
+        setOtpType('login');
+        await sendOTPCode(email, 'login');
+        setShowOTPForm(true);
+        return;
+      }
+
+      // Proceed with normal login
+      await login(email, password);
       setAlert({ type: "success", message: "Login successful! Redirecting..." });
     } catch (error: any) {
       setAlert({ type: "error", message: error.message || "Login failed. Please try again." });
@@ -68,8 +135,14 @@ const LoginPage: React.FC = () => {
         return;
       }
 
+      // Register user first
       await register(firstName, lastName, signUpEmail, signUpPassword);
-      setAlert({ type: "success", message: "Registration successful! Redirecting..." });
+      
+      // Send OTP for email verification
+      setEmail(signUpEmail);
+      setOtpType('registration');
+      await sendOTPCode(signUpEmail, 'registration');
+      setShowOTPForm(true);
       setIsSignUpOpen(false);
     } catch (error: any) {
       setAlert({ type: "error", message: error.message || "Registration failed. Please try again." });
@@ -110,6 +183,129 @@ const LoginPage: React.FC = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleLogin();
+  };
+
+  // 2FA Functions
+  const sendOTPCode = async (email: string, type: 'registration' | 'login' | 'admin') => {
+    try {
+      setIsOTPLoading(true);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/users/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send OTP');
+      }
+
+      setOtpSent(true);
+      setOtpExpired(false);
+      setOtpTimer(600); // 10 minutes = 600 seconds
+      setOtp(''); // Clear the OTP field when sending new OTP
+      setAlert({ type: "success", message: `Verification code sent to ${type === 'admin' ? 'admin email' : email}` });
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Failed to send verification code" });
+    } finally {
+      setIsOTPLoading(false);
+    }
+  };
+
+  const verifyOTPCode = async () => {
+    try {
+      if (!otp || otp.length !== 6) {
+        setAlert({ type: "error", message: "Please enter a valid 6-digit code" });
+        return;
+      }
+
+      setIsOTPLoading(true);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/users/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, type: otpType })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Invalid verification code');
+      }
+
+      // OTP verified successfully, proceed with login
+      if (otpType === 'admin') {
+        await login(email, password, "REFURNISH_ADMIN_SECRET_2024");
+      } else {
+        await login(email, password);
+      }
+      
+      setAlert({ type: "success", message: "Login successful! Redirecting..." });
+      setShowOTPForm(false);
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Verification failed" });
+    } finally {
+      setIsOTPLoading(false);
+    }
+  };
+
+  const checkLastLogin = async (email: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com'}/api/users/check-last-login/${email}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.needsOTP;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking last login:', error);
+      return false;
+    }
+  };
+
+  const handleBackToLanding = () => {
+    router.push('/landing');
+  };
+
+  // Function to get current OTP for testing
+  const getCurrentOTP = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/users/current-otp/${email}?type=${otpType}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentOTP(data.otp || '');
+      }
+    } catch (error) {
+      console.error('Error fetching current OTP:', error);
+    }
+  };
+
+  // OTP Timer Effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => {
+          if (prev <= 1) {
+            setOtpExpired(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [otpTimer]);
+
+  // Format timer display
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
    const AlertWidget = () =>
@@ -154,6 +350,15 @@ const LoginPage: React.FC = () => {
         }}
       >
         <div className="relative w-full max-w-sm">
+          {/* Back Button */}
+          <button
+            onClick={handleBackToLanding}
+            className="absolute -top-16 left-0 flex items-center text-white hover:text-gray-200 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            <span className="text-sm font-medium">Back to Landing</span>
+          </button>
+
           {/* Logo and Tagline */}
           <div className="text-center mb-5">
             <div className="mb-3">
@@ -279,10 +484,10 @@ const LoginPage: React.FC = () => {
               {/* Login Button */}
               <button
                 onClick={handleLogin}
-                disabled={isLoading || !email || !password}
+                disabled={isLoading || isAdminLoading || !email || !password}
                 className="w-full bg-[#636B2F] text-white font-semibold py-2.5 px-3 rounded-full shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Logging in..." : "Log In"}
+                {isLoading ? "Logging in..." : isAdminLoading ? "Sending verification code..." : "Log In"}
               </button>
             </div>
 
@@ -301,6 +506,135 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Verification Form */}
+      {showOTPForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm">
+            <h2 className="text-xl font-extrabold text-[#273815] text-center mb-6">
+              {otpType === 'registration' ? 'Verify Your Email' : 'Two-Factor Authentication'}
+            </h2>
+            
+            {/* Loading state while sending OTP */}
+            {isAdminLoading && (
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Sending verification code...
+                </div>
+              </div>
+            )}
+            
+            {!isAdminLoading && (
+              <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-4">
+                  {otpType === 'registration' 
+                    ? 'We sent a verification code to your email address. Please enter it below to complete your registration.'
+                    : otpType === 'admin'
+                    ? 'Admin login requires verification. We sent a code to the admin email address.'
+                    : 'For security purposes, please enter the verification code sent to your email address.'
+                  }
+                </p>
+                {otpType !== 'admin' && (
+                  <p className="text-sm font-medium text-[#273815]">{email}</p>
+                )}
+              </div>
+
+              {/* Timer Display */}
+              {otpTimer > 0 && (
+                <div className="text-center">
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    otpTimer <= 60 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Code expires in {formatTimer(otpTimer)}
+                  </div>
+                </div>
+              )}
+
+              {/* DEBUG: Show current OTP for testing */}
+              {process.env.NODE_ENV === 'development' && otpType === 'admin' && currentOTP && (
+                <div className="text-center">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Current OTP: {currentOTP}
+                  </div>
+                </div>
+              )}
+
+              {otpExpired && (
+                <div className="text-center">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    Code expired
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="otp" className="block text-xs font-medium text-[#273815] mb-1.5">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  id="otp"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F] transition-all text-center text-lg tracking-widest"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowOTPForm(false);
+                    setOtp('');
+                    setOtpSent(false);
+                    setOtpTimer(0);
+                    setOtpExpired(false);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={verifyOTPCode}
+                  disabled={isOTPLoading || !otp || otp.length !== 6 || otpExpired}
+                  className="flex-1 px-4 py-2 bg-[#636B2F] text-white rounded-lg hover:bg-[#4a5a22] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isOTPLoading ? 'Verifying...' : otpExpired ? 'Code Expired' : 'Verify'}
+                </button>
+              </div>
+
+              {(otpExpired || otpTimer === 0) && (
+                <div className="text-center">
+                  <button
+                    onClick={() => sendOTPCode(email, otpType)}
+                    disabled={isOTPLoading}
+                    className="text-sm text-[#636B2F] underline hover:text-[#4a5a22] disabled:opacity-50"
+                  >
+                    Resend Code
+                  </button>
+                </div>
+              )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Sign Up Modal */}
       {isSignUpOpen && (
@@ -429,10 +763,32 @@ const LoginPage: React.FC = () => {
                     id="signUpPassword"
                     type={showSignUpPassword ? "text" : "password"}
                     value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSignUpPassword(val);
+                      setPasswordStrength(val ? evaluatePasswordStrength(val) : { score: 0, label: "", textColor: "", barColor: "" });
+                    }}
                     className="w-full px-3 py-2  text-sm bg-white border border-gray-300 rounded-md text-[#273815] focus:outline-none focus:ring-2 focus:ring-[#636B2F]"
                     placeholder="Enter password"
                   />
+                  {signUpPassword && (
+                    <div className="mt-2">
+                      <div className="flex gap-1" aria-hidden>
+                        {Array.from({ length: 4 }).map((_, idx) => {
+                          const filled = idx < passwordStrength.score;
+                          return (
+                            <div
+                              key={idx}
+                              className={`${filled ? passwordStrength.barColor : "bg-gray-200"} h-1.5 flex-1 rounded`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className={`mt-1 text-xs font-medium ${passwordStrength.textColor}`}>
+                        Password strength: {passwordStrength.label}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm Password */}

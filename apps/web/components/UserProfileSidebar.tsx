@@ -3,39 +3,42 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, Settings, MessageSquare, Info, LogOut, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UserProfileSidebarProps {
   isMobileMenuOpen?: boolean;
   setIsMobileMenuOpen?: (open: boolean) => void;
+  onLogoutClick?: () => void;
 }
 
-const UserProfileSidebar = ({ isMobileMenuOpen = false, setIsMobileMenuOpen }: UserProfileSidebarProps) => {
+const UserProfileSidebar = ({ isMobileMenuOpen = false, setIsMobileMenuOpen, onLogoutClick }: UserProfileSidebarProps) => {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const sidebarItems = [
     { 
       id: 'Account', 
       label: 'Account', 
       icon: User, 
-      href: '/user-profile'
+      href: '/profile/account'
     },
     { 
-      id: 'Seller Dashboard', 
-      label: 'Seller Dashboard', 
+      id: user?.role === 'seller' ? 'Seller Dashboard' : 'Seller Registration', 
+      label: user?.role === 'seller' ? 'Seller Dashboard' : 'Seller Registration', 
       icon: Settings, 
-      href: '/seller-dashboard'
+      href: user?.role === 'seller' ? '/profile/seller-dashboard-access' : '/profile/seller-registration'
     },
     { 
       id: 'Messages', 
       label: 'Messages', 
       icon: MessageSquare, 
-      href: '/messages-section'
+      href: '/profile/messages'
     },
     { 
       id: 'About Us', 
       label: 'About Us', 
       icon: Info, 
-      href: '/about-page'
+      href: '/profile/about'
     },
     { 
       id: 'Log out', 
@@ -43,9 +46,7 @@ const UserProfileSidebar = ({ isMobileMenuOpen = false, setIsMobileMenuOpen }: U
       icon: LogOut, 
       href: '#',
       onClick: () => {
-        // Handle logout logic here
-        console.log('Logging out...');
-        // You can add your logout logic here
+        onLogoutClick?.();
       }
     }
   ];

@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
+import { CartProvider } from "../contexts/CartContext";
+import { WishlistProvider } from "../contexts/WishlistContext";
 import SessionProvider from "../components/SessionProvider";
+import SiteVisitTracker from "../components/SiteVisitTracker";
+import ActivityTracker from "../components/ActivityTracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +43,13 @@ export default function RootLayout({
       >
         <SessionProvider>
           <AuthProvider>
-            {children}
+            <CartProvider>
+              <WishlistProvider>
+                <SiteVisitTracker />
+                <ActivityTracker />
+                {children}
+              </WishlistProvider>
+            </CartProvider>
           </AuthProvider>
         </SessionProvider>
       </body>

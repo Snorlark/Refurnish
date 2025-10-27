@@ -5,21 +5,39 @@ import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Footer from '../../components/Footer';
-import { useWishlist } from '../../hooks/useWishlist';
-import Navbar from '../../components/Navbar-Products';
-import WishlistSidebar from '../../components/WishlistSidebar';
-import CartSidebar from '../../components/CartSidebar';
 import ChatBubble from '../../components/ChatBubble';
-import { useCart } from '../../hooks/useCart';
-import { saleProducts, newProducts, featuredProducts, forSwapProducts } from '../../data/products';
+import { useWishlistContext } from '../../contexts/WishlistContext';
+import { useCartContext } from '../../contexts/CartContext';
+import { useSearchParams } from 'next/navigation';
 
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+type BackendProduct = {
+  _id: string;
+  title: string;
+  description: string;
+  price?: number;
+  condition: string;
+  category: string;
+  images: string[];
+  location: string;
+  status: string;
+  material: string;
+  age: { value: number; unit: string };
+  listedAs: string;
+  owner?: { 
+    _id: string;
+    email: string; 
+    firstName: string; 
+    lastName: string; 
+  };
+};
+
 type Product = {
-  id: number;
+  id: string | number;
   title: string;
   image: string;
   location: string;
@@ -30,9 +48,15 @@ type Product = {
   age: string;
   description: string;
   images: string[];
+  owner?: { 
+    _id: string;
+    email: string; 
+    firstName: string; 
+    lastName: string; 
+  };
 };
 
-const currentProduct: Product = {
+const fallbackProduct: Product = {
   id: 1,
   title: "360° Swivel Wooden Office Chair",
   image: "/products/chair/view1.jpg",
@@ -46,32 +70,89 @@ const currentProduct: Product = {
   images: ["/products/chair/view1.jpg", "/products/chair/view2.jpg", "/products/chair/view4.jpg", "/products/chair/view5.jpg", "/products/chair/view3.jpg"  ]
 };
 
-const relatedProducts = [
-  { id: 2, title: "Folding Trolley", image: "/living.png", location: "Amanpulo", price: 12000 },
-  { id: 3, title: "Coffee Table", image: "/dining.png", location: "Amanpulo", price: 12000 }
-];
-
-const similarProducts = [
-  { id: 4, title: "Folding Trolley", image: "/living.png", location: "Amanpulo", price: 12000 },
-  { id: 5, title: "Wooden Cabinet", image: "/bedroom.png", location: "Amanpulo", price: 12000 },
-  { id: 6, title: "Half-moon Table", image: "/dining.png", location: "Amanpulo", price: 12000 },
-  { id: 7, title: "Cinema Seats", image: "/living.png", location: "Amanpulo", price: 12000 },
-  { id: 8, title: "Metal Shelving Unit", image: "/bedroom.png", location: "Amanpulo", price: 12000 }
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
 
 export default function ItemViewSalePage() {
   const navbarRef = useRef<HTMLElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const [currentProduct, setCurrentProduct] = useState<Product>(fallbackProduct);
+  const [relatedProducts, setRelatedProducts] = useState<Array<{ id: string; title: string; image: string; location: string; price: number }>>([]);
+  const [similarProductsData, setSimilarProductsData] = useState<Array<{ id: string; name: string; image: string; price: string; location: string }>>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [similarProductsIndex, setSimilarProductsIndex] = useState(0);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-
+  
   // Use shared hooks
-  const cart = useCart();
-  const wishlist = useWishlist();
+  const cart = useCartContext();
+  const wishlist = useWishlistContext();
+  // Load product and lists
+  useEffect(() => {
+    const id = searchParams.get('id') || '';
+    if (!id) return;
+    const controller = new AbortController();
+
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, { signal: controller.signal });
+        const p: BackendProduct = await res.json();
+        if (!res.ok || !p) return;
+        const prod: Product = {
+          id: p._id,
+          title: p.title,
+          image: Array.isArray(p.images) && p.images[0] ? p.images[0] : '/products/chair/view1.jpg',
+          location: p.location || 'Metro Manila',
+          price: typeof p.price === 'number' ? p.price : 0,
+          seller: p.owner ? [p.owner.firstName, p.owner.lastName].filter(Boolean).join(' ') || 'Seller' : 'Seller',
+          condition: p.condition,
+          material: p.material,
+          age: p.age ? `${p.age.value} ${p.age.unit}` : '—',
+          description: p.description,
+          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [Array.isArray(p.images) ? (p.images[0] || '/products/chair/view1.jpg') : '/products/chair/view1.jpg'],
+          owner: p.owner
+        };
+        setCurrentProduct(prod);
+
+        // Fetch similar category products (status listed, listedAs sale)
+        const listRes = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=sale&category=${encodeURIComponent(p.category)}`, { signal: controller.signal });
+        const listData: BackendProduct[] = await listRes.json();
+        const others = (listData || []).filter(x => x._id !== p._id);
+
+        // Related: same category AND same material, pick 2
+        const related = others.filter(x => x.material === p.material).slice(0, 2).map(x => ({
+          id: x._id,
+          title: x.title,
+          image: Array.isArray(x.images) && x.images[0] ? x.images[0] : '/living.png',
+          location: x.location || 'Metro Manila',
+          price: typeof x.price === 'number' ? x.price : 0,
+        }));
+        setRelatedProducts(related);
+
+        // Similar: same category
+        const similar = others.slice(0, 12).map(x => ({
+          id: x._id,
+          name: x.title,
+          image: Array.isArray(x.images) && x.images[0] ? x.images[0] : '/living.png',
+          price: `₱${(x.price || 0).toLocaleString()}`,
+          location: x.location || 'Metro Manila',
+        }));
+        setSimilarProductsData(similar);
+        setTimeout(() => {
+          checkScrollPosition();
+        }, 0);
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    fetchProduct();
+    return () => controller.abort();
+  }, [searchParams]);
+
+  // Recalculate scroll availability when similar items change
+  useEffect(() => {
+    checkScrollPosition();
+  }, [similarProductsData]);
   
  // Navbar animation (reused from Home)
   useEffect(() => {
@@ -187,17 +268,6 @@ export default function ItemViewSalePage() {
     );
   };
 
-  const nextSimilarProducts = () => {
-    setSimilarProductsIndex((prev) => 
-      prev + 3 >= similarProducts.length ? 0 : prev + 3
-    );
-  };
-
-  const prevSimilarProducts = () => {
-    setSimilarProductsIndex((prev) => 
-      prev - 3 < 0 ? Math.max(0, similarProducts.length - 3) : prev - 3
-    );
-  };
 
   // Check scroll position and update button visibility
   const checkScrollPosition = () => {
@@ -259,12 +329,24 @@ export default function ItemViewSalePage() {
               </div>
 
               <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive) relative">
                   <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
+                  {wishlist.wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {wishlist.wishlistCount}
+                    </span>
+                  )}
                 </button>
-                <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
-                  <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
-                </button>
+                <Link href="/cart-details/cart">
+                  <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive) relative">
+                    <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
+                    {cart.cartCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cart.cartCount}
+                      </span>
+                    )}
+                  </button>
+                </Link>
                 <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                   <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
                 </button>
@@ -281,7 +363,7 @@ export default function ItemViewSalePage() {
              
              {/* LEFT SECTION */}
              <div className="lg:col-span-2">
-               <Link href="/product-catalog-sale" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
+              <Link href="/product-catalog-sale" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -294,7 +376,7 @@ export default function ItemViewSalePage() {
                <div className="relative mb-6 sm:mb-8">
                  <div className="h-64 sm:h-80 md:h-96 lg:h-120 w-full max-w-lg mx-auto rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
                    <Image 
-                     src={currentProduct.images[currentImageIndex]} 
+                    src={currentProduct.images[currentImageIndex]} 
                      alt={currentProduct.title}
                      width={500}
                      height={600}
@@ -364,7 +446,12 @@ export default function ItemViewSalePage() {
                        </svg>
                      </div>
                      <div>
-                       <p className="font-semibold text-gray-900 text-sm sm:text-base">{currentProduct.seller}</p>
+                       <Link 
+                         href={`/user-profile/${currentProduct.owner?.email || 'unknown'}`}
+                         className="font-semibold text-gray-900 text-sm sm:text-base hover:text-green-600 transition-colors cursor-pointer"
+                       >
+                         {currentProduct.seller}
+                       </Link>
                        <p className="text-xs sm:text-sm text-gray-600">Verified Seller</p>
                      </div>
                    </div>
@@ -382,17 +469,46 @@ export default function ItemViewSalePage() {
 
                {/* Action Buttons */}
                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                 <button onClick={() => setIsLiked(!isLiked)} className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-full border-2 font-medium transition-all duration-300 text-sm sm:text-base ${
-                   isLiked ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive)'
-                 }`}>
+                 <button 
+                   onClick={() => {
+                     const wishlistItem = {
+                       id: currentProduct.id.toString(),
+                       name: currentProduct.title,
+                       price: `₱${currentProduct.price.toLocaleString()}`,
+                       priceNum: currentProduct.price,
+                       location: currentProduct.location,
+                       image: currentProduct.image,
+                       category: currentProduct.material
+                     };
+                     wishlist.toggleWishlist(wishlistItem);
+                   }}
+                   className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-full border-2 font-medium transition-all duration-300 text-sm sm:text-base ${
+                     wishlist.isInWishlist(currentProduct.id) ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-(--color-olive) hover:text-(--color-olive)'
+                   }`}
+                 >
                    <div className="flex items-center justify-center gap-2">
-                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill={wishlist.isInWishlist(currentProduct.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                      </svg>
-                     {isLiked ? 'Liked' : 'Like'}
+                     {wishlist.isInWishlist(currentProduct.id) ? 'Liked' : 'Like'}
                    </div>
                  </button>
-                 <button className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors text-sm sm:text-base">
+                 <button 
+                   onClick={() => {
+                     const cartItem = {
+                       id: currentProduct.id.toString(),
+                       name: currentProduct.title,
+                       price: `₱${currentProduct.price.toLocaleString()}`,
+                       priceNum: currentProduct.price,
+                       location: currentProduct.location,
+                       image: currentProduct.image,
+                       category: currentProduct.material,
+                       quantity: 1
+                     };
+                     cart.addToCart(cartItem);
+                   }}
+                   className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                 >
                    <div className="flex items-center justify-center gap-2">
                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -417,7 +533,7 @@ export default function ItemViewSalePage() {
                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Related Products</h3>
                  <div className="space-y-3 sm:space-y-4">
                    {relatedProducts.map((product) => (
-                     <Link key={product.id} href={`/item-view-sale/${product.id}`} className="block bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+                    <Link key={product.id} href={`/item-view-sale?id=${product.id}`} className="block bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                        <div className="aspect-square">
                          <Image src={product.image} alt={product.title} width={300} height={300} className="w-full h-full object-cover" />
                        </div>
@@ -448,44 +564,67 @@ export default function ItemViewSalePage() {
                    className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 scrollbar-hide" 
                    id="product-carousel"
                  >
-                   {featuredProducts.map((product, index) => (
+                  {similarProductsData.map((product, index) => (
                      <div 
-                       key={product.id} 
+                      key={product.id} 
                        className="bg-white rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden group transform hover:-translate-y-2 flex-shrink-0 w-56 sm:w-64 md:w-72"
                        style={{
                          animationDelay: `${index * 0.1}s`
                        }}
                      >
                        <div className="relative overflow-hidden">
-                         <img 
-                           src={product.image}
-                           alt={product.name}
+                        <img 
+                          src={product.image}
+                          alt={product.name}
                            className="w-full h-48 sm:h-55 object-cover group-hover:scale-110 transition-transform duration-500"
                          />
                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                          <button 
-                           onClick={() => wishlist.toggleWishlist(product)}
+                          onClick={() => {
+                            const wishlistItem = {
+                              id: product.id.toString(),
+                              name: product.name,
+                              price: product.price,
+                              priceNum: parseFloat(product.price.replace(/[₱,\s]/g, '')),
+                              location: product.location,
+                              image: product.image,
+                              category: 'Similar Product'
+                            };
+                            wishlist.toggleWishlist(wishlistItem);
+                          }}
                            className={`absolute cursor-pointer top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white transform hover:scale-110 ${
-                             wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
+                            wishlist.isInWishlist(product.id) ? 'bg-red-100' : 'bg-white/80'
                            }`}
                          >
                            <img 
                              src="/icon/heartIcon.png" 
                              alt="wishlist" 
-                             className={`w-3 h-3 sm:w-4 sm:h-4 ${wishlist.isInWishlist(product.id) ? 'filter brightness-0 saturate-100 invert-[0.2] sepia-[1] saturate-[5] hue-rotate-[340deg]' : ''}`}
+                            className={`w-3 h-3 sm:w-4 sm:h-4 ${wishlist.isInWishlist(product.id) ? 'filter brightness-0 saturate-100 invert-[0.2] sepia-[1] saturate-[5] hue-rotate-[340deg]' : ''}`}
                            />
                          </button>
                        </div>
                        <div className="p-3 sm:p-4">
-                         <h3 className="font-semibold text-(--color-olive) text-sm sm:text-md mb-2 line-clamp-2">{product.name}</h3>
-                         <p className="text-(--color-primary) font-bold text-sm sm:text-base mb-2">{product.price}</p>
+                        <h3 className="font-semibold text-(--color-olive) text-sm sm:text-md mb-2 line-clamp-2">{product.name}</h3>
+                        <p className="text-(--color-primary) font-bold text-sm sm:text-base mb-2">{product.price}</p>
                          <div className="flex items-center justify-between">
                            <div className="flex items-center text-gray-600 text-xs">
                              <img src="/icon/locateIcon.png" alt="location" className="w-2 h-2 sm:w-3 sm:h-4 mr-1 sm:mr-2" />
-                             {product.location}
+                            {product.location}
                            </div>
                            <button 
-                             onClick={() => cart.addToCart(product)}
+                            onClick={() => {
+                              const cartItem = {
+                                id: product.id.toString(),
+                                name: product.name,
+                                price: product.price,
+                                priceNum: parseFloat(product.price.replace(/[₱,\s]/g, '')),
+                                location: product.location,
+                                image: product.image,
+                                category: 'Similar Product',
+                                quantity: 1
+                              };
+                              cart.addToCart(cartItem);
+                            }}
                              className="p-1.5 sm:p-2 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-200 transform hover:scale-110"
                            >
                              <img src="/icon/addtocart.png" alt="add to cart" className="w-auto h-5 sm:h-7" />
@@ -496,28 +635,26 @@ export default function ItemViewSalePage() {
                    ))}
                  </div>
                  
-                 {/* Navigation buttons */}
-                 {canScrollLeft && (
-                   <button 
-                     onClick={scrollLeft}
-                     className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
-                   >
-                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                     </svg>
-                   </button>
-                 )}
-                 
-                 {canScrollRight && (
-                   <button 
-                     onClick={scrollRight}
-                     className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
-                   >
-                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                   </svg>
-                   </button>
-                 )}
+                {/* Navigation buttons (always visible, disabled when not scrollable) */}
+                <button 
+                  onClick={scrollLeft}
+                  disabled={!canScrollLeft}
+                  className={`absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-10 ${canScrollLeft ? 'hover:bg-white hover:shadow-xl' : 'opacity-50 cursor-not-allowed'}`}
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <button 
+                  onClick={scrollRight}
+                  disabled={!canScrollRight}
+                  className={`absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-10 ${canScrollRight ? 'hover:bg-white hover:shadow-xl' : 'opacity-50 cursor-not-allowed'}`}
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                </button>
                </div>
 
            </div>
@@ -526,6 +663,18 @@ export default function ItemViewSalePage() {
         {/* FOOTER */}
         <Footer />
       </main>
+      
+      {/* Chat Bubble */}
+      <ChatBubble 
+        sellerId={currentProduct.owner?._id}
+        sellerName={currentProduct.seller}
+        openWithUser={currentProduct.owner ? {
+          id: currentProduct.owner._id,
+          email: currentProduct.owner.email,
+          firstName: currentProduct.owner.firstName,
+          lastName: currentProduct.owner.lastName
+        } : undefined}
+      />
     </>
   );
 }

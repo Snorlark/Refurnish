@@ -4,13 +4,41 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useSearchParams, useRouter } from 'next/navigation';
+import ChatBubble from '../../components/ChatBubble';
+import { useCartContext } from '../../contexts/CartContext';
+import { useSwap } from '../../hooks/useSwap';
+import { useAuth } from '../../contexts/AuthContext';
+import { useWishlistContext } from '../../contexts/WishlistContext';
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+type BackendProduct = {
+  _id: string;
+  title: string;
+  description: string;
+  price?: number;
+  condition: string;
+  category: string;
+  images: string[];
+  location: string;
+  status: string;
+  material: string;
+  age: { value: number; unit: string };
+  listedAs: string;
+  swapWantedDescription?: string;
+  owner?: { 
+    _id: string;
+    email: string; 
+    firstName: string; 
+    lastName: string; 
+  };
+};
+
 type SwapProduct = {
-  id: number;
+  id: string;
   title: string;
   image: string;
   location: string;
@@ -21,18 +49,24 @@ type SwapProduct = {
   age: string;
   description: string;
   images: string[];
+  owner?: { 
+    _id: string;
+    email: string; 
+    firstName: string; 
+    lastName: string; 
+  };
 };
 
 type SaleProduct = {
-  id: number;
+  id: string;
   title: string;
   image: string;
   location: string;
   price: number;
 };
 
-const currentSwapProduct: SwapProduct = {
-  id: 1,
+const fallbackSwapProduct: SwapProduct = {
+  id: "1",
   title: "360° Swivel Wooden Office Chair",
   image: "/products/chair/view1.jpg",
   location: "Manila",
@@ -45,21 +79,75 @@ const currentSwapProduct: SwapProduct = {
   images: ["/products/chair/view1.jpg", "/products/chair/view2.jpg", "/products/chair/view4.jpg"]
 };
 
-const relatedSaleProducts: SaleProduct[] = [
-  { id: 2, title: "Folding Trolley", image: "/living.png", location: "Amanpulo", price: 12000 },
-  { id: 3, title: "Folding Trolley", image: "/dining.png", location: "Amanpulo", price: 12000 }
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
 
 export default function ItemViewSwapPage() {
+  const cart = useCartContext();
+  const wishlist = useWishlistContext();
+  const { createSwap } = useSwap();
+  const { isAuthenticated } = useAuth();
   const navbarRef = useRef<HTMLElement>(null);
+  const searchParams = useSearchParams();
+  const [currentSwapProduct, setCurrentSwapProduct] = useState<SwapProduct>(fallbackSwapProduct);
+  const [relatedSaleProducts, setRelatedSaleProducts] = useState<SaleProduct[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load product and related products
+  useEffect(() => {
+    const id = searchParams.get('id') || '';
+    if (!id) return;
+    const controller = new AbortController();
+
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, { signal: controller.signal });
+        const p: BackendProduct = await res.json();
+        if (!res.ok || !p) return;
+        
+        const swapProduct: SwapProduct = {
+          id: p._id,
+          title: p.title,
+          image: Array.isArray(p.images) && p.images[0] ? p.images[0] : '/products/chair/view1.jpg',
+          location: p.location || 'Metro Manila',
+          wantItem: p.swapWantedDescription || 'Something interesting',
+          seller: p.owner ? [p.owner.firstName, p.owner.lastName].filter(Boolean).join(' ') || 'Seller' : 'Seller',
+          condition: p.condition,
+          material: p.material,
+          age: p.age ? `${p.age.value} ${p.age.unit}` : '—',
+          description: p.description,
+          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [Array.isArray(p.images) ? (p.images[0] || '/products/chair/view1.jpg') : '/products/chair/view1.jpg'],
+          owner: p.owner
+        };
+        setCurrentSwapProduct(swapProduct);
+
+        // Fetch related sale products (same category, status listed, listedAs sale)
+        const relatedRes = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=sale&category=${encodeURIComponent(p.category)}`, { signal: controller.signal });
+        const relatedData: BackendProduct[] = await relatedRes.json();
+        const related = (relatedData || []).slice(0, 2).map(x => ({
+          id: x._id,
+          title: x.title,
+          image: Array.isArray(x.images) && x.images[0] ? x.images[0] : '/living.png',
+          location: x.location || 'Metro Manila',
+          price: typeof x.price === 'number' ? x.price : 0,
+        }));
+        setRelatedSaleProducts(related);
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchProduct();
+    return () => controller.abort();
+  }, [searchParams]);
 
   useEffect(() => {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      gsap.timeline({
         scrollTrigger: {
           trigger: "main",
           start: "top top",
@@ -128,11 +216,21 @@ export default function ItemViewSwapPage() {
               </div>
 
               <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
-                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive) relative">
                   <img src="/icon/heartIcon.png" alt="Wishlist" className="h-4 w-auto" />
+                  {wishlist.wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {wishlist.wishlistCount}
+                    </span>
+                  )}
                 </button>
-                <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                <button className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-(--color-olive) relative">
                   <img src="/icon/cartIcon.png" alt="Cart" className="h-4 w-auto" />
+                  {cart.cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {cart.cartCount}
+                    </span>
+                  )}
                 </button>
                 <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                   <img src="/icon/menuIcon.png" alt="Account" className="h-4 w-auto" />
@@ -243,7 +341,12 @@ export default function ItemViewSwapPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{currentSwapProduct.seller}</p>
+                      <Link 
+                        href={`/user-profile/${currentSwapProduct.owner?.email || 'unknown'}`}
+                        className="font-semibold text-gray-900 text-sm sm:text-base hover:text-green-600 transition-colors cursor-pointer"
+                      >
+                        {currentSwapProduct.seller}
+                      </Link>
                       <p className="text-xs sm:text-sm text-gray-600">Verified Seller</p>
                     </div>
                   </div>
@@ -271,7 +374,30 @@ export default function ItemViewSwapPage() {
                     {isLiked ? 'Liked' : 'Like'}
                   </div>
                 </button>
-                <button className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-(--color-olive) text-white rounded-full font-medium hover:bg-(--color-primary) transition-colors text-sm sm:text-base">
+                <button
+                  onClick={async () => {
+                    if (!isAuthenticated) {
+                      setToast({ type: 'error', message: 'Please login to initiate a swap' });
+                      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+                      toastTimerRef.current = setTimeout(() => setToast(null), 1800);
+                      return;
+                    }
+                    try {
+                      await createSwap(currentSwapProduct.id, `Interested to swap for: ${currentSwapProduct.wantItem}`);
+                      setToast({ type: 'success', message: 'A message was sent to the seller' });
+                      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+                      toastTimerRef.current = setTimeout(() => {
+                        setToast(null);
+                        window.location.href = '/cart-details/swap';
+                      }, 1200);
+                    } catch (e) {
+                      setToast({ type: 'error', message: 'Failed to create swap. Please try again.' });
+                      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+                      toastTimerRef.current = setTimeout(() => setToast(null), 1800);
+                    }
+                  }}
+                  className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-(--color-olive) text-white rounded-full font-medium hover:bg-(--color-primary) transition-colors text-sm sm:text-base"
+                >
                   <div className="flex items-center justify-center gap-2">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -288,20 +414,13 @@ export default function ItemViewSwapPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Related Products</h3>
                 <div className="space-y-3 sm:space-y-4">
                   {relatedSaleProducts.map((product) => (
-                    <Link key={product.id} href={`/item-view-sale/${product.id}`} className="block bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+                    <Link key={product.id} href={`/item-view-sale?id=${product.id}`} className="block bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                       <div className="aspect-square">
                         <Image src={product.image} alt={product.title} width={300} height={300} className="w-full h-full object-cover" />
                       </div>
                       <div className="p-3 sm:p-4">
                         <h4 className="font-semibold text-sm sm:text-base lg:text-lg text-(--color-olive) mb-1">{product.title}</h4>
-                        <div className="bg-(--color-white) text-(--color-primary) rounded-lg sm:rounded-xl mb-2">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                </svg>
-                                <span className="font-semibold text-xs sm:text-sm lg:text-base">Want: {currentSwapProduct.wantItem}</span>
-                            </div>
-                        </div>                        
+                        <div className="text-base sm:text-lg font-semibold text-(--color-olive) mb-2">₱ {product.price.toLocaleString()}</div>
                         <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                           <img src="/icon/locateIcon.png" alt="Location" className="w-2 h-2 sm:w-3 sm:h-3" />
                           <span>{product.location}</span>
@@ -372,6 +491,43 @@ export default function ItemViewSwapPage() {
           </div>
         </footer>
       </main>
+      {/* Themed Toast Notification */}
+      {toast && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className={`min-w-[260px] max-w-sm px-4 py-3 rounded-xl shadow-xl ring-1 ring-black/10 bg-white flex items-start gap-3 border-l-4 ${toast.type === 'success' ? 'border-l-(--color-olive)' : 'border-l-red-500'}`}>
+            <div className={`mt-0.5 rounded-full p-1 ${toast.type === 'success' ? 'bg-(--color-olive)/10 text-(--color-olive)' : 'bg-red-100 text-red-600'}`}>
+              {toast.type === 'success' ? (
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 12.086l6.793-6.793a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              ) : (
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-5a1 1 0 112 0 1 1 0 01-2 0zm.293-7.707a1 1 0 011.414 0l.007.007a1 1 0 01.286.704l-.2 5a1 1 0 11-1.998-.08l.2-5a1 1 0 01.291-.631z" clipRule="evenodd"/></svg>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className={`text-sm font-medium ${toast.type === 'success' ? 'text-(--color-olive)' : 'text-red-700)'}`.replace(')', '')}>{toast.type === 'success' ? 'Success' : 'Notice'}</p>
+              <p className="text-sm text-neutral-700 mt-0.5">{toast.message}</p>
+            </div>
+            <button
+              aria-label="Dismiss"
+              onClick={() => setToast(null)}
+              className="ml-2 text-neutral-400 hover:text-neutral-600"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Chat Bubble */}
+      <ChatBubble 
+        sellerId={currentSwapProduct.owner?._id}
+        sellerName={currentSwapProduct.seller}
+        openWithUser={currentSwapProduct.owner ? {
+          id: currentSwapProduct.owner._id,
+          email: currentSwapProduct.owner.email,
+          firstName: currentSwapProduct.owner.firstName,
+          lastName: currentSwapProduct.owner.lastName
+        } : undefined}
+      />
     </>
   );
 }

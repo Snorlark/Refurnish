@@ -1,46 +1,25 @@
-//hehe
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Footer from '../../../components/Footer';
-import { useMemo, useState } from "react";
-
-type OrderItem = {
-  id: string;
-  name: string;
-  status: string;
-  thumbnailSrc?: string;
-};
+import { useTrackOrders, TrackOrder } from '../../../hooks/useTrackOrders';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function TrackOrdersPage() {
-  const [orders] = useState<OrderItem[]>([
-    {
-      id: "chair-360",
-      name: "360° Swivel Wooden Office Chair",
-      status: "Shipped out",
-      
-    },
-    {
-      id: "corner-cabinet",
-      name: "Vintage Mahogany Corner Shelf/Cabinet",
-      status: "Out for Delivery",
-      
-    },
-    {
-      id: "brown-sofa",
-      name: "Brown Wood Sofa",
-      status: "Preparing to Ship",
-      
-    },
-    {
-      id: "yamacata-painting",
-      name: "YAMACATA Vintage Painting",
-      status: "To Rate",
-      
-    },
-  ]);
+  const { orders, isLoading, error, isBackendHealthy } = useTrackOrders();
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans ">
@@ -48,49 +27,176 @@ export default function TrackOrdersPage() {
 
       <main className="mx-auto w-full font-sans max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
+        
+        {/* Back to Products Navigation */}
+        <Link href="/product-catalog-sale" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <span className="text-xs sm:text-sm font-medium">Back to Products</span>
+        </Link>
 
         <div className="mt-6 rounded-2xl bg-white font-sans shadow-sm ring-1 ring-black/[0.06]">
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815] font-sans">
-            <div>Product</div>
-            <div className=" font-sans text-right">Status</div>
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 py-4 text-sm font-semibold text-[#273815] font-sans">
+            <div className="font-sans">Product</div>
+            <div className="font-sans text-right">Status</div>
           </div>
         </div>
 
-        <ul className="space-y-4 mt-4">
-          {orders.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-2xl  font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
-              
+        {!isBackendHealthy ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Backend Unavailable</h3>
+            <p className="text-gray-500 mb-6">Unable to connect to the server. Please try again later.</p>
+          </div>
+        ) : isLoading ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading orders...</h3>
+            <p className="text-gray-500">Please wait while we fetch your orders</p>
+          </div>
+        ) : error ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Orders</h3>
+            <p className="text-gray-500 mb-6">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="inline-flex items-center px-6 py-3 bg-[#636B2F] text-white rounded-full hover:bg-[#4A5A2A] transition-colors"
             >
-              <div className="grid font-sans grid-cols-[1fr_auto] items-center gap-4">
-                <div className="flex font-sans  items-center gap-4 min-w-0">
-                  <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0 font-sans" >
-                    {item.thumbnailSrc ? (
-                      <Image
-                        src={item.thumbnailSrc}
-                        alt=""
-                        width={56}
-                        height={56}
-                        className="object-cover size-full"
-                      />
-                    ) : (
-                      <span className=" font-sans ">Image</span>
-                    )}
+              Try Again
+            </button>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+            <p className="text-gray-500 mb-6">Your order history will appear here</p>
+            <Link href="/product-catalog-sale" className="inline-flex items-center px-6 py-3 bg-[#636B2F] text-white rounded-full hover:bg-[#4A5A2A] transition-colors">
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-4 mt-4">
+            {orders.map((order) => (
+              <li
+                key={order._id}
+                className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
+              >
+                <div className="space-y-4">
+                  {/* Order Header */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Order #{order.orderId}</h3>
+                      <p className="text-sm text-gray-500">
+                        Placed on {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        order.status === 'Shipped out' ? 'bg-blue-100 text-blue-800' :
+                        order.status === 'Out for Delivery' ? 'bg-orange-100 text-orange-800' :
+                        order.status === 'Preparing to Ship' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'To Rate' ? 'bg-green-100 text-green-800' :
+                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                        order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="truncate">
-                    <p className=" font-sans truncate text-neutral-800">
-                      {item.name}
-                    </p>
+
+                  {/* Order Items */}
+                  <div className="space-y-2">
+                    {order.items.map((item, index) => (
+                      <div key={index} className="flex items-center gap-4">
+                        <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0">
+                          {item.image ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              width={56}
+                              height={56}
+                              className="object-cover size-full"
+                            />
+                          ) : (
+                            <span>Image</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-neutral-800 truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Qty: {item.quantity} × ₱{item.price.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-neutral-800">
+                            ₱{(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+
+                  {/* Order Summary */}
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>₱{(order.totalAmount - order.shippingFee).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Shipping:</span>
+                      <span>₱{order.shippingFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-lg border-t pt-2 mt-2">
+                      <span>Total:</span>
+                      <span>₱{order.totalAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Order Details */}
+                  {(order.trackingNumber || order.shippingAddress) && (
+                    <div className="border-t pt-4 space-y-2">
+                      {order.trackingNumber && (
+                        <div className="text-sm">
+                          <span className="font-medium">Tracking Number:</span>
+                          <span className="ml-2 font-mono">{order.trackingNumber}</span>
+                        </div>
+                      )}
+                      {order.shippingAddress && (
+                        <div className="text-sm">
+                          <span className="font-medium">Shipping Address:</span>
+                          <p className="text-gray-600 mt-1">{order.shippingAddress}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className=" font-sans text-right text-neutral-700">
-                  {item.status}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        )}
       </main>
 
     {/* footer */}
@@ -136,6 +242,7 @@ function CartTabs() {
   const tabs = [
     { href: "/cart-details/cart", label: "CART" },
     { href: "/cart-details/wishlist", label: "WISHLIST" },
+    { href: "/cart-details/swap", label: "SWAP" },
     { href: "/cart-details/track-orders", label: "TRACK ORDERS" },
   ];
 

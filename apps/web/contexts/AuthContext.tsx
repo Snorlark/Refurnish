@@ -10,6 +10,10 @@ interface User {
   email: string;
   role: 'buyer' | 'seller' | 'admin';
   profilePicture?: string;
+  contactNumber?: string;
+  address?: string;
+  birthday?: string; // ISO date
+  gender?: 'male' | 'female' | 'other';
 }
 
 interface AuthContextType {
@@ -22,6 +26,9 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  refreshProfile: () => Promise<void>;
+  updateUser: (partial: Partial<User>) => void;
+  updateActivity: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasRestoredFromStorage, setHasRestoredFromStorage] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -40,10 +48,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Sync NextAuth session with AuthContext
   useEffect(() => {
-    console.log('AuthContext: Session status changed', { status, session });
+    console.log('AuthContext: Session status changed', { 
+      status, 
+      hasSession: !!session, 
+      hasBackendUser: !!session?.backendUser,
+      hasRestoredFromStorage,
+      currentUser: user?.email,
+      currentToken: !!token
+    });
     
     if (status === 'loading') {
+      console.log('AuthContext: NextAuth is loading, setting isLoading to true');
       setIsLoading(true);
+      return;
+    }
+
+    // If we've already restored from localStorage, don't override unless NextAuth has a valid session
+    if (hasRestoredFromStorage && !session?.backendUser) {
+      console.log('AuthContext: Already restored from localStorage, skipping NextAuth override');
+      setIsLoading(false);
       return;
     }
 
@@ -54,7 +77,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(session.backendToken);
       localStorage.setItem('token', session.backendToken);
       localStorage.setItem('user', JSON.stringify(session.backendUser));
-    } else if (status === 'unauthenticated') {
+      // Hydrate with full profile from backend so extended fields are present
+      (async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.backendToken}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const fullUser: User = {
+              id: data.id,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              role: data.role,
+              profilePicture: data.profilePicture,
+              contactNumber: data.contactNumber,
+              address: data.address,
+              birthday: data.birthday,
+              gender: data.gender,
+            };
+            setUser(fullUser);
+            localStorage.setItem('user', JSON.stringify(fullUser));
+          }
+        } catch {}
+      })();
+    } else if (status === 'unauthenticated' && !hasRestoredFromStorage) {
       console.log('AuthContext: User unauthenticated, clearing state');
       setUser(null);
       setToken(null);
@@ -63,20 +111,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     setIsLoading(false);
-  }, [session, status]);
+  }, [session, status, hasRestoredFromStorage]);
 
-  // Initialize auth state from localStorage (only if not using NextAuth)
+  // Initialize auth state from localStorage on mount (for page refresh)
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      
-      if (storedToken && storedUser) {
+    console.log('AuthContext: Running localStorage restoration useEffect');
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    console.log('AuthContext: Stored data check', { 
+      hasToken: !!storedToken, 
+      hasUser: !!storedUser,
+      tokenPreview: storedToken?.substring(0, 20) + '...',
+      userPreview: storedUser ? JSON.parse(storedUser).email : 'N/A'
+    });
+    
+    if (storedToken && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('AuthContext: Setting user and token from localStorage', { email: parsedUser.email, role: parsedUser.role });
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        setUser(parsedUser);
+        setHasRestoredFromStorage(true);
+        console.log('AuthContext: Successfully restored user from localStorage', parsedUser);
+      } catch (error) {
+        console.error('AuthContext: Error parsing stored user', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
+    } else {
+      console.log('AuthContext: No stored auth data found');
     }
-  }, [status]);
+    
+    // Set loading to false after checking localStorage
+    console.log('AuthContext: Setting isLoading to false');
+    setIsLoading(false);
+  }, []); // Run only on mount
+
+  // Clear localStorage when NextAuth session is unauthenticated
+  useEffect(() => {
+    if (status === 'unauthenticated' && !user && !token) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+  }, [status, user, token]);
 
   const login = async (email: string, password: string, adminSecret?: string) => {
     try {
@@ -179,18 +257,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    // Clear state immediately
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     // Use NextAuth signOut for Google OAuth users
     if (session) {
       nextAuthSignOut({ callbackUrl: '/' });
     } else {
-      // For regular users, just clear local state
+      // For regular users, navigate to home
       router.push('/');
-      setTimeout(() => {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }, 100);
     }
   };
 
@@ -204,6 +282,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     isAuthenticated,
     isAdmin,
+    refreshProfile: async () => {
+      try {
+        if (!token) return;
+        const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to refresh profile');
+        const refreshed: User = {
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role,
+          profilePicture: data.profilePicture,
+          contactNumber: data.contactNumber,
+          address: data.address,
+          birthday: data.birthday,
+          gender: data.gender,
+        };
+        setUser(refreshed);
+        localStorage.setItem('user', JSON.stringify({
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role,
+          profilePicture: data.profilePicture,
+          contactNumber: data.contactNumber,
+          address: data.address,
+          birthday: data.birthday,
+          gender: data.gender,
+        }));
+      } catch (e) {
+        // swallow
+      }
+    },
+    updateUser: (partial: Partial<User>) => {
+      setUser((prev) => {
+        const merged = { ...(prev || ({} as User)), ...partial } as User;
+        localStorage.setItem('user', JSON.stringify(merged));
+        return merged;
+      });
+    },
+    updateActivity: async () => {
+      try {
+        if (!token) return;
+        await fetch(`${API_BASE_URL}/api/users/activity`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (e) {
+        // swallow errors for activity tracking
+      }
+    },
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -216,3 +356,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

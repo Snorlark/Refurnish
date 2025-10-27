@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import User from "../models/user.model";
 import { io } from "../../../app";
 import config from "../../../config/config";
+import cloudinary from "cloudinary";
+import { createOTP, verifyOTP as verifyOTPService, checkOTPAttempts } from "../../../services/otpService";
 
 // Validation helper
 const validateEmail = (email: string): boolean => {
@@ -144,7 +146,10 @@ export const googleAuth = async (req: Request, res: Response) => {
         // Link Google account to existing user
         console.log('Google Auth: Linking Google account to existing user');
         user.googleId = googleId;
-        user.profilePicture = profilePicture;
+        // Only update profile picture if user doesn't have a custom one
+        if (!user.profilePicture || user.profilePicture.includes('googleusercontent.com')) {
+          user.profilePicture = profilePicture;
+        }
         await user.save();
       } else {
         // Create new user
@@ -162,8 +167,8 @@ export const googleAuth = async (req: Request, res: Response) => {
         console.log('Google Auth: New user created:', user._id);
       }
     } else {
-      // Update existing user's profile picture if it's different
-      if (user.profilePicture !== profilePicture) {
+      // Update existing user's profile picture only if they don't have a custom one
+      if (!user.profilePicture || user.profilePicture.includes('googleusercontent.com')) {
         console.log('Google Auth: Updating profile picture for existing user');
         user.profilePicture = profilePicture;
         await user.save();
@@ -265,11 +270,140 @@ export const getProfile = async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
       profilePicture: user.profilePicture,
-      isEmailVerified: user.isEmailVerified
+      isEmailVerified: user.isEmailVerified,
+      contactNumber: (user as any).contactNumber,
+      address: (user as any).address,
+      birthday: (user as any).birthday,
+      gender: (user as any).gender
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserProfileByEmail = async (req: Request, res: Response) => {
+  try {
+    let { email } = req.params;
+
+    console.log('Original email param:', email);
+
+    // Decode URL-encoded email if needed
+    if (email.includes('%40')) {
+      email = decodeURIComponent(email);
+    }
+    console.log('Processed email:', email);
+
+    // Try to find user by exact email match first
+    let user = await User.findOne({ email }).select("-password");
+    console.log('Exact match result:', user ? 'Found' : 'Not found');
+
+    // If not found, try to find by email with @gmail.com appended
+    if (!user && !email.includes('@')) {
+      const emailWithGmail = `${email}@gmail.com`;
+      console.log('Trying with @gmail.com:', emailWithGmail);
+      user = await User.findOne({ email: emailWithGmail }).select("-password");
+      console.log('With @gmail.com result:', user ? 'Found' : 'Not found');
+    }
+
+    // If still not found, try to find by email without @gmail.com
+    if (!user && email.includes('@gmail.com')) {
+      const emailWithoutDomain = email.replace('@gmail.com', '');
+      console.log('Trying without @gmail.com:', emailWithoutDomain);
+      user = await User.findOne({ email: emailWithoutDomain }).select("-password");
+      console.log('Without @gmail.com result:', user ? 'Found' : 'Not found');
+    }
+
+    // If the user is not found, return a 404 error.
+    if (!user) {
+      console.log('User not found after all attempts');
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send the user's profile data in the response.
+    res.status(200).json({
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      profilePicture: user.profilePicture,
+      isEmailVerified: user.isEmailVerified,
+      contactNumber: (user as any).contactNumber,
+      address: (user as any).address,
+      birthday: (user as any).birthday,
+      gender: (user as any).gender,
+      createdAt: (user as any).createdAt,
+      followerCount: (user as any).followerCount || 0,
+      followingCount: (user as any).followingCount || 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { _id: userId } = req.user;
+    const { firstName, lastName, profilePicture, contactNumber, address, birthday, gender } = req.body as {
+      firstName?: string;
+      lastName?: string;
+      profilePicture?: string;
+      contactNumber?: string;
+      address?: string;
+      birthday?: string;
+      gender?: 'male' | 'female' | 'other';
+    };
+
+    const updates: any = {};
+    if (typeof firstName === 'string') updates.firstName = firstName;
+    if (typeof lastName === 'string') updates.lastName = lastName;
+    if (typeof profilePicture === 'string') updates.profilePicture = profilePicture;
+    if (typeof contactNumber === 'string') updates.contactNumber = contactNumber;
+    if (typeof address === 'string') updates.address = address;
+    if (typeof birthday === 'string') updates.birthday = new Date(birthday);
+    if (gender) updates.gender = gender;
+
+    const updated = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+
+    return res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updated._id,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        email: updated.email,
+        role: updated.role,
+        profilePicture: updated.profilePicture,
+      contactNumber: (updated as any).contactNumber,
+      address: (updated as any).address,
+      birthday: (updated as any).birthday,
+      gender: (updated as any).gender,
+      },
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to update profile' });
+  }
+};
+
+export const uploadProfilePicture = async (req: Request, res: Response) => {
+  try {
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const result = await cloudinary.v2.uploader.upload(file.path, {
+      folder: 'refurnish-profile',
+      public_id: `user_${(req as any).user._id}_${Date.now()}`,
+      overwrite: true,
+    });
+
+    return res.status(200).json({ url: result.secure_url });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to upload profile picture' });
   }
 };
 
@@ -396,5 +530,436 @@ export const adminDeleteUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
     return res.status(500).json({ message: 'Failed to delete user' });
+  }
+};
+
+// Authenticated lookup by email (non-admin) - smart search with multiple results
+export const lookupUserByEmail = async (req: Request, res: Response) => {
+  try {
+    const email = (req.query.email as string || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: 'email is required' });
+
+    // First try exact match
+    const exactUser = await User.findOne({ email }).select('_id firstName lastName email role profilePicture');
+    if (exactUser) {
+      return res.status(200).json([{
+        id: exactUser._id,
+        firstName: exactUser.firstName,
+        lastName: exactUser.lastName,
+        email: exactUser.email,
+        role: exactUser.role,
+        profilePicture: exactUser.profilePicture,
+      }]);
+    }
+
+    // If no exact match, do smart search with partial matches
+    const searchTerm = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape regex special chars
+    const users = await User.find({
+      $or: [
+        { email: { $regex: searchTerm, $options: 'i' } },
+        { firstName: { $regex: searchTerm, $options: 'i' } },
+        { lastName: { $regex: searchTerm, $options: 'i' } },
+        { $expr: { $regexMatch: { input: { $concat: ['$firstName', ' ', '$lastName'] }, regex: searchTerm, options: 'i' } } }
+      ]
+    })
+    .select('_id firstName lastName email role profilePicture')
+    .limit(5)
+    .sort({ email: 1 });
+
+    const results = users.map(user => ({
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      profilePicture: user.profilePicture,
+    }));
+
+    return res.status(200).json(results);
+  } catch (e) {
+    return res.status(500).json({ error: 'Lookup failed' });
+  }
+};
+
+export const updateUserActivity = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user._id;
+    await User.findByIdAndUpdate(userId, { 
+      lastActive: new Date(),
+      isOnline: true 
+    });
+    return res.status(200).json({ message: 'Activity updated' });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to update activity' });
+  }
+};
+
+export const getActiveUsers = async (req: Request, res: Response) => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const activeUsers = await User.find({
+      lastActive: { $gte: fiveMinutesAgo },
+      isOnline: true
+    }).select('_id firstName lastName email role profilePicture lastActive isOnline');
+    
+    return res.status(200).json(activeUsers);
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to fetch active users' });
+  }
+};
+
+export const getActiveUsersForMessaging = async (req: Request, res: Response) => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const activeUsers = await User.find({
+      lastActive: { $gte: fiveMinutesAgo },
+      isOnline: true
+    }).select('_id firstName lastName email role profilePicture lastActive isOnline');
+    
+    return res.status(200).json(activeUsers);
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to fetch active users' });
+  }
+};
+
+// Follow a user
+export const followUser = async (req: Request, res: Response) => {
+  try {
+    const currentUserId = (req as any).user._id;
+    const { userId } = req.params;
+
+    if (currentUserId === userId) {
+      return res.status(400).json({ error: 'Cannot follow yourself' });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(userId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if already following
+    if (currentUser.following?.includes(userId)) {
+      return res.status(400).json({ error: 'Already following this user' });
+    }
+
+    // Add to following list
+    await User.findByIdAndUpdate(currentUserId, {
+      $addToSet: { following: userId },
+      $inc: { followingCount: 1 }
+    });
+
+    // Add to target user's followers list
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { followers: currentUserId },
+      $inc: { followerCount: 1 }
+    });
+
+    res.status(200).json({ message: 'User followed successfully' });
+  } catch (e) {
+    console.error('Error following user:', e);
+    res.status(500).json({ error: 'Failed to follow user' });
+  }
+};
+
+// Unfollow a user
+export const unfollowUser = async (req: Request, res: Response) => {
+  try {
+    const currentUserId = (req as any).user._id;
+    const { userId } = req.params;
+
+    if (currentUserId === userId) {
+      return res.status(400).json({ error: 'Cannot unfollow yourself' });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(userId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if currently following
+    if (!currentUser.following?.includes(userId)) {
+      return res.status(400).json({ error: 'Not following this user' });
+    }
+
+    // Remove from following list
+    await User.findByIdAndUpdate(currentUserId, {
+      $pull: { following: userId },
+      $inc: { followingCount: -1 }
+    });
+
+    // Remove from target user's followers list
+    await User.findByIdAndUpdate(userId, {
+      $pull: { followers: currentUserId },
+      $inc: { followerCount: -1 }
+    });
+
+    res.status(200).json({ message: 'User unfollowed successfully' });
+  } catch (e) {
+    console.error('Error unfollowing user:', e);
+    res.status(500).json({ error: 'Failed to unfollow user' });
+  }
+};
+
+// Check if user is following another user
+export const checkFollowStatus = async (req: Request, res: Response) => {
+  try {
+    const currentUserId = (req as any).user._id;
+    const { userId } = req.params;
+
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isFollowing = currentUser.following?.includes(userId) || false;
+    res.status(200).json({ isFollowing });
+  } catch (e) {
+    console.error('Error checking follow status:', e);
+    res.status(500).json({ error: 'Failed to check follow status' });
+  }
+};
+
+export const getFollowers = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = (req as any).user?._id;
+
+    console.log(`Getting followers for user: ${userId}, current user: ${currentUserId}`);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log('User not found:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('User found:', {
+      id: user._id,
+      followers: user.followers,
+      followersPublic: user.followersPublic
+    });
+
+    // Check if the current user is viewing their own profile or if followers is public
+    const isOwnProfile = currentUserId && currentUserId.toString() === userId.toString();
+    const isFollowersPublic = user.followersPublic !== false; // Default to true
+    
+    // Check if current user is following the target user (for private lists)
+    let isFollowingUser = false;
+    if (!isOwnProfile && !isFollowersPublic && currentUserId) {
+      const currentUser = await User.findById(currentUserId);
+      isFollowingUser = currentUser && currentUser.following && currentUser.following.includes(userId);
+    }
+
+    if (!isOwnProfile && !isFollowersPublic && !isFollowingUser) {
+      return res.status(403).json({ error: 'Followers list is private' });
+    }
+
+    // Get follower details
+    const followerIds = user.followers || [];
+    const followers = followerIds.length > 0 ? await User.find(
+      { _id: { $in: followerIds } },
+      { _id: 1, firstName: 1, lastName: 1, email: 1, profilePicture: 1, role: 1 }
+    ) : [];
+
+    res.status(200).json({ followers });
+  } catch (e) {
+    console.error('Error getting followers:', e);
+    res.status(500).json({ error: 'Failed to get followers' });
+  }
+};
+
+export const getFollowing = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = (req as any).user?._id;
+
+    console.log(`Getting following for user: ${userId}, current user: ${currentUserId}`);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log('User not found:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('User found:', {
+      id: user._id,
+      following: user.following,
+      followingPublic: user.followingPublic
+    });
+
+    // Check if the current user is viewing their own profile or if following is public
+    const isOwnProfile = currentUserId && currentUserId.toString() === userId.toString();
+    const isFollowingPublic = user.followingPublic !== false; // Default to true
+    
+    // Check if current user is following the target user (for private lists)
+    let isFollowingUser = false;
+    if (!isOwnProfile && !isFollowingPublic && currentUserId) {
+      const currentUser = await User.findById(currentUserId);
+      isFollowingUser = currentUser && currentUser.following && currentUser.following.includes(userId);
+    }
+
+    if (!isOwnProfile && !isFollowingPublic && !isFollowingUser) {
+      return res.status(403).json({ error: 'Following list is private' });
+    }
+
+    // Get following details
+    const followingIds = user.following || [];
+    const following = followingIds.length > 0 ? await User.find(
+      { _id: { $in: followingIds } },
+      { _id: 1, firstName: 1, lastName: 1, email: 1, profilePicture: 1, role: 1 }
+    ) : [];
+
+    res.status(200).json({ following });
+  } catch (e) {
+    console.error('Error getting following:', e);
+    res.status(500).json({ error: 'Failed to get following' });
+  }
+};
+
+export const updatePrivacySettings = async (req: Request, res: Response) => {
+  try {
+    const currentUserId = (req as any).user._id;
+    const { followersPublic, followingPublic } = req.body;
+
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update privacy settings
+    if (followersPublic !== undefined) {
+      user.followersPublic = followersPublic;
+    }
+    if (followingPublic !== undefined) {
+      user.followingPublic = followingPublic;
+    }
+
+    await user.save();
+
+    res.status(200).json({ 
+      message: 'Privacy settings updated successfully',
+      followersPublic: user.followersPublic,
+      followingPublic: user.followingPublic
+    });
+  } catch (e) {
+    console.error('Error updating privacy settings:', e);
+    res.status(500).json({ error: 'Failed to update privacy settings' });
+  }
+};
+
+// OTP Controllers
+export const sendOTP = async (req: Request, res: Response) => {
+  try {
+    const { email, type = 'login' } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if email exists for login/admin OTP
+    if (type === 'login' || type === 'admin') {
+      // For admin, check if it's the admin email
+      if (type === 'admin' && email === 'admin@refurnish.dev') {
+        // Admin login is valid, proceed to send OTP
+      } else {
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+      }
+    }
+
+    // Check OTP attempts
+    const canSendOTP = await checkOTPAttempts(email, type);
+    if (!canSendOTP) {
+      return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
+    }
+
+    await createOTP(email, type);
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+};
+
+export const verifyOTP = async (req: Request, res: Response) => {
+  try {
+    const { email, otp, type = 'login' } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required' });
+    }
+
+    const isValid = await verifyOTPService(email, otp, type);
+    
+    if (!isValid) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ error: 'Failed to verify OTP' });
+  }
+};
+
+export const checkLastLogin = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const lastLogin = user.lastActive || user.createdAt;
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const needsOTP = lastLogin < oneMonthAgo;
+
+    res.status(200).json({ 
+      needsOTP,
+      lastLogin: lastLogin.toISOString()
+    });
+  } catch (error) {
+    console.error('Error checking last login:', error);
+    res.status(500).json({ error: 'Failed to check last login' });
+  }
+};
+
+export const getCurrentOTP = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    const { type = 'login' } = req.query;
+
+    // Only allow in development mode
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    const OTP = require('../models/otp.model').default;
+    const otpRecord = await OTP.findOne({
+      email: email.toLowerCase(),
+      type,
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!otpRecord) {
+      return res.status(404).json({ error: 'No active OTP found' });
+    }
+
+    res.status(200).json({ 
+      otp: otpRecord.otp,
+      expiresAt: otpRecord.expiresAt
+    });
+  } catch (error) {
+    console.error('Error getting current OTP:', error);
+    res.status(500).json({ error: 'Failed to get current OTP' });
   }
 };

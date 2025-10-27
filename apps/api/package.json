@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon",
     "init-admin": "node src/scripts/initAdmin.js",
+    "add-sold-product": "node src/scripts/addSoldProduct.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -32,6 +33,8 @@
   },
   "dependencies": {
     "@types/dotenv": "^6.1.1",
+    "@types/nodemailer": "^7.0.2",
+    "@types/uuid": "^10.0.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "compression": "^1.8.1",
@@ -42,6 +45,8 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.19.0",
-    "mongoose": "^8.18.1"
+    "mongoose": "^8.18.1",
+    "nodemailer": "^7.0.9",
+    "uuid": "^13.0.0"
   }
 }

@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useWishlist } from '../hooks/useWishlist';
+import { useWishlistContext } from '../contexts/WishlistContext';
 import Navbar from '../components/Navbar-Products';
 import WishlistSidebar from '../components/WishlistSidebar';
 import Footer from '../components/Footer';
 import AuthModal from '../components/AuthModal';
 import CartSidebar from '../components/CartSidebar';
 import ChatBubble from '../components/ChatBubble';
-import { useCart } from '../hooks/useCart';
+import { useCartContext } from '../contexts/CartContext';
 import { saleProducts, newProducts, featuredProducts, forSwapProducts } from '../data/products';
 
 
@@ -27,8 +27,8 @@ export default function Home() {
   
 
   // Use shared hooks
-  const cart = useCart();
-  const wishlist = useWishlist();
+  const cart = useCartContext();
+  const wishlist = useWishlistContext();
   
   const heroSlides = [
     {
@@ -213,8 +213,8 @@ export default function Home() {
               onSearchChange={setSearchQuery}
               onSearchSubmit={handleSearchSubmit}
               onAuthClick={() => setIsAuthModalOpen(true)}
-              cartItemsCount={cart.cartItems.length}
-              wishlistItemsCount={wishlist.wishlistItems.length}
+              cartItemsCount={cart.cartCount}
+              wishlistItemsCount={wishlist.wishlistCount}
               onCartClick={() => cart.setIsCartOpen(true)}
               onWishlistClick={() => wishlist.setIsWishlistOpen(true)}
             />
@@ -232,9 +232,9 @@ export default function Home() {
             <p className="text-(--color-black) mb-8 font-light leading-relaxed text-[14px] md:text-[15px]">
               Enjoy a 10% discount on your first two furniture purchases when you sign up today.
             </p>
-            <Link href='/login'>
+            <Link href='/shop'>
             <button className="bg-(--color-olive) hover:text-(--color-white) hover:bg-(--color-primary) hover:font-bold hover:translate-y-1 hover:tracking-[0.15em] tracking-[0.1em] text-white px-8 py-4 rounded-full font-normal cursor-pointer transition-modern text-[12px] md:text-[14px]">
-              SIGN UP NOW &nbsp; ➤
+             SHOP NOW &nbsp; ➤
             </button>
             </Link>
           </div>
@@ -462,6 +462,7 @@ export default function Home() {
         onUpdateQuantity={cart.updateQuantity}
         onRemoveItem={cart.removeFromCart}
         totalPrice={cart.getTotalPrice()}
+        isBackendAvailable={cart.isBackendAvailable}
       />
 
       {/* Wishlist Sidebar */}
@@ -688,8 +689,8 @@ export default function Home() {
 //               onSearchChange={setSearchQuery}
 //               onSearchSubmit={handleSearchSubmit}
 //               onAuthClick={() => setIsAuthModalOpen(true)}
-//               cartItemsCount={cart.cartItems.length}
-//               wishlistItemsCount={wishlist.wishlistItems.length}
+//               cartItemsCount={cart.cartCount}
+//               wishlistItemsCount={wishlist.wishlistCount}
 //               onCartClick={() => cart.setIsCartOpen(true)}
 //               onWishlistClick={() => wishlist.setIsWishlistOpen(true)}
 //             />

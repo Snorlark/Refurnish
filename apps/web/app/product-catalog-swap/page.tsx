@@ -5,125 +5,178 @@ import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useCartContext } from "../../contexts/CartContext";
+import { useWishlistContext } from "../../contexts/WishlistContext";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 type SwapItem = {
-  id: number;
+  id: string;
   title: string;
   image: string;
   location: string;
   swapFor: string; // New field for what the seller wants
   dateAdded: string;
+  category: string;
 };
 
-const swapCatalog: Record<string, SwapItem[]> = {
-  CHAIRS: [
-    {
-      id: 1,
-      title: "Wooden Chair",
-      image: "/bedroom.png",
-      location: "Amanpulo",
-      swapFor: "Coffee Table",
-      dateAdded: "2025-08-25",
-    },
-    {
-      id: 2,
-      title: "Classic Rattan Chair",
-      image: "/bedroom.png",
-      location: "Cebu",
-      swapFor: "Floor Lamp",
-      dateAdded: "2025-08-26",
-    },
-  ],
-  TABLES: [
-    {
-      id: 3,
-      title: "Dining Table",
-      image: "/bedroom.png",
-      location: "Makati",
-      swapFor: "Bookshelf",
-      dateAdded: "2025-08-5",
-    },
-    {
-      id: 4,
-      title: "Coffee Table",
-      image: "/bedroom.png",
-      location: "Tagaytay",
-      swapFor: "Side Chair",
-      dateAdded: "2025-08-15",
-    },
-  ],
-  SOFA: [
-    {
-      id: 5,
-      title: "Modern Sofa",
-      image: "/living.png",
-      location: "Cebu",
-      swapFor: "Rug",
-      dateAdded: "2025-07-25",
-    },
-  ],
-  CABINET: [
-    {
-      id: 6,
-      title: "Classic Cabinet",
-      image: "/living.png",
-      location: "Davao",
-      swapFor: "Bar Stool",
-      dateAdded: "2025-01-25",
-    },
-  ],
-  DECOR: [
-    {
-      id: 7,
-      title: "Decorative Vase",
-      image: "/living.png",
-      location: "Palawan",
-      swapFor: "Wall Art",
-      dateAdded: "2025-09-25",
-    },
-  ],
-  MIRROR: [
-    {
-      id: 8,
-      title: "Wall Mirror",
-      image: "/dining.png",
-      location: "Tagaytay",
-      swapFor: "Console Table",
-      dateAdded: "2025-08-12",
-    },
-  ],
+type SwapCatalogByCategory = Record<string, SwapItem[]>;
 
-  LAMP: [],
-  VANITY: [],
-
-  SHELVES: [],
+type BackendProduct = {
+  _id: string;
+  title: string;
+  images: string[];
+  location: string;
+  category: string;
+  status: string;
+  listedAs: string;
+  createdAt?: string;
+  description?: string;
+  swapWantedDescription?: string;
+  condition?: string;
 };
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
+
+const initialCatalog: SwapCatalogByCategory = {};
 
 export default function SwapCatalogPage() {
-  
-  const [menuOpen, setMenuOpen, ] = useState(false);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SwapCatalogContent />
+    </Suspense>
+  );
+}
+
+function SwapCatalogContent() {
+  const cart = useCartContext();
+  const wishlist = useWishlistContext();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
   const navbarRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const categories = ["ALL", ...Object.keys(swapCatalog)];
+  const [catalog, setCatalog] = useState<SwapCatalogByCategory>(initialCatalog);
+  const categories = ["ALL", ...Object.keys(catalog)];
   const [isSwapPage, setIsSwapPage] = useState(true); // since this is the Swap page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [sortOption, setSortOption] = useState<string>("newest");
   const [showFilters, setShowFilters] = useState(false);
-  ///  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const categoryParam = searchParams.get("category");
+
+  // Keep in sync when user lands with a category from Shop page
+  useEffect(() => {
+    if (categoryParam && categoryParam !== activeCategory) {
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam, activeCategory]);
+
+  // Fetch swap products and group by category
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch products with listedAs="swap" OR listedAs="both" and status="listed"
+        const res = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=swap`, { signal: controller.signal });
+        const data: BackendProduct[] = await res.json();
+        if (!res.ok) throw new Error('Failed to load products');
+
+        // Also fetch products with listedAs="both"
+        const resBoth = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=both`, { signal: controller.signal });
+        const dataBoth: BackendProduct[] = await resBoth.json();
+        if (!resBoth.ok) throw new Error('Failed to load both products');
+
+        // Combine both results
+        const allProducts = [...(data || []), ...(dataBoth || [])];
+
+        const mapped: SwapItem[] = allProducts.map((p) => ({
+          id: p._id,
+          title: p.title,
+          image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '/products/chair/view1.jpg',
+          location: p.location || 'Metro Manila',
+          swapFor: p.swapWantedDescription || 'Open to offers', // Use swapWantedDescription or fallback
+          dateAdded: p.createdAt || new Date().toISOString(),
+          category: (p.category || 'UNCATEGORIZED').toUpperCase(),
+        }));
+
+        const grouped: SwapCatalogByCategory = mapped.reduce((acc, item) => {
+          if (!acc[item.category]) acc[item.category] = [];
+          acc[item.category].push(item);
+          return acc;
+        }, {} as SwapCatalogByCategory);
+
+        setCatalog(grouped);
+      } catch (e) {
+        // Only log errors that are not abort errors (which are expected when component unmounts)
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('Error fetching products:', e);
+        }
+        // Don't update state if the request was aborted
+        if (!controller.signal.aborted) {
+          setCatalog({});
+        }
+      } finally {
+        // Only update loading state if the request wasn't aborted
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchProducts();
+    return () => controller.abort();
+  }, []);
+
+  const handleCategoryClick = (c: string) => {
+    setActiveCategory(c);
+    router.push(`/product-catalog-swap?category=${encodeURIComponent(c)}`);
+  };
+
+  const updateDropdownPos = () => {
+    const btn = menuBtnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const top = rect.bottom + window.scrollY + 8; // 8px gap under button
+    const right = Math.max(8, window.innerWidth - rect.right); // right offset in px
+    setDropdownPos({ top, right });
+  };
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    updateDropdownPos();
+    const onResize = () => updateDropdownPos();
+    const onScroll = () => updateDropdownPos();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   // Navbar animation
   useEffect(() => {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      gsap.timeline({
         scrollTrigger: {
           trigger: "main",
           start: "top top",
@@ -157,10 +210,6 @@ export default function SwapCatalogPage() {
           },
         },
       });
-
-      // keep a reference so cleanup kills this timeline too
-      // (timeline is scoped inside ctx and will be reverted by ctx.revert())
-      // nothing else needed here
     }, navEl);
 
     return () => ctx.revert();
@@ -196,7 +245,7 @@ export default function SwapCatalogPage() {
   // Get unique locations from products
   const allLocations = Array.from(
     new Set(
-      Object.values(swapCatalog)
+      Object.values(catalog)
         .flat()
         .map((product) => product.location)
     )
@@ -205,8 +254,8 @@ export default function SwapCatalogPage() {
   // Enhanced filtering logic
   let filteredItems: SwapItem[] =
     activeCategory === "ALL"
-      ? Object.values(swapCatalog).flat()
-      : swapCatalog[activeCategory] ?? [];
+      ? Object.values(catalog).flat()
+      : catalog[activeCategory] ?? [];
 
   // Apply location filter
   if (selectedLocations.length > 0) {
@@ -215,16 +264,26 @@ export default function SwapCatalogPage() {
     );
   }
 
-  // Filtering logic (curated & scalable)
-  const filteredProducts: SwapItem[] = isSwapPage
-    ? // Sale page: filter by category under SALE
-      activeCategory === "ALL"
-      ? Object.values(swapCatalog).flat()
-      : swapCatalog[activeCategory] ?? []
-    : // Non-sale page logic (future proof if reused elsewhere)
-    activeCategory === "ALL"
-    ? Object.values(swapCatalog).flat()
-    : swapCatalog[activeCategory] ?? [];
+  // Apply sorting
+  const allProductsFlat: SwapItem[] = Object.values(catalog).flat();
+  const norm = (s: string) => s.toLowerCase().trim();
+  const q = norm(searchQuery);
+  if (q) {
+    filteredItems = allProductsFlat.filter((p) => norm(p.title).includes(q));
+  }
+
+  filteredItems = [...filteredItems].sort((a, b) => {
+    if (sortOption === "newest")
+      return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    if (sortOption === "oldest")
+      return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+    if (sortOption === "nameAZ") return a.title.localeCompare(b.title);
+    if (sortOption === "nameZA") return b.title.localeCompare(a.title);
+    return 0;
+  });
+
+  // Use the enhanced filteredItems for display
+  const filteredProducts: SwapItem[] = filteredItems;
 
   return (
     <>
@@ -253,7 +312,7 @@ export default function SwapCatalogPage() {
         
                       {/* Search bar (hidden on xs, expands on sm+) */}
                       <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
-                        <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
+                        <div className="relative flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
                           <svg
                             className="w-4 h-4 text-gray-500"
                             viewBox="0 0 24 24"
@@ -264,34 +323,112 @@ export default function SwapCatalogPage() {
                             <path d="M21 21l-3.5-3.5" strokeWidth="2" />
                           </svg>
                           <input
-                            className="bg-transparent outline-none text-sm flex-1"
-                            placeholder="Search"
+                            className="bg-transparent outline-none text-gray-800 text-sm flex-1"
+                            placeholder="Search by category or title"
+                            value={searchQuery}
+                            onChange={(e) => {
+                              setSearchQuery(e.target.value);
+                              setShowSuggestions(true);
+                            }}
+                            onFocus={() => setShowSuggestions(true)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const matchCat = categories
+                                  .filter(Boolean)
+                                  .find((c) => c.toLowerCase() === q);
+                                if (matchCat) {
+                                  setShowSuggestions(false);
+                                  setSearchQuery("");
+                                  handleCategoryClick(matchCat);
+                                } else {
+                                  setShowSuggestions(false);
+                                }
+                              }
+                              if (e.key === 'Escape') setShowSuggestions(false);
+                            }}
                           />
+                          {showSuggestions && q && (
+                            <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+                              <ul className="max-h-72 overflow-auto py-2 text-gray-800 text-sm">
+                                {categories
+                                  .filter((c) => c && c !== 'ALL')
+                                  .filter((c) => c.toLowerCase().includes(q))
+                                  .slice(0, 5)
+                                  .map((c) => (
+                                    <li key={`cat-${c}`}>
+                                      <button
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          setShowSuggestions(false);
+                                          setSearchQuery("");
+                                          handleCategoryClick(c);
+                                        }}
+                                      >
+                                        Category: {c}
+                                      </button>
+                                    </li>
+                                  ))}
+                                {allProductsFlat
+                                  .filter((p) => norm(p.title).includes(q))
+                                  .slice(0, 8)
+                                  .map((p) => (
+                                    <li key={`title-${p.id}`}>
+                                      <button
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          setShowSuggestions(false);
+                                          setSearchQuery(p.title);
+                                        }}
+                                      >
+                                        {p.title}
+                                      </button>
+                                    </li>
+                                  ))}
+                                {categories.filter((c) => c && c !== 'ALL' && c.toLowerCase().includes(q)).length === 0 &&
+                                  allProductsFlat.filter((p) => norm(p.title).includes(q)).length === 0 && (
+                                    <li className="px-4 py-2 text-gray-500">No results</li>
+                                  )}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
         
                       {/* Icons */}
                       <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
                         <Link href="/cart-details/wishlist">
-                          <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                          <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive) relative">
                             <img
                               src="/icon/heartIcon.png"
                               alt="Wishlist"
                               className="h-4 w-auto"
                             />
+                            {wishlist.wishlistCount > 0 && (
+                              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                {wishlist.wishlistCount}
+                              </span>
+                            )}
                           </button>
                         </Link>
                         <Link href="/cart-details/cart">
-                          <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                          <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive) relative">
                             <img
                               src="/icon/cartIcon.png"
                               alt="Cart"
                               className="h-4 w-auto"
                             />
+                            {cart.cartCount > 0 && (
+                              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                {cart.cartCount}
+                              </span>
+                            )}
                           </button>
                         </Link>
         
-                        <button                 
+                        <button
+                          ref={menuBtnRef}
                           onClick={() => setMenuOpen(true)}
                           className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
                           <img
@@ -372,7 +509,7 @@ export default function SwapCatalogPage() {
                       </Link>
         
                       <Link
-                        href="/seller-dashboard"
+                        href="/profile/seller-dashboard-access"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -408,7 +545,7 @@ export default function SwapCatalogPage() {
               return (
                 <button
                   key={c}
-                  onClick={() => setActiveCategory(c)}
+                  onClick={() => handleCategoryClick(c)}
                   className={`relative pb-1 sm:pb-2 transition-colors ${
                     active
                       ? "font-semibold text-black"
@@ -596,8 +733,11 @@ export default function SwapCatalogPage() {
 
             {/* Results Count */}
             <div className="text-center text-sm text-gray-600 mb-4">
-              Showing {filteredItems.length} of{" "}
-              {Object.values(swapCatalog).flat().length} products
+              {isLoading ? (
+                "Loading products..."
+              ) : (
+                `Showing ${filteredItems.length} of ${Object.values(catalog).flat().length} products`
+              )}
             </div>
           </div>
         </section>
@@ -608,7 +748,11 @@ export default function SwapCatalogPage() {
             ref={gridRef}
             className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
           >
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <div className="col-span-full text-center py-20 text-gray-500">
+                Loading products...
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="col-span-full text-center py-20 text-gray-500">
                 No products in this category yet.
               </div>
@@ -628,7 +772,7 @@ export default function SwapCatalogPage() {
                     />
                   </div>
 
-                  <Link href="/item-view-swap">
+                  <Link href={`/item-view-swap?id=${encodeURIComponent(p.id)}`}>
                     <div className="p-4">
                       <h3 className="text-[15px] text-(--color-olive) font-semibold">
                         {p.title}

@@ -5,10 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Footer from '../../../components/Footer';
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useCartContext } from '../../../contexts/CartContext';
+import { useTrackOrders } from '../../../hooks/useTrackOrders';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import PaymentMockupModal from '../../../components/PaymentMockupModal';
 
 type CartItem = {
-  id: string;
+  id: string | number;
   name: string;
   unitPrice: number;
   quantity: number;
@@ -16,70 +21,29 @@ type CartItem = {
   selected: boolean;
 };
 
+
 const currency = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",
 });
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "chair-360",
-      name: "360° Swivel Wooden Office Chair",
-      unitPrice: 750,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "corner-cabinet",
-      name: "Vintage Mahogany Corner Shelf/Cabinet",
-      unitPrice: 9750,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "oak-coffee-table",
-      name: "Reclaimed Oak Coffee Table",
-      unitPrice: 3250,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "leather-sofa",
-      name: "Mid-century Leather Sofa",
-      unitPrice: 18950,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "bamboo-stool",
-      name: "Bamboo Bar Stool",
-      unitPrice: 890,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "ceramic-vase",
-      name: "Handcrafted Ceramic Vase",
-      unitPrice: 680,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "linen-cushion",
-      name: "Linen Throw Cushion",
-      unitPrice: 420,
-      quantity: 1,
-      selected: false,
-    },
-    {
-      id: "maple-dresser",
-      name: "Maple Wood Dresser",
-      unitPrice: 7450,
-      quantity: 1,
-      selected: false,
-    },
-  ]);
+  const cart = useCartContext();
+  const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
+  const [loadingItems, setLoadingItems] = useState<Set<string | number>>(new Set());
+  
+
+  // Convert cart hook items to local cart items with selection state
+  const cartItems = useMemo(() => {
+    return cart.cartItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      unitPrice: item.priceNum,
+      quantity: item.quantity,
+      thumbnailSrc: item.image,
+      selected: selectedItems.has(item.id)
+    }));
+  }, [cart.cartItems, selectedItems]);
 
   const cartTotal = useMemo(() => {
     return cartItems
@@ -87,38 +51,85 @@ export default function CartPage() {
       .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   }, [cartItems]);
 
-  const selectedItems = useMemo(() => cartItems.filter((i) => i.selected), [cartItems]);
-  const shippingFee = selectedItems.length > 0 ? 150 : 0;
+  const selectedItemsList = useMemo(() => cartItems.filter((i) => i.selected), [cartItems]);
+  const shippingFee = selectedItemsList.length > 0 ? 150 : 0;
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  function toggleItemSelection(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, selected: !item.selected } : item
-      )
-    );
+  function toggleItemSelection(itemId: string | number) {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   }
 
-  function incrementQuantity(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  async function incrementQuantity(itemId: string | number) {
+    const item = cart.cartItems.find(item => item.id === itemId);
+    if (item && !loadingItems.has(itemId)) {
+      setLoadingItems(prev => new Set(prev).add(itemId));
+      try {
+        // Prevent incrementing beyond a reasonable limit
+        const maxQuantity = 99;
+        const newQuantity = Math.min(item.quantity + 1, maxQuantity);
+        await cart.updateQuantity(itemId, newQuantity);
+      } catch (error) {
+        console.error('Error incrementing quantity:', error);
+        // You could add a toast notification here
+      } finally {
+        setLoadingItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    }
   }
 
-  function decrementQuantity(itemId: string) {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      )
-    );
+  async function decrementQuantity(itemId: string | number) {
+    const item = cart.cartItems.find(item => item.id === itemId);
+    if (item && !loadingItems.has(itemId)) {
+      setLoadingItems(prev => new Set(prev).add(itemId));
+      try {
+        const newQuantity = item.quantity - 1;
+        if (newQuantity <= 0) {
+          // If quantity becomes 0 or negative, remove the item
+          await cart.removeFromCart(itemId);
+          setSelectedItems((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(itemId);
+            return newSet;
+          });
+        } else {
+          await cart.updateQuantity(itemId, newQuantity);
+        }
+      } catch (error) {
+        console.error('Error decrementing quantity:', error);
+        // You could add a toast notification here
+      } finally {
+        setLoadingItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    }
   }
 
-  function removeItem(itemId: string) {
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+  async function removeItem(itemId: string | number) {
+    try {
+      await cart.removeFromCart(itemId);
+      setSelectedItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Error removing item:', error);
+    }
   }
 
   const someSelected = cartItems.some((item) => item.selected);
@@ -130,29 +141,58 @@ export default function CartPage() {
 
       <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 flex-1">
         <CartTabs />
+        
+        {/* Back to Products Navigation */}
+        <Link href="/product-catalog-sale" className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-(--color-primary) hover:text-(--color-olive) transition-colors">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-(--color-primary) rounded-full flex items-center justify-center">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <span className="text-xs sm:text-sm font-medium">Back to Products</span>
+        </Link>
+
 
         <div className="mt-6 font-sans rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06]">
-          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] font-sans items-center gap-4 px-4 sm:px-6 py-3 text-sm font-semibold text-[#273815]">
-            <div className="pl-40 font-sans">Product</div>
-            <div className="pl-153 font-sans">Quantity</div>
-            <div className="pl-1 font-sans" >Price</div>
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] font-sans items-center gap-4 px-4 sm:px-6 py-4 text-sm font-semibold text-[#273815]">
+            <div className="font-sans flex justify-center">Select</div>
+            <div className="font-sans">Product</div>
+            <div className="font-sans text-center">Quantity</div>
+            <div className="font-sans text-right">Price</div>
+            <div className="font-sans text-center">Action</div>
           </div>
         </div>
 
-        <ul className="space-y-4 mt-4">
-          {cartItems.map((item) => (
+        {cartItems.length === 0 ? (
+          <div className="mt-8 text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+            <p className="text-gray-500 mb-6">Add some items to get started</p>
+            <Link href="/product-catalog-sale" className="inline-flex items-center px-6 py-3 bg-[#636B2F] text-white rounded-full hover:bg-[#4A5A2A] transition-colors">
+              Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-4 mt-4">
+            {cartItems.map((item) => (
             <li
               key={item.id}
               className="rounded-2xl font-sans bg-white shadow-sm ring-1 ring-black/[0.06] px-4 sm:px-6 py-4"
             >
               <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
-                <input
-                  aria-label="Select item"
-                  type="checkbox"
-                  checked={item.selected}
-                  onChange={() => toggleItemSelection(item.id)}
-                  className="size-4 accent-green-800"
-                />
+                <div className="flex justify-center">
+                  <input
+                    aria-label="Select item"
+                    type="checkbox"
+                    checked={item.selected}
+                    onChange={() => toggleItemSelection(item.id)}
+                    className="size-4 accent-green-800"
+                  />
+                </div>
 
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="size-14 rounded-lg bg-neutral-100 ring-1 ring-black/[0.06] overflow-hidden flex items-center justify-center text-xs text-neutral-500 shrink-0" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
@@ -179,17 +219,25 @@ export default function CartPage() {
                   <IconButton
                     label="Decrease quantity"
                     onClick={() => decrementQuantity(item.id)}
-                    className="text-[#273815] hover:bg-[#273815]/10"
+                    className={`text-[#273815] hover:bg-[#273815]/10 disabled:opacity-50 disabled:cursor-not-allowed ${loadingItems.has(item.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <MinusIcon />
+                    {loadingItems.has(item.id) ? (
+                      <div className="w-4 h-4 border-2 border-[#273815] border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <MinusIcon />
+                    )}
                   </IconButton>
                   <span className="w-6 text-center font-sans select-none font-medium">{item.quantity}</span>
                   <IconButton
                     label="Increase quantity"
                     onClick={() => incrementQuantity(item.id)}
-                    className="text-[#273815] font-sans hover:bg-[#273815]/10"
+                    className={`text-[#273815] font-sans hover:bg-[#273815]/10 ${loadingItems.has(item.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <PlusIcon />  
+                    {loadingItems.has(item.id) ? (
+                      <div className="w-4 h-4 border-2 border-[#273815] border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <PlusIcon />
+                    )}
                   </IconButton>
                 </div>
 
@@ -208,31 +256,49 @@ export default function CartPage() {
                 </div>
               </div>
             </li>
-          ))}
-        </ul>
+            ))}
+          </ul>
+        )}
 
-        <div className="mt-10 flex flex-col-reverse font-sans gap-4 sm:flex-row sm:items-center">
-          <div className="flex-1">
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] font-sans p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xl font-semibold font-sans text-neutral-800">Total :</p>
-                <p className="text-xl font-semibold font-sans text-[#636B2F] tabular-num" >
-                  {currency.format(cartTotal)}
-                </p>
+        <div className="mt-10 flex flex-col-reverse font-sans gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1 max-w-md">
+            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.06] font-sans p-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-medium font-sans text-neutral-700">Subtotal:</p>
+                  <p className="text-lg font-semibold font-sans text-neutral-800 tabular-nums">
+                    {currency.format(cartTotal)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-medium font-sans text-neutral-700">Shipping:</p>
+                  <p className="text-lg font-semibold font-sans text-neutral-800 tabular-nums">
+                    {currency.format(shippingFee)}
+                  </p>
+                </div>
+                <div className="border-t border-neutral-200 pt-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xl font-bold font-sans text-neutral-900">Total:</p>
+                    <p className="text-xl font-bold font-sans text-[#636B2F] tabular-nums">
+                      {currency.format(cartTotal + shippingFee)}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={() => setIsCheckoutOpen(true)}
-            disabled={!someSelected}
-            title={!someSelected ? 'Select at least one product to continue' : undefined}
-            className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-6 h-12 shrink-0 transition-colors ${someSelected ? 'bg-neutral-900 text-white hover:bg-neutral-800' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
-            aria-label="Buy now"
-            
-          >
-            <span className="font-sans">Buy Now</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setIsCheckoutOpen(true)}
+              disabled={!someSelected}
+              title={!someSelected ? 'Select at least one product to continue' : undefined}
+              className={`inline-flex font-sans items-center justify-center gap-2 rounded-full px-8 h-12 shrink-0 transition-all duration-200 ${someSelected ? 'bg-[#636B2F] text-white hover:bg-[#4A5A2A] shadow-lg hover:shadow-xl' : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'}`}
+              aria-label="Buy now"
+            >
+              <span className="font-sans font-medium">Buy Now</span>
+            </button>
+          </div>
         </div>
 
         {!someSelected && (
@@ -241,7 +307,7 @@ export default function CartPage() {
 
         {isCheckoutOpen && (
           <CheckoutModal
-            items={selectedItems}
+            items={selectedItemsList}
             subtotal={cartTotal}
             shippingFee={shippingFee}
             onClose={() => setIsCheckoutOpen(false)}
@@ -256,6 +322,8 @@ export default function CartPage() {
 }
 
 function SiteHeader() {
+  const cart = useCartContext();
+  
   return (
     <header className="w-full font-sans">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 h-16 flex items-center gap-4">
@@ -276,7 +344,15 @@ function SiteHeader() {
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <button className="size-9 rounded-full hover:bg-neutral-100 flex items-center justify-center relative">
+            <Image src="/icon/cartIcon.png" alt="Cart" width={16} height={16} className="h-4 w-auto" />
+            {cart.cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {cart.cartCount}
+              </span>
+            )}
+          </button>
           <button aria-label="Menu" className="size-9 rounded-full hover:bg-neutral-100 flex items-center justify-center">
             <MenuIcon />
           </button>
@@ -291,6 +367,7 @@ function CartTabs() {
   const tabs = [
     { href: "/cart-details/cart", label: "CART" },
     { href: "/cart-details/wishlist", label: "WISHLIST" },
+    { href: "/cart-details/swap", label: "SWAP" },
     { href: "/cart-details/track-orders", label: "TRACK ORDERS" },
   ];
 
@@ -322,49 +399,6 @@ function CartTabs() {
   );
 }
 
-function SiteFooter() {
-  return (
-    <footer className="mt-16  border-t border-black/[0.08] py-10" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-neutral-600">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Image src="/Rf-long-black-logo.svg" alt="Refurnish" width={140} height={32} />
-          </div>
-          <div className="flex items-center gap-3 text-neutral-500">
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <InstagramIcon />
-            </a>
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <TikTokIcon />
-            </a>
-            <a href="#" className="hover:text-[#273815] transition-colors">
-              <FacebookIcon />
-            </a>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Information</h3>
-          <ul className="space-y-2">
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Privacy</a></li>
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Terms of Use</a></li>
-            <li><a className="hover:text-neutral-800" href="#" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>About us</a></li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="font-medium text-neutral-800" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Contact Us</h3>
-          <ul className="space-y-1">
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Email: <a className="hover:text-neutral-800" href="mailto:support@refurnish.ph" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>support@refurnish.ph</a></li>
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Mobile / Viber: +63 912 345 6789</li>
-            <li style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>Messenger: m.me/refurnishph</li>
-            <li className="pt-2 text-xs text-neutral-500" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>© 2025 NOVU. All rights reserved.</li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 function CheckoutModal({
   items,
@@ -378,6 +412,98 @@ function CheckoutModal({
   onClose: () => void;
 }) {
   const total = subtotal + shippingFee;
+  const { placeOrder } = useTrackOrders();
+  const { user } = useAuth();
+  const { refreshCartAfterCheckout } = useCartContext();
+  const router = useRouter();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [notes, setNotes] = useState('');
+
+  // Payment modal state
+  const [paymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
+  const [paymentModalProps, setPaymentModalProps] = useState<{ provider: string; txnId?: string }>({ provider: "gcash" });
+
+  const [selection, setSelection] = useState({
+    paymentMode: "Cash on Delivery",
+    ewalletOption: "gcash",
+    cardType: "debit",
+    deliveryMode: "LBC Express",
+  });
+
+  const [notice, setNotice] = useState<{ type: "info" | "error" | "success"; message: string } | null>(null);
+  const [cardValid, setCardValid] = useState(false);
+  const [attemptedCardSubmit, setAttemptedCardSubmit] = useState(false);
+
+  const handleSelectionChange = useCallback((s: any) => {
+    setSelection(s);
+  }, []);
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      alert('Please log in to place an order');
+      return;
+    }
+
+    if (!shippingAddress.trim()) {
+      alert('Please enter a shipping address');
+      return;
+    }
+
+    // If user selected an e-wallet, open the payment mockup modal
+    if (selection.paymentMode === "Ewallet") {
+      const provider = selection.ewalletOption || "gcash";
+      const txnId = `txn_${Date.now().toString(36).slice(-8)}`;
+      setPaymentModalProps({ provider, txnId });
+      setPaymentModalOpen(true);
+      return;
+    }
+
+    // Cash on Delivery: treat as immediate order placement success
+    if (selection.paymentMode === "Cash on Delivery") {
+      const txnId = `cod_${Date.now().toString(36).slice(-8)}`;
+      handlePaymentSuccess({ status: "SOLD", txnId, amount: total });
+      return;
+    }
+
+    // Debit/Credit: require valid card inputs before proceeding
+    if (selection.paymentMode === "Debit/Credit") {
+      setAttemptedCardSubmit(true);
+      if (!cardValid) {
+        return;
+      }
+      const txnId = `card_${Date.now().toString(36).slice(-8)}`;
+      handlePaymentSuccess({ status: "SOLD", txnId, amount: total });
+      return;
+    }
+  };
+
+  const handlePaymentSuccess = async (payload: { status: "SOLD"; txnId: string; amount: number }) => {
+    console.log("Payment success", payload);
+    setPaymentModalOpen(false);
+    
+    setIsPlacingOrder(true);
+    try {
+      const selectedItems = items.map(item => item.id.toString());
+      await placeOrder({
+        selectedItems,
+        shippingAddress: shippingAddress.trim(),
+        notes: notes.trim() || undefined,
+      }, {
+        onSuccess: () => {
+          // Refresh cart to remove only the ordered items (backend handles selective removal)
+          refreshCartAfterCheckout();
+        }
+      });
+      
+      setNotice({ type: "success", message: "Your order has been placed successfully." });
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setNotice({ type: "error", message: "Failed to place order. Please try again." });
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
   return (
     <div className="fixed inset-0 font-sans z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -388,15 +514,31 @@ function CheckoutModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="text-neutral-700">
                 <p className="font-semibold mb-2">Your Details :</p>
-                <p>Name : Son Chaeyoung</p>
-                <p>Contact No. : 099898333953</p>
-                <p>Email : district8@gmail.com</p>
+                <p>Name : {user?.firstName} {user?.lastName}</p>
+                <p>Email : {user?.email}</p>
               </div>
               <div className="text-neutral-700">
-                <p className="font-semibold mb-2">Address :</p>
-                <p>Brgy. 29, Cavite City, Cavite, 4100</p>
-                <p>2129 Block 23, Dunchondong St.</p>
+                <p className="font-semibold mb-2">Shipping Address :</p>
+                <textarea
+                  value={shippingAddress}
+                  onChange={(e) => setShippingAddress(e.target.value)}
+                  placeholder="Enter your complete shipping address..."
+                  className="w-full h-20 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
               </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-neutral-700 font-semibold mb-2">
+                Additional Notes (Optional):
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any special instructions for your order..."
+                className="w-full h-16 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
             </div>
 
             <p className="mt-8 font-semibold text-neutral-800">Your Order(s) :</p>
@@ -426,17 +568,18 @@ function CheckoutModal({
 
           <div className="space-y-6">
             <div className="space-y-4">
+              <PaymentDeliverySelector 
+                onChange={handleSelectionChange} 
+                attemptedSubmit={attemptedCardSubmit} 
+                onValidityChange={setCardValid} 
+              />
+
               <div>
-                <p className="text-neutral-700 font-medium">Mode of Payment :</p>
-                <div className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center justify-between px-4">Cash on Delivery <span>›</span></div>
-              </div>
-              <div>
-                <p className="text-neutral-700 font-medium">Mode of Delivery :</p>
-                <div className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center justify-between px-4">LBC Express <span>›</span></div>
-              </div>
-              <div>
-                <p className="text-neutral-700 font-medium">Voucher Applied :</p>
-                <div className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center px-4 text-neutral-500">NONE</div>
+                <p className="text-neutral-700 font-medium">Refurnish Voucher :</p>
+                <input 
+                  placeholder="Voucher Code" 
+                  className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center px-4 text-neutral-500 w-full"
+                />
               </div>
             </div>
 
@@ -447,11 +590,65 @@ function CheckoutModal({
             </div>
 
             <div className="flex items-center gap-4 pt-4">
-              <button onClick={onClose} className="h-12 px-6 rounded-full ring-1 ring-black/[0.08] bg-white">Cancel</button>
-              <button className="h-12 px-6 rounded-full bg-[#636B2F] text-white">Place Order</button>
+              <button 
+                onClick={onClose} 
+                disabled={isPlacingOrder}
+                className="h-12 px-6 rounded-full ring-1 ring-black/[0.08] bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handlePlaceOrder}
+                disabled={isPlacingOrder || !shippingAddress.trim()}
+                className="h-12 px-6 rounded-full bg-[#636B2F] text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isPlacingOrder ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Placing Order...
+                  </>
+                ) : (
+                  'Place Order'
+                )}
+              </button>
             </div>
+
+            <PaymentMockupModal
+              open={paymentModalOpen}
+              onClose={() => setPaymentModalOpen(false)}
+              amount={total}
+              provider={paymentModalProps.provider}
+              txnId={paymentModalProps.txnId}
+              onSuccess={handlePaymentSuccess}
+            />
           </div>
         </div>
+
+        {notice && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setNotice(null)} />
+            <div className="relative mx-4 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2">
+                {notice.type === 'error' ? 'Something went wrong' : notice.type === 'success' ? 'Successful checkout!' : 'Notice'}
+              </h3>
+              <p className="text-sm text-neutral-700">{notice.message}</p>
+              <div className="mt-4 flex justify-end gap-2">
+                <button 
+                  onClick={() => { 
+                    setNotice(null); 
+                    if (notice.type === 'success') {
+                      onClose();
+                      router.push('/cart-details/track-orders');
+                    }
+                  }} 
+                  className="h-10 px-4 rounded-full bg-neutral-900 text-white"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <button aria-label="Close" onClick={onClose} className="absolute top-4 right-4 size-9 rounded-full hover:bg-neutral-100 flex items-center justify-center">
           <CloseIcon />
@@ -526,28 +723,363 @@ function SearchIcon() {
   );
 }
 
-function InstagramIcon() {
+function PaymentDeliverySelector({ onChange, attemptedSubmit = false, onValidityChange }: { onChange?: (s: any) => void; attemptedSubmit?: boolean; onValidityChange?: (valid: boolean) => void }) {
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
+
+  const [paymentMode, setPaymentMode] = useState("Cash on Delivery");
+  const [ewalletOption, setEwalletOption] = useState("gcash");
+  const [cardType, setCardType] = useState("debit");
+
+  const [deliveryMode, setDeliveryMode] = useState("LBC Express");
+
+  // Card inputs and errors
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState(""); // MM/YY
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardErrors, setCardErrors] = useState<{ name?: string; number?: string; expiry?: string; cvc?: string }>({});
+
+  const paymentRef = useRef<HTMLDivElement | null>(null);
+  const deliveryRef = useRef<HTMLDivElement | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  // Keep the ref updated with the latest onChange function
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (paymentRef.current && !paymentRef.current.contains(e.target as Node)) {
+        setPaymentOpen(false);
+      }
+      if (deliveryRef.current && !deliveryRef.current.contains(e.target as Node)) {
+        setDeliveryOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // notify parent if needed
+  useEffect(() => {
+    if (typeof onChangeRef.current === "function") {
+      onChangeRef.current({ paymentMode, ewalletOption, cardType, deliveryMode });
+    }
+  }, [paymentMode, ewalletOption, cardType, deliveryMode]);
+
+  // Validation helpers
+  function luhnCheck(num: string) {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let digit = parseInt(num.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  }
+
+  function validateCard(): { valid: boolean; errors: typeof cardErrors } {
+    if (paymentMode !== "Debit/Credit") return { valid: true, errors: {} };
+    const errors: typeof cardErrors = {};
+    const digits = cardNumber.replace(/\D/g, "");
+
+    if (!cardName.trim()) {
+      errors.name = "Cardholder name is required.";
+    }
+
+    if (digits.length < 13 || digits.length > 19 || !luhnCheck(digits)) {
+      errors.number = "Enter a valid card number.";
+    }
+
+    // expiry MM/YY and not past
+    const match = cardExpiry.match(/^\s*(\d{2})\/(\d{2})\s*$/);
+    if (!match) {
+      errors.expiry = "Enter expiry as MM/YY.";
+    } else {
+      const mm = parseInt(match[1], 10);
+      const yy = parseInt(match[2], 10);
+      if (mm < 1 || mm > 12) {
+        errors.expiry = "Invalid expiry month.";
+      } else {
+        const now = new Date();
+        const curYY = now.getFullYear() % 100;
+        const curMM = now.getMonth() + 1;
+        if (yy < curYY || (yy === curYY && mm < curMM)) {
+          errors.expiry = "Card is expired.";
+        }
+      }
+    }
+
+    if (!/^\d{3,4}$/.test(cardCvc)) {
+      errors.cvc = "CVC must be 3–4 digits.";
+    }
+
+    return { valid: Object.keys(errors).length === 0, errors };
+  }
+
+  // Recompute validity on relevant changes and report to parent
+  useEffect(() => {
+    const { valid, errors } = validateCard();
+    setCardErrors(errors);
+    if (typeof onValidityChange === "function") onValidityChange(valid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentMode, cardName, cardNumber, cardExpiry, cardCvc]);
+
+  const paymentOptions = ["Cash on Delivery", "Ewallet", "Debit/Credit"];
+  const ewalletOptions = [
+    { id: "gcash", label: "", logo: "/icon/GCash_logo.png" },
+    { id: "paymaya", label: "", logo: "/icon/maya.jpg" },
+  ];
+  const deliveryOptions = [
+    "LBC Express",
+    "J&T Express",
+    "GGX",
+    "Ninja Van",
+    "Xend",
+    "2GO",
+    "GrabExpress",
+  ];
+
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-    </svg>
+    <div className="space-y-4 w-full">
+      {/* Mode of Payment */}
+      <div>
+        <p className="text-neutral-700 font-medium">Mode of Payment :</p>
+
+        <div ref={paymentRef} className="relative">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={paymentOpen}
+            onClick={() => setPaymentOpen((s) => !s)}
+            className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center justify-between px-4 w-full bg-white"
+          >
+            <span className="text-left truncate">{paymentMode}</span>
+            <span className="ml-3 text-neutral-400">›</span>
+          </button>
+
+          {paymentOpen && (
+            <ul
+              role="listbox"
+              tabIndex={-1}
+              className="absolute z-10 mt-2 w-full rounded-lg bg-white ring-1 ring-black/[0.06] shadow-lg divide-y divide-neutral-100 max-h-56 overflow-auto"
+            >
+              {paymentOptions.map((opt) => (
+                <li
+                  key={opt}
+                  role="option"
+                  aria-selected={paymentMode === opt}
+                  onClick={() => {
+                    setPaymentMode(opt);
+                    setPaymentOpen(false);
+                  }}
+                  className="px-4 py-3 cursor-pointer hover:bg-neutral-50"
+                >
+                  {opt}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="mt-3">
+          {paymentMode === "Ewallet" && (
+            <div className="rounded-xl ring-1 ring-black/[0.06] p-3 bg-white">
+              <p className="text-sm font-medium text-neutral-700 mb-2">Choose e-wallet:</p>
+              <div className="flex gap-4 items-center flex-wrap">
+                {ewalletOptions.map((w) => (
+                  <label key={w.id} className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="ewallet"
+                      value={w.id}
+                      checked={ewalletOption === w.id}
+                      onChange={() => setEwalletOption(w.id)}
+                      className="cursor-pointer"
+                    />
+
+                    <Image
+                      src={w.logo}
+                      alt={w.label}
+                      width={20}
+                      height={20}
+                      className="h-5 w-auto object-contain"
+                    />
+
+                    <span className="text-sm">{w.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="mt-3 text-sm text-neutral-600">
+                {ewalletOption === "gcash" && <p>You'll be redirected to GCash to complete the payment.</p>}
+                {ewalletOption === "paymaya" && <p>You'll be redirected to PayMaya to complete the payment.</p>}
+              </div>
+            </div>
+          )}
+
+          {paymentMode === "Debit/Credit" && (
+            <div className="rounded-xl ring-1 ring-black/[0.06] p-3 bg-white">
+              {attemptedSubmit && Object.keys(cardErrors).length > 0 && (
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm" role="alert" style={{ fontFamily: 'Fustat, Arial, Helvetica, sans-serif' }}>
+                  Please correct the highlighted card details.
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-neutral-700">Card type:</p>
+                <div className="flex items-center gap-2">
+                  <Image src="/icon/visa.png" alt="Visa" width={20} height={20} className="h-5" />
+                  <Image src="/icon/card.png" alt="Mastercard" width={20} height={20} className="h-5" />
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-center">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="cardType"
+                    value="debit"
+                    checked={cardType === "debit"}
+                    onChange={() => setCardType("debit")}
+                  />
+                  <span className="text-sm">Debit</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="cardType"
+                    value="credit"
+                    checked={cardType === "credit"}
+                    onChange={() => setCardType("credit")}
+                  />
+                  <span className="text-sm">Credit</span>
+                </label>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                <div>
+                  <input
+                    placeholder="Cardholder name"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    className={`w-full rounded-md border px-3 py-2 text-sm ${attemptedSubmit && cardErrors.name ? 'border-red-300' : 'border-neutral-200'}`}
+                  />
+                  {attemptedSubmit && cardErrors.name && (
+                    <p className="mt-1 text-xs text-red-600">{cardErrors.name}</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    placeholder="Card number"
+                    inputMode="numeric"
+                    maxLength={23}
+                    value={cardNumber}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 19);
+                      // group in 4s
+                      const grouped = digits.replace(/(.{4})/g, '$1 ').trim();
+                      setCardNumber(grouped);
+                    }}
+                    className={`w-full rounded-md border px-3 py-2 text-sm tabular-nums ${attemptedSubmit && cardErrors.number ? 'border-red-300' : 'border-neutral-200'}`}
+                  />
+                  {attemptedSubmit && cardErrors.number && (
+                    <p className="mt-1 text-xs text-red-600">{cardErrors.number}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <div className="w-1/2">
+                    <input
+                      placeholder="MM/YY"
+                      maxLength={5}
+                      value={cardExpiry}
+                      onChange={(e) => {
+                        let v = e.target.value.replace(/[^\d]/g, '').slice(0, 4);
+                        if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+                        else if (v.length >= 1 && parseInt(v[0],10) > 1) v = '0' + v[0] + (v[1] ? '/' + v.slice(1) : '');
+                        setCardExpiry(v);
+                      }}
+                      className={`w-full rounded-md border px-3 py-2 text-sm ${attemptedSubmit && cardErrors.expiry ? 'border-red-300' : 'border-neutral-200'}`}
+                    />
+                    {attemptedSubmit && cardErrors.expiry && (
+                      <p className="mt-1 text-xs text-red-600">{cardErrors.expiry}</p>
+                    )}
+                  </div>
+                  <div className="w-1/2">
+                    <input
+                      placeholder="CVC"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0,4))}
+                      className={`w-full rounded-md border px-3 py-2 text-sm tabular-nums ${attemptedSubmit && cardErrors.cvc ? 'border-red-300' : 'border-neutral-200'}`}
+                    />
+                    {attemptedSubmit && cardErrors.cvc && (
+                      <p className="mt-1 text-xs text-red-600">{cardErrors.cvc}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentMode === "Cash on Delivery" && (
+            <div className="mt-2 text-sm text-neutral-600">Pay with cash when your order is delivered.</div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Mode of Delivery */}
+      <div>
+        <p className="text-neutral-700 font-medium">Mode of Delivery :</p>
+
+        <div ref={deliveryRef} className="relative">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={deliveryOpen}
+            onClick={() => setDeliveryOpen((s) => !s)}
+            className="mt-2 h-11 rounded-xl ring-1 ring-black/[0.08] flex items-center justify-between px-4 w-full bg-white"
+          >
+            <span className="text-left truncate">{deliveryMode}</span>
+            <span className="ml-3 text-neutral-400">›</span>
+          </button>
+
+          {deliveryOpen && (
+            <ul
+              role="listbox"
+              tabIndex={-1}
+              className="absolute z-10 mt-2 w-full rounded-lg bg-white ring-1 ring-black/[0.06] shadow-lg divide-y divide-neutral-100 max-h-56 overflow-auto"
+            >
+              {deliveryOptions.map((opt) => (
+                <li
+                  key={opt}
+                  role="option"
+                  aria-selected={deliveryMode === opt}
+                  onClick={() => {
+                    setDeliveryMode(opt);
+                    setDeliveryOpen(false);
+                  }}
+                  className="px-4 py-3 cursor-pointer hover:bg-neutral-50"
+                >
+                  {opt}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
-function TikTokIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
-      <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-    </svg>
-  );
-}
-
-function FacebookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-    </svg>
-  );
-}
 
 

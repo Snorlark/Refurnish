@@ -7,198 +7,39 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
+import { useCartContext } from "../../contexts/CartContext";
+import { useWishlistContext } from "../../contexts/WishlistContext";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-type Product = {
-  id: number;
+type CatalogProduct = {
+  id: string;
   title: string;
   image: string;
   location: string;
-  price: number; // Added for sorting purposes
+  price: number;
   dateAdded: string;
+  category: string;
 };
 
-const productCatalog: Record<string, Product[]> = {
-  CHAIRS: [
-    {
-      id: 1,
-      title: "360° Swivel Wooden Office Chair",
-      image: "/products/chair/view1.jpg",
-      location: "Cavite",
-      price: 500,
-      dateAdded: "2025-08-25",
-    },
-    {
-      id: 2,
-      title: "Classic Rattan Chair",
-      image: "/bedroom.png",
-      location: "Cebu",
-      price: 80,
-      dateAdded: "2025-08-20",
-    },
-    {
-      id: 9,
-      title: "Ergonomic Office Chair",
-      image: "/bedroom.png",
-      location: "Makati",
-      price: 250,
-      dateAdded: "2025-08-15",
-    },
-    {
-      id: 10,
-      title: "Vintage Armchair",
-      image: "/bedroom.png",
-      location: "Tagaytay",
-      price: 180,
-      dateAdded: "2025-08-10",
-    },
-  ],
-  TABLES: [
-    {
-      id: 3,
-      title: "Dining Table",
-      image: "/bedroom.png",
-      location: "Makati",
-      price: 300,
-      dateAdded: "2025-08-22",
-    },
-    {
-      id: 4,
-      title: "Coffee Table",
-      image: "/bedroom.png",
-      location: "Tagaytay",
-      price: 150,
-      dateAdded: "2025-08-18",
-    },
-    {
-      id: 11,
-      title: "Study Desk",
-      image: "/bedroom.png",
-      location: "Cebu",
-      price: 120,
-      dateAdded: "2025-08-12",
-    },
-    {
-      id: 12,
-      title: "Console Table",
-      image: "/bedroom.png",
-      location: "Davao",
-      price: 90,
-      dateAdded: "2025-08-08",
-    },
-  ],
-  SOFA: [
-    {
-      id: 5,
-      title: "Modern Sofa",
-      image: "/living.png",
-      location: "Cebu",
-      price: 450,
-      dateAdded: "2025-08-21",
-    },
-    {
-      id: 13,
-      title: "Leather Loveseat",
-      image: "/living.png",
-      location: "Makati",
-      price: 380,
-      dateAdded: "2025-08-14",
-    },
-    {
-      id: 14,
-      title: "Sectional Sofa",
-      image: "/living.png",
-      location: "Amanpulo",
-      price: 520,
-      dateAdded: "2025-08-05",
-    },
-  ],
-  CABINET: [
-    {
-      id: 6,
-      title: "Classic Cabinet",
-      image: "/living.png",
-      location: "Davao",
-      price: 200,
-      dateAdded: "2025-08-19",
-    },
-    {
-      id: 15,
-      title: "Bookshelf",
-      image: "/living.png",
-      location: "Tagaytay",
-      price: 160,
-      dateAdded: "2025-08-11",
-    },
-    {
-      id: 16,
-      title: "Wardrobe",
-      image: "/living.png",
-      location: "Palawan",
-      price: 280,
-      dateAdded: "2025-08-07",
-    },
-  ],
-  DECOR: [
-    {
-      id: 7,
-      title: "Decorative Vase",
-      image: "/living.png",
-      location: "Palawan",
-      price: 50,
-      dateAdded: "2025-08-26",
-    },
-    {
-      id: 17,
-      title: "Wall Art",
-      image: "/living.png",
-      location: "Cebu",
-      price: 75,
-      dateAdded: "2025-08-13",
-    },
-    {
-      id: 18,
-      title: "Table Lamp",
-      image: "/living.png",
-      location: "Makati",
-      price: 65,
-      dateAdded: "2025-08-09",
-    },
-  ],
-  MIRROR: [
-    {
-      id: 8,
-      title: "Wall Mirror",
-      image: "/dining.png",
-      location: "Tagaytay",
-      price: 180,
-      dateAdded: "2025-08-23",
-    },
-    {
-      id: 19,
-      title: "Floor Mirror",
-      image: "/dining.png",
-      location: "Amanpulo",
-      price: 220,
-      dateAdded: "2025-08-16",
-    },
-    {
-      id: 20,
-      title: "Bathroom Mirror",
-      image: "/dining.png",
-      location: "Davao",
-      price: 95,
-      dateAdded: "2025-08-06",
-    },
-  ],
-  LAMP: [],
-  VANITY: [],
+type ProductCatalogByCategory = Record<string, CatalogProduct[]>;
 
-  SHELVES: [],
+type BackendProduct = {
+  _id: string;
+  title: string;
+  images: string[];
+  location: string;
+  price?: number;
+  category: string;
+  status: string;
+  createdAt?: string;
 };
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
+
+const initialCatalog: ProductCatalogByCategory = {};
 export default function ChairsCatalogPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -208,6 +49,8 @@ export default function ChairsCatalogPage() {
 }
 
 function ChairsCatalogContent() {
+  const cart = useCartContext();
+  const wishlist = useWishlistContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{
     top: number;
@@ -217,27 +60,96 @@ function ChairsCatalogContent() {
 
   const navbarRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const categories = ["ALL", ...Object.keys(productCatalog)];
-  const defaultCategory = "SALE";
+  const [catalog, setCatalog] = useState<ProductCatalogByCategory>(initialCatalog);
+  const categories = ["ALL", ...Object.keys(catalog)];
   const [isSalePage, setIsSalePage] = useState(true); // since this is the Sale page
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [sortOption, setSortOption] = useState<string>("newest");
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 600]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
   const searchParams = useSearchParams();
 
   const router = useRouter();
 
   const categoryParam = searchParams.get("category");
+  const initialSearchParam = searchParams.get("search") || "";
 
   // Keep in sync when user lands with a category from Shop page
   useEffect(() => {
     if (categoryParam && categoryParam !== activeCategory) {
       setActiveCategory(categoryParam);
     }
-  }, [categoryParam]);
+  }, [categoryParam, activeCategory]);
+
+  // Initialize search from URL query param
+  useEffect(() => {
+    if (initialSearchParam && initialSearchParam !== searchQuery) {
+      setSearchQuery(initialSearchParam);
+      setShowSuggestions(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSearchParam]);
+
+  // Fetch sale products and group by category
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch products with listedAs="sale" OR listedAs="both" and status="listed"
+        const res = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=sale`, { signal: controller.signal });
+        const data: BackendProduct[] = await res.json();
+        if (!res.ok) throw new Error('Failed to load products');
+
+        // Also fetch products with listedAs="both"
+        const resBoth = await fetch(`${API_BASE_URL}/api/products?status=listed&listedAs=both`, { signal: controller.signal });
+        const dataBoth: BackendProduct[] = await resBoth.json();
+        if (!resBoth.ok) throw new Error('Failed to load both products');
+
+        // Combine both results
+        const allProducts = [...(data || []), ...(dataBoth || [])];
+
+        const mapped: CatalogProduct[] = allProducts.map((p) => ({
+          id: p._id,
+          title: p.title,
+          image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '/products/chair/view1.jpg',
+          location: p.location || 'Metro Manila',
+          price: typeof p.price === 'number' ? p.price : 0,
+          dateAdded: p.createdAt || new Date().toISOString(),
+          category: (p.category || 'UNCATEGORIZED').toUpperCase(),
+        }));
+
+        const grouped: ProductCatalogByCategory = mapped.reduce((acc, item) => {
+          if (!acc[item.category]) acc[item.category] = [];
+          acc[item.category].push(item);
+          return acc;
+        }, {} as ProductCatalogByCategory);
+
+        setCatalog(grouped);
+      } catch (e) {
+        // Only log errors that are not abort errors (which are expected when component unmounts)
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('Error fetching products:', e);
+        }
+        // Don't update state if the request was aborted
+        if (!controller.signal.aborted) {
+          setCatalog({});
+        }
+      } finally {
+        // Only update loading state if the request wasn't aborted
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchProducts();
+    return () => controller.abort();
+  }, []);
 
   const handleCategoryClick = (c: string) => {
     setActiveCategory(c);
@@ -248,7 +160,7 @@ function ChairsCatalogContent() {
     if (!navbarRef.current) return;
     const navEl = navbarRef.current;
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      gsap.timeline({
         scrollTrigger: {
           trigger: "main",
           start: "top top",
@@ -256,12 +168,8 @@ function ChairsCatalogContent() {
           scrub: 0.5,
           onUpdate: (self) => {
             const progress = self.progress;
-            // const height = gsap.utils.interpolate(72, 60, progress);
-            // const marginX = gsap.utils.interpolate(12, 6, progress);
             const height = gsap.utils.interpolate(64, 60, progress);
             const marginX = gsap.utils.interpolate(32, 18, progress);
-            const marginY = gsap.utils.interpolate(0, 8, progress);
-            const paddingX = gsap.utils.interpolate(22, 16, progress);
             // use gsap.set to avoid layout thrash
             gsap.set(navEl, {
               height,
@@ -321,17 +229,17 @@ function ChairsCatalogContent() {
   // Get unique locations from products
   const allLocations = Array.from(
     new Set(
-      Object.values(productCatalog)
+      Object.values(catalog)
         .flat()
         .map((product) => product.location)
     )
   );
 
   // Enhanced filtering logic
-  let filteredItems: Product[] =
+  let filteredItems: CatalogProduct[] =
     activeCategory === "ALL"
-      ? Object.values(productCatalog).flat()
-      : productCatalog[activeCategory] ?? [];
+      ? Object.values(catalog).flat()
+      : catalog[activeCategory] ?? [];
 
   // Apply location filter
   if (selectedLocations.length > 0) {
@@ -344,6 +252,15 @@ function ChairsCatalogContent() {
   filteredItems = filteredItems.filter(
     (item) => item.price >= priceRange[0] && item.price <= priceRange[1]
   );
+
+  const allProductsFlat: CatalogProduct[] = Object.values(catalog).flat();
+  const norm = (s: string) => s.toLowerCase().trim();
+  const q = norm(searchQuery);
+  if (q) {
+    filteredItems = allProductsFlat.filter((p) =>
+      norm(p.title).includes(q)
+    );
+  }
 
   // Apply sorting
   filteredItems = [...filteredItems].sort((a, b) => {
@@ -359,7 +276,7 @@ function ChairsCatalogContent() {
   });
 
   // Use the enhanced filteredItems for display
-  const filteredProducts: Product[] = filteredItems;
+  const filteredProducts: CatalogProduct[] = filteredItems;
 
   const updateDropdownPos = () => {
     const btn = menuBtnRef.current;
@@ -415,7 +332,7 @@ function ChairsCatalogContent() {
 
               {/* Search bar (hidden on xs, expands on sm+) */}
               <div className="hidden sm:flex flex-1 mx-3 sm:mx-6">
-                <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
+                <div className="relative flex items-center gap-3 bg-gray-100 rounded-full px-4 sm:px-5 h-9 w-full">
                   <svg
                     className="w-4 h-4 text-gray-500"
                     viewBox="0 0 24 24"
@@ -426,30 +343,107 @@ function ChairsCatalogContent() {
                     <path d="M21 21l-3.5-3.5" strokeWidth="2" />
                   </svg>
                   <input
-                    className="bg-transparent outline-none text-sm flex-1"
-                    placeholder="Search"
+                    className="bg-transparent text-gray-800 outline-none text-sm flex-1"
+                    placeholder="Search by category or title"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const matchCat = categories
+                          .filter(Boolean)
+                          .find((c) => c.toLowerCase() === q);
+                        if (matchCat) {
+                          setShowSuggestions(false);
+                          setSearchQuery("");
+                          handleCategoryClick(matchCat);
+                        } else {
+                          setShowSuggestions(false);
+                        }
+                      }
+                      if (e.key === 'Escape') setShowSuggestions(false);
+                    }}
                   />
+                  {showSuggestions && q && (
+                    <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+                      <ul className="max-h-72 overflow-auto py-2 text-gray-800 text-sm">
+                        {categories
+                          .filter((c) => c && c !== 'ALL')
+                          .filter((c) => c.toLowerCase().includes(q))
+                          .slice(0, 5)
+                          .map((c) => (
+                            <li key={`cat-${c}`}>
+                              <button
+                                className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setShowSuggestions(false);
+                                  setSearchQuery("");
+                                  handleCategoryClick(c);
+                                }}
+                              >
+                                Category: {c}
+                              </button>
+                            </li>
+                          ))}
+                        {allProductsFlat
+                          .filter((p) => norm(p.title).includes(q))
+                          .slice(0, 8)
+                          .map((p) => (
+                            <li key={`title-${p.id}`}>
+                              <button
+                                className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setShowSuggestions(false);
+                                  setSearchQuery(p.title);
+                                }}
+                              >
+                                {p.title}
+                              </button>
+                            </li>
+                          ))}
+                        {categories.filter((c) => c && c !== 'ALL' && c.toLowerCase().includes(q)).length === 0 &&
+                          allProductsFlat.filter((p) => norm(p.title).includes(q)).length === 0 && (
+                            <li className="px-4 py-2 text-gray-500">No results</li>
+                          )}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Icons */}
               <div className="nav-icons flex items-center space-x-3 sm:space-x-4 text-gray-700">
                 <Link href="/cart-details/wishlist">
-                  <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive)">
+                  <button className="w-8 h-8 sm:w-9 cursor-pointer sm:h-9 flex items-center justify-center hover:text-(--color-olive) relative">
                     <img
                       src="/icon/heartIcon.png"
                       alt="Wishlist"
                       className="h-4 w-auto"
                     />
+                    {wishlist.wishlistCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {wishlist.wishlistCount}
+                      </span>
+                    )}
                   </button>
                 </Link>
                 <Link href="/cart-details/cart">
-                  <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive)">
+                  <button className="w-8 h-8 sm:w-10 cursor-pointer sm:h-10 flex items-center justify-center hover:text-(--color-olive) relative">
                     <img
                       src="/icon/cartIcon.png"
                       alt="Cart"
                       className="h-4 w-auto"
                     />
+                    {cart.cartCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cart.cartCount}
+                      </span>
+                    )}
                   </button>
                 </Link>
 
@@ -546,7 +540,7 @@ function ChairsCatalogContent() {
                 </Link>
 
                 <Link
-                  href="/seller-dashboard"
+                  href="/profile/seller-dashboard-access"
                   className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100/70"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -730,7 +724,7 @@ function ChairsCatalogContent() {
                           onChange={(e) =>
                             setPriceRange([
                               priceRange[0],
-                              parseInt(e.target.value) || 600,
+                              parseInt(e.target.value) || 1000000,
                             ])
                           }
                           placeholder="Max"
@@ -790,7 +784,7 @@ function ChairsCatalogContent() {
                   <div className="lg:col-span-3  font-sans  flex justify-end">
                     <button
                       onClick={() => {
-                        setPriceRange([0, 600]);
+                        setPriceRange([0, 1000000]);
                         setSelectedLocations([]);
                         setSortOption("newest");
                       }}
@@ -804,7 +798,7 @@ function ChairsCatalogContent() {
                 {/* Active Filters Display */}
                 {(selectedLocations.length > 0 ||
                   priceRange[0] > 0 ||
-                  priceRange[1] < 600) && (
+                  priceRange[1] < 1000000) && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex flex-wrap gap-2">
                       {selectedLocations.map((location) => (
@@ -831,7 +825,7 @@ function ChairsCatalogContent() {
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
                           Price: ₱{priceRange[0]} - ₱{priceRange[1]}
                           <button
-                            onClick={() => setPriceRange([0, 600])}
+                            onClick={() => setPriceRange([0, 1000000])}
                             className="ml-1 hover:text-purple-600"
                           >
                             ×
@@ -846,8 +840,11 @@ function ChairsCatalogContent() {
 
             {/* Results Count */}
             <div className="text-center text-sm text-gray-600 mb-4">
-              Showing {filteredItems.length} of{" "}
-              {Object.values(productCatalog).flat().length} products
+              {isLoading ? (
+                "Loading products..."
+              ) : (
+                `Showing ${filteredItems.length} of ${Object.values(catalog).flat().length} products`
+              )}
             </div>
           </div>
         </section>
@@ -858,7 +855,11 @@ function ChairsCatalogContent() {
             ref={gridRef}
             className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
           >
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <div className="col-span-full text-center py-20 text-gray-500">
+                Loading products...
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="col-span-full text-center py-20 text-gray-500">
                 No products in this category yet.
               </div>
@@ -878,7 +879,7 @@ function ChairsCatalogContent() {
                     />
                   </div>
 
-                  <Link href="/item-view-sale">
+                  <Link href={`/item-view-sale?id=${encodeURIComponent(item.id)}`}>
                     <div className="p-4">
                       <h3 className="text-[15px] text-(--color-olive) font-semibold">
                         {item.title}

@@ -1,41 +1,55 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { useContent } from '../hooks/useContent';
 
 export default function FlashSale() {
+  const { flashSaleSettings, isLoading } = useContent();
   const [timeLeft, setTimeLeft] = useState({
-    days: 2,
-    hours: 1,
-    minutes: 52,
-    seconds: 48
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   });
 
+  // Calculate time left based on flash sale settings
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        
-        if (seconds > 0) {
-          seconds--;
-        } else if (minutes > 0) {
-          minutes--;
-          seconds = 59;
-        } else if (hours > 0) {
-          hours--;
-          minutes = 59;
-          seconds = 59;
-        } else if (days > 0) {
-          days--;
-          hours = 23;
-          minutes = 59;
-          seconds = 59;
-        }
-        
+    if (!flashSaleSettings || !flashSaleSettings.isActive || !flashSaleSettings.endDate) {
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      return;
+    }
+
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const endTime = new Date(flashSaleSettings.endDate).getTime();
+      const difference = endTime - now;
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
         return { days, hours, minutes, seconds };
-      });
+      } else {
+        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      }
+    };
+
+    // Set initial time
+    setTimeLeft(calculateTimeLeft());
+
+    // Update timer every second
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [flashSaleSettings]);
+
+  // Don't render if no active flash sale or still loading
+  if (isLoading || !flashSaleSettings || !flashSaleSettings.isActive) {
+    return null;
+  }
 
   return (
     <div className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-16 ">
@@ -43,28 +57,35 @@ export default function FlashSale() {
         <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-center shadow-xl relative overflow-hidden max-w-6xl mx-auto">
           {/* Percentage Badge - Top Left */}
           <div className="absolute top-3 left-3 sm:top-6 sm:left-6 bg-(--color-olive) text-white w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center transform rotate-12 shadow-lg z-10">
-            <span className="text-xl sm:text-2xl lg:text-4xl font-bold">%</span>
+            <span className="text-xl sm:text-2xl lg:text-4xl font-bold">{flashSaleSettings.discountPercentage}%</span>
           </div>
           
-          {/* Chair Image - Left Side */}
+          {/* Featured Product Image - Left Side */}
           <div className="flex-shrink-0 mb-6 lg:mb-0 lg:mr-8 xl:mr-12 w-full lg:w-auto">
             <div className="w-full sm:w-80 h-48 sm:h-56 lg:h-64 bg-gray-100 rounded-2xl sm:rounded-3xl flex items-center justify-center overflow-hidden">
-              <img 
-                src="/bedroom.png" 
-                alt="Vintage Chair" 
-                className="w-full h-full object-cover"
-              />
+              {flashSaleSettings.featuredProducts && flashSaleSettings.featuredProducts.length > 0 ? (
+                <img 
+                  src={flashSaleSettings.featuredProducts[0].images[0]} 
+                  alt={flashSaleSettings.featuredProducts[0].title} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img 
+                  src="/bedroom.png" 
+                  alt="Flash Sale Item" 
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
           </div>
           
           {/* Content - Center */}
           <div className="flex-1 text-center lg:text-left">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-(--color-olive) mb-3 sm:mb-4 tracking-tight">
-              3 DAYS <span className="italic font-normal">FLASH</span> SALE
+              {flashSaleSettings.title || 'FLASH SALE'}
             </h1>
             <p className="text-gray-800 text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 font-medium">
-              Get up to <span className="font-bold text-lg sm:text-xl lg:text-2xl text-black">70%</span> Off For All Vintage<br className="hidden sm:block" />
-              Chairs Today!
+              {flashSaleSettings.description || `Get up to ${flashSaleSettings.discountPercentage}% Off For All Items!`}
             </p>
             
             {/* Countdown Timer */}

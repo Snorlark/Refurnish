@@ -6,9 +6,9 @@ import Image from 'next/image';
 import { Menu, Users, MoreVertical, Search } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { LogOut, LayoutDashboard, PackageCheck } from "lucide-react";
 import ProtectedRoute from '../../../components/ProtectedRoute';
 import { useAuth } from '../../../contexts/AuthContext';
+import AdminSidebar from '../../../components/AdminSidebar';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -28,11 +28,12 @@ interface UserRow {
 
 const UserManagementPage: React.FC = () => {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 9;
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [activeUsers, setActiveUsers] = useState<Set<string>>(new Set());
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://refurnish-backend.onrender.com';
@@ -63,11 +64,6 @@ const UserManagementPage: React.FC = () => {
     return () => document.removeEventListener('click', onDocClick);
   }, [openMenuIndex]);
 
-  const navItems = [
-  { label: 'Dashboard Overview', href: '/admin/dashboard', active: false, icon: <LayoutDashboard className="w-5 h-5 text-gray-500" /> },
-  { label: 'User Management', href: '/admin/user-management', active: true, icon: <Users className="w-5 h-5 text-gray-500" /> },
-  { label: 'Product Moderation', href: '/admin/product-moderation', active: false, icon: <PackageCheck className="w-5 h-5 text-gray-500" /> },
-];
 
   const filteredUsers = users; // server-side filtered via query
 
@@ -131,6 +127,34 @@ const UserManagementPage: React.FC = () => {
     fetchUsers();
     return () => controller.abort();
   }, [token, API_BASE_URL, currentPage, pageSize, search]);
+
+  // Fetch active users
+  const fetchActiveUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/active`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setActiveUsers(new Set(data.map((user: any) => user._id)));
+      }
+    } catch (error) {
+      console.error('Error fetching active users:', error);
+    }
+  };
+
+  // Fetch active users on mount and every 30 seconds
+  useEffect(() => {
+    if (!token) return;
+    
+    fetchActiveUsers();
+    const interval = setInterval(fetchActiveUsers, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   // Socket.IO: auto-refresh on user updates/deletes
   useEffect(() => {
@@ -233,67 +257,10 @@ const UserManagementPage: React.FC = () => {
 
   return (
     <ProtectedRoute requireAdmin={true}>
-      <div className='fixed top-0 left-0 h-screen w-80 bg-white shadow-sm"'> 
-      <div className="w-80 bg-white shadow-sm h-screen flex flex-col">
-        <div className="p-6 border-b flex-grow">
-          {/* Header */}
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
-              <Image src="/Rf-logo.svg" alt="Rf" width={40} height={40} />
-            </div>
-            <span className="text-lg font-medium text-gray-700">Admin Access</span>
-          </div>
-
-          {/* Admin Profile */}
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">Juan Dela Cruz</div>
-              <div className="text-sm text-gray-500">Administrator</div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="mt-8">
-            <div className="px-2">
-              <div className="px-4 text-xs font-medium tracking-wider text-gray-500 mb-3">NAVIGATION</div>
-              
-              <div className="space-y-2">
-                {navItems.map((item) => (
-                 
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition-colors ${
-                      item.active 
-                        ? 'bg-gray-100 text-gray-900 font-semibold' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="w-4 h-4">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </Link>
-
-                ))}
-              </div>
-
-            </div>
-          </nav>
-        </div>
-        <div className="p-6 border-t border-gray-200 mt-auto">
-          <button onClick={() => router.push('/')} className="w-full cursor-pointer flex items-center justify-start gap-2 px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-            <LogOut className="w-5 h-5 text-gray-500" />
-            <span>Log out</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <div className={`${montserrat.className} flex min-h-screen bg-gray-50`}>
-      {/* Main Content */}
-      <div className="flex-1 ml-80 p-8 overflow-y-auto">
+      <div className={`${montserrat.className} flex min-h-screen bg-gray-50`}>
+        <AdminSidebar activePage="user-management" />
+        {/* Main Content */}
+        <div className="flex-1 ml-80 p-8 overflow-y-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
           <Menu className="w-5 h-5 text-gray-600 mr-3" /> 
@@ -353,7 +320,22 @@ const UserManagementPage: React.FC = () => {
                       <div className="text-gray-500 text-xs">{user.createdTime}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">{user.status}</span>
+                      <div className="flex items-center space-x-2">
+                        {activeUsers.has(user.id) ? (
+                          <span className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full flex items-center">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                            Online
+                          </span>
+                        ) : (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            user.status === 'Active' ? 'text-green-800 bg-green-100' :
+                            user.status === 'Inactive' ? 'text-yellow-800 bg-yellow-100' :
+                            'text-red-800 bg-red-100'
+                          }`}>
+                            {user.status}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap z-50 text-right text-sm text-gray-500 relative" data-action-menu>
                       <button
@@ -428,9 +410,9 @@ const UserManagementPage: React.FC = () => {
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </div>
-    {/* Update Modal */}
+      {/* Update Modal */}
     {showUpdateModal && selectedUser && (
       <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30">
         <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-5">
