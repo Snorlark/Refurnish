@@ -41,7 +41,7 @@
     <a href="https://github.com/Snorlark/Refurnish"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Snorlark/Refurnish">View Demo</a>
+    <a href="https://refurnish-blond.vercel.app">View Demo</a>
     &middot;
     <a href="https://github.com/Snorlark/Refurnish/issues">Report Bug</a>
     &middot;
@@ -755,3 +755,4 @@ Resources and inspirations that made this project possible:
 [PNPM-url]: https://pnpm.io/
 [JWT]: https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white
 [JWT-url]: https://jwt.io/
+
